@@ -19,3 +19,4 @@ use Illuminate\Support\Facades\Route;
 //});
 
 Route::get('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
+Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'createLead']);

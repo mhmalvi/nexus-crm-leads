@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class LeadScraper extends Controller
 {
@@ -16,110 +18,96 @@ class LeadScraper extends Controller
     public function dataScraper(Request $request){
 
         try {
-//            $decodeUrl = urldecode("https://graph.facebook.com/v15.0/me?fields=id%2Cname%2Cadaccounts%7Bcampaigns%7Bname%2Cstart_time%2Cstop_time%2Cstatus%2Cads%7Bleads%7D%7D%7D&access_token=EAAKu5ZBYpE2cBAMOvGwtJwDv96WezHbxpdBbcFnBaqgmiMUNqMCNPAZApA0YuInf5AxHSiThsAIWETluZCPM7Bk4aLnBnAlrZBUChP9Lhoy9IFMbi9xSce8qCaJcaxUOln0lrKZAsjitJZAPTzJs7ay2T3XYhubnb7GNL0geO6DHkWSaZCIwE5EJZB54VxFruxgTr0KbFIGf7AZDZD"). "\n";
 
-            $accessToken  =  "EAAKu5ZBYpE2cBAMOvGwtJwDv96WezHbxpdBbcFnBaqgmiMUNqMCNPAZApA0YuInf5AxHSiThsAIWETluZCPM7Bk4aLnBnAlrZBUChP9Lhoy9IFMbi9xSce8qCaJcaxUOln0lrKZAsjitJZAPTzJs7ay2T3XYhubnb7GNL0geO6DHkWSaZCIwE5EJZB54VxFruxgTr0KbFIGf7AZDZD";
+            //$accessToken  =  "EAAKu5ZBYpE2cBAMOvGwtJwDv96WezHbxpdBbcFnBaqgmiMUNqMCNPAZApA0YuInf5AxHSiThsAIWETluZCPM7Bk4aLnBnAlrZBUChP9Lhoy9IFMbi9xSce8qCaJcaxUOln0lrKZAsjitJZAPTzJs7ay2T3XYhubnb7GNL0geO6DHkWSaZCIwE5EJZB54VxFruxgTr0KbFIGf7AZDZD";
 
-            //$accessToken  = "EAAIfArqorGcBAK9ZBR7IjJDk4KPkTtm3DOjBtJiBpnO0WUnDb1Vhk4xMVZACdL6h0NZAxAY80QpSzxyZBQECIOePPCZBzmvxX7iztei5l14nYQyID4CiTG2o9d9HxWqxm4idVjIFtTxbEsOIFyO5pVjWDIln3dvLnwPN8Uh3a4h0qJgwBgPdYdyjPbZCbJJU9bcXdLteNOZBgZDZD";
-
+            $accessToken  = "EAAIfArqorGcBAMU8HzLfJ0KNrdHNWqOUZC1hSc2gcTd7ELcnDagLSlBuAInAtUFgPw5VB3PIMSZBIbPTswY9lQQ0K84XaJ5h2Pod01Y2lp1rJmXNamaQW3wFR006U3dGDRB31GfZCWZBxKZATGWVWVZAblnLPpY3XIZCw3EUoLmXbAmDlB9TGfmNXCZBO7z9HVIlzR4G7l0RLQZDZD";
             $url = "https://graph.facebook.com/v15.0/me?fields=id,name,adaccounts{campaigns.limit(10000){name,start_time,stop_time,status,ads{leads.limit(10000)}},business_name}&access_token=".$accessToken;
-
             $dataArray = json_decode(file_get_contents($url), true);
-            //dd($dataArray);
-
             $campaignData = [];
             $leads = [];
-            $courseInfo = [];
-            $courseQueries = [];
-            $queriesAnswer = [];
-            $user = [];
             $leadFrom = 'fb';
 
             if($dataArray!="" && count($dataArray)>0){
                 if(isset($dataArray['adaccounts']['data']) && count($dataArray['adaccounts']['data'])>0){
                     //dd($dataArray['adaccounts']['data']);
+                    $leadDetails = [];
                     foreach ($dataArray['adaccounts']['data'] as $dataCampaign){
                         if(isset($dataCampaign['campaigns']) && count($dataCampaign['campaigns'])>0){ //Start of data scraping
-                            //dd($dataCampaign['business_name']);
-                            $campaignData['business_id'] = $dataCampaign['id'];
-                            $campaignData['business_name'] = $dataCampaign['business_name'];
-
+                            $campaignData['account'][$dataCampaign['id']]['business_id'] = $dataCampaign['id'];
+                            $campaignData['account'][$dataCampaign['id']]['business_name'] = $dataCampaign['business_name'];
                             if(isset($dataCampaign['campaigns']['data']) && count($dataCampaign['campaigns']['data'])>0){
-                                //dd($dataCampaign['campaigns']['data']);
                                 $campaignDetails = [];
-
                                 foreach ($dataCampaign['campaigns']['data'] as $campaign){
-                                    $campaignDetails['campaign_name'] = $campaign['name'];
-                                    $campaignDetails['campaign_id'] = $campaign['name'];
-                                    $campaignDetails['start_time'] = $campaign['start_time'];
-                                    $campaignDetails['stop_time'] = isset($campaign['stop_time'])?$campaign['stop_time']:$campaign['start_time'];
-                                    $campaignDetails['campaign_status'] = $campaign['status'];
-                                    $campaignData['data'][]=$campaignDetails;
-
                                     if(isset($campaign['ads']['data']) && count($campaign['ads']['data'])>0){
                                         foreach ($campaign['ads']['data'] as $adsData){
                                             if(isset($adsData['leads']['data']) && count($adsData['leads']['data'])>0){
-                                               $leadDetails = [];
-                                                $courseDetails = [];
+                                               $leadDetailsInfo = [];
+                                               $tempArray = [];
                                                foreach ($adsData['leads']['data'] as $lead){
 
                                                    if(isset($lead['field_data']) && count($lead['field_data'])>0){
-                                                       //dd($lead['field_data']);
-                                                       $tempArray = [];
+
                                                        foreach ($lead['field_data'] as $fieldData){
-                                                           $tempArray['name'][]=$fieldData['name'];
-                                                           $tempArray['data'][]=$fieldData;
-//
+                                                           $tempArray['lead'][$lead['id']]['name'][]=$fieldData['name'];
+                                                           $tempArray['lead'][$lead['id']]['data'][]=$fieldData;
                                                        }
-                                                       //dd($tempArray);
-                                                       if(!in_array('inbox_url', $tempArray['name'])){
-                                                           //dd($tempArray);
-                                                           if(count($tempArray['data'])>0){
-                                                               foreach ($tempArray['data'] as $fieldValue){
+
+                                                       if(!in_array('inbox_url', $tempArray['lead'][$lead['id']]['name'])){
+                                                           if(count($tempArray['lead'][$lead['id']]['data'])>0){
+                                                               foreach ($tempArray['lead'][$lead['id']]['data'] as $fieldValue){
                                                                    if (strlen(stristr($fieldValue['name'],"live_in"))>0) {
-                                                                       //echo "true";die(); // are Found
-                                                                       $leadDetails['work_location'] = $fieldValue['values'][0];
-                                                                       //dd($leadDetails);
+
+                                                                       $leadDetailsInfo['lead'][$lead['id']]['work_location']= $fieldValue['values'][0];
                                                                    }
                                                                    if (strlen(stristr($fieldValue['name'],"qualification_are_you"))>0) {
-                                                                       //echo "true";die(); // are Found
-                                                                       $courseDetails['title'] = $fieldValue['values'][0];
-                                                                       $courseCodeArray = explode('_', $fieldValue['values'][0]);
-                                                                       //dd($courseCodeArray);
+
+                                                                       $courseCodeArray = explode('_', $this->_cleanString($fieldValue['values'][0]));
+                                                                       $leadDetailsInfo['lead'][$lead['id']]['course_title']= $this->_cleanString(str_replace("_", "",$fieldValue['values'][0]));
                                                                        foreach ($courseCodeArray as $courseCodeString){
-                                                                           if (preg_match('~[0-9]+~', $courseCodeString)) {
-                                                                               $courseDetails['course_code'] = trim(rtrim($courseCodeString, '-'));
-                                                                               break;
+                                                                           $isThereNumber = false;
+                                                                           for ($i = 0; $i < strlen($courseCodeString); $i++) {
+                                                                               if ( ctype_digit($courseCodeString[$i]) ) {
+                                                                                   $isThereNumber = true;
+                                                                                   break;
+                                                                               }
                                                                            }
-//                                                                           if(ctype_alnum($courseCodeString)===true){
-//                                                                               $courseDetails['course_code'] = $courseCodeString;
-//                                                                               break;
-//                                                                               //dd($courseCodeString);
-//                                                                           }
+                                                                           if($isThereNumber){
+                                                                               $leadDetailsInfo['lead'][$lead['id']]['course_code']= trim(rtrim($courseCodeString, '-'));
+                                                                           }
                                                                        }
-                                                                      // dd($courseDetails);
-
-                                                                       //dd($leadDetails);
                                                                    }
-
+                                                                   // User Info
+                                                                   if (strlen(stristr($fieldValue['name'],"full_name"))>0) {
+                                                                       $leadDetailsInfo['lead'][$lead['id']]['full_name']= $fieldValue['values'][0];
+                                                                   }
+                                                                   if (strlen(stristr($fieldValue['name'],"phone_number"))>0) {
+                                                                       $leadDetailsInfo['lead'][$lead['id']]['phone_number']= $fieldValue['values'][0];
+                                                                   }
+                                                                   if (strlen(stristr($fieldValue['name'],"email"))>0) {
+                                                                       $leadDetailsInfo['lead'][$lead['id']]['email']= $fieldValue['values'][0];
+                                                                   }
                                                                }
+
                                                            }
-                                                       }else{
-                                                           $tempArray = [];
+                                                           $leadDetailsInfo['lead'][$lead['id']]['lead_id']=$lead['id'];
+                                                           $leadDetailsInfo['lead'][$lead['id']]['lead_apply_date']=$lead['created_time'];
+                                                           $leadDetailsInfo['lead'][$lead['id']]['form_data']= $lead['field_data'];
                                                        }
                                                    }
-                                                   if(isset($leadDetails['work_location'])){
-                                                       $leadDetails['lead_id'] = $lead['id'];
-                                                       $leadDetails['lead_apply_date'] = $lead['created_time'];
-                                                       $leadDetails['lead_from'] = $leadFrom;
-                                                       $leads[]=$leadDetails;
-                                                       $courseInfo[] = $courseDetails;
-                                                   }
-
                                                }
+                                                $campaignDetails['campaign_name'] = $campaign['name'];
+                                                $campaignDetails['campaign_id'] = $campaign['id'];
+                                                $campaignDetails['start_time'] = $campaign['start_time'];
+                                                $campaignDetails['stop_time'] = isset($campaign['stop_time'])?$campaign['stop_time']:$campaign['start_time'];
+                                                $campaignDetails['campaign_status'] = $campaign['status'];
+                                                $leadDetails['campaign'][$campaign['id']]['campaign_details'] = $campaignDetails;
+                                                $leadDetails['campaign'][$campaign['id']]['campaign_leads'] = $leadDetailsInfo;
+                                                $leadDetails['lead_from'] = $leadFrom;
                                             }
                                         }
                                     }
+                                    $leads['account'][$dataCampaign['id']]=$leadDetails;
                                 }
                             }
                         } // EOF data scraping
@@ -127,13 +115,17 @@ class LeadScraper extends Controller
                 }
             }
 
-            dd($courseInfo);
-            dd($leads);
-            dd($campaignData);
+//            $response = Http::post('http://leadapp.crm.com/api/lead/create', [
+//                'name' => 'Steve',
+//                'role' => 'Network Administrator',
+//            ]);
+//            dd(json_decode($response->body(), true) );
+
+           // dd($leads);
             return response()->json([
                 'status' => true,
                 'message' => 'Data Scrap Successfully',
-                'data' => []
+                'data' => $leads
             ], 200);
 
         } catch (\Throwable $th) {
@@ -143,5 +135,30 @@ class LeadScraper extends Controller
             ], 500);
         }
 
+    }
+
+    private function _cleanString($text) {
+        $utf8 = array(
+            '/[áàâãªä]/u'   =>   'a',
+            '/[ÁÀÂÃÄ]/u'    =>   'A',
+            '/[ÍÌÎÏ]/u'     =>   'I',
+            '/[íìîï]/u'     =>   'i',
+            '/[éèêë]/u'     =>   'e',
+            '/[ÉÈÊË]/u'     =>   'E',
+            '/[óòôõºö]/u'   =>   'o',
+            '/[ÓÒÔÕÖ]/u'    =>   'O',
+            '/[úùûü]/u'     =>   'u',
+            '/[ÚÙÛÜ]/u'     =>   'U',
+            '/ç/'           =>   'c',
+            '/Ç/'           =>   'C',
+            '/ñ/'           =>   'n',
+            '/Ñ/'           =>   'N',
+            '/–/'           =>   '-', // UTF-8 hyphen to "normal" hyphen
+            '/[’‘‹›‚]/u'    =>   ' ', // Literally a single quote
+            '/[“”«»„]/u'    =>   ' ', // Double quote
+            '/ /'           =>   ' ', // nonbreaking space (equiv. to 0x160)
+            '/¬/'             => ''
+        );
+        return preg_replace(array_keys($utf8), array_values($utf8), $text);
     }
 }
