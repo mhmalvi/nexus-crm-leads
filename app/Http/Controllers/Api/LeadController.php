@@ -19,34 +19,27 @@ class LeadController extends Controller
     public function createLead(Request $request)
     {
 
-        //dd($request->name);
-        return response()->json([
-            'status' => true,
-            'message' => 'User Created Successfully',
-            // 'token' => $user->createToken("API TOKEN")->plainTextToken
-            'data'=>$request->name
-        ], 200);
+        if(!isset($request->client_id)){
+            return response()->json([
+                'status' => false,
+                'message' => 'Client id required',
+                'data'=>$request->client_id
+            ], 406);
+        }
 
         try {
-            //Validated
-            $validateUser = Validator::make($request->all(),
-                [
-                    'name' => 'required',
-                    'email' => 'required|unique:lead_id'
-                ]);
 
-            if($validateUser->fails()){
-                return response()->json([
-                    'status' => false,
-                    'message' => 'validation error',
-                    'errors' => $validateUser->errors()
-                ], 401);
-            }
+            $leadsDataArray =  $request->data;
 
+//            return response()->json([
+//                'status' => false,
+//                'message' => '',
+//                'data'=>$leadsDataArray
+//            ], 200);
 
 
             $campign = CampaignDetails::create([
-                'campaign_name ' => $request->campaign_name,
+                'campaign_name' => $request->campaign_name,
                 'campaign_id' => $request->campaign_id,
                 'client_id' => $request->client_id,
                 'business_id' => $request->business_id,
@@ -64,11 +57,14 @@ class LeadController extends Controller
             ]);
 
             $leadDetails = LeadDetails::create([
-                'lead_id ' => $request->lead_id ,
-                'student_id ' => isset($student_id)?$student_id:'' ,
-                'client_id ' => isset($client_id)?$client_id:'' ,
-                'campaign_id ' => isset($campign->id)?$campign->id:'',
-                'sales_user_id' => '' ,
+                'lead_id' => $request->lead_id ,
+                'student_id' => isset($request->student_id)?$request->student_id:'',
+                'full_name' => isset($request->full_name)?$request->full_name:'',
+                'phone_number' => isset($request->phone_number)?$request->phone_number:'',
+                'student_email' => isset($request->student_email)?$request->student_email:'',
+                'client_id' => isset($client_id)?$client_id:'' ,
+                'campaign_id' => isset($campign->id)?$campign->id:'',
+                'sales_user_id' => isset($request->sales_user_id)?$request->sales_user_id:'',
                 'document_certificate_id' => isset($request->document_certificate_id)?$request->document_certificate_id:'',
                 'course_id' => isset($courses->id)?$courses->id:'',
                 'work_location' => isset($request->work_location)?$request->work_location:'',
@@ -80,9 +76,16 @@ class LeadController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'User Created Successfully',
+                'message' => 'Lead Created Successfully',
                // 'token' => $user->createToken("API TOKEN")->plainTextToken
-            ], 200);
+            ], 201);
+
+//            return response()->json([
+//                'status' => true,
+//                'message' => 'User Created Successfully',
+//                // 'token' => $user->createToken("API TOKEN")->plainTextToken
+//                'data'=>$request->data
+//            ], 200);
 
         } catch (\Throwable $th) {
             return response()->json([

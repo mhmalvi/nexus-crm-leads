@@ -17,6 +17,9 @@ class LeadDetails extends Model
     protected $fillable = [
         'lead_id',
         'student_id',
+        'full_name',
+        'phone_number',
+        'student_email',
         'client_id',
         'campaign_id',
         'sales_user_id',
@@ -24,9 +27,8 @@ class LeadDetails extends Model
         'course_id',
         'work_location',
         'lead_from',
+        //'form_data',
         'star_review',
-        'lead_apply_date',
-        'lead_remarks',
-        'lead_remarks'
+        'lead_apply_date'
     ];
 }
