@@ -36,7 +36,6 @@ class LeadScraper extends Controller
             $campaignData = [];
             $leads = [];
             $leadFrom = 'fb';
-
             if($client_id!="" && $dataArray!="" && count($dataArray)>0 && isset($dataArray['id'])){
                 if(isset($dataArray['adaccounts']['data']) && count($dataArray['adaccounts']['data'])>0){
                     //dd($dataArray['adaccounts']['data']);
@@ -47,111 +46,110 @@ class LeadScraper extends Controller
                             $campaignData['account'][$dataCampaign['id']]['business_name'] = $dataCampaign['business_name'];
                             if(isset($dataCampaign['campaigns']['data']) && count($dataCampaign['campaigns']['data'])>0){
                                 $campaignDetails = [];
-                                $tempArray = [];
                                 foreach ($dataCampaign['campaigns']['data'] as $campaign){
+                                    //dd($campaign);
                                     if(isset($campaign['ads']['data']) && count($campaign['ads']['data'])>0){
                                         foreach ($campaign['ads']['data'] as $adsData){
                                             if(isset($adsData['leads']['data']) && count($adsData['leads']['data'])>0){
-                                               $leadDetailsInfo = [];
+                                                $leadDetailsInfo = [];
+                                                $tempArray = [];
+                                                //dd($adsData['leads']['data']);
+                                                foreach ($adsData['leads']['data'] as $lead){
+                                                    //dd($lead);
+                                                    if(isset($lead['field_data']) && count($lead['field_data'])>0){
+                                                        //dd($lead['field_data']);
+                                                        if($this->_checkFBInboxData($lead['field_data'])){
+                                                            // dd('here');
+                                                            foreach ($lead['field_data'] as $fieldData){
+                                                                $tempArray['lead'][$lead['id']]['name'][]=$fieldData['name'];
+                                                                $tempArray['lead'][$lead['id']]['data'][]=$fieldData;
+                                                            }
 
-                                               foreach ($adsData['leads']['data'] as $lead){
-                                                   if(isset($lead['field_data']) && count($lead['field_data'])>0){
+                                                            if(count($tempArray['lead'][$lead['id']]['data'])>0){
+                                                                foreach ($tempArray['lead'][$lead['id']]['data'] as $fieldValue){
+                                                                    if (strlen(stristr($fieldValue['name'],"live_in"))>0) {
 
-                                                       foreach ($lead['field_data'] as $fieldData){
-                                                           $tempArray['lead'][$lead['id']]['name'][]=$fieldData['name'];
-                                                           $tempArray['lead'][$lead['id']]['data'][]=$fieldData;
-                                                       }
+                                                                        $leadDetailsInfo['lead'][$lead['id']]['work_location']= $fieldValue['values'][0];
+                                                                    }
+                                                                    if (strlen(stristr($fieldValue['name'],"qualification_are_you"))>0) {
 
-                                                       if(!in_array('inbox_url', $tempArray['lead'][$lead['id']]['name'])){
+                                                                        $courseCodeArray = explode('_', $this->_cleanString($fieldValue['values'][0]));
+                                                                        $leadDetailsInfo['lead'][$lead['id']]['course_title']= $this->_cleanString(str_replace("_", " ",$fieldValue['values'][0]));
+                                                                        foreach ($courseCodeArray as $courseCodeString){
+                                                                            $isThereNumber = false;
+                                                                            for ($i = 0; $i < strlen($courseCodeString); $i++) {
+                                                                                if ( ctype_digit($courseCodeString[$i]) ) {
+                                                                                    $isThereNumber = true;
+                                                                                    break;
+                                                                                }
+                                                                            }
+                                                                            if($isThereNumber){
+                                                                                $leadDetailsInfo['lead'][$lead['id']]['course_code']= trim(rtrim($courseCodeString, '-'));
+                                                                            }
+                                                                        }
+                                                                        $courseCode =isset($leadDetailsInfo['lead'][$lead['id']]['course_code'])?$leadDetailsInfo['lead'][$lead['id']]['course_code']:'';
+                                                                        if($courseCode ==""){
+                                                                            $courseCode = isset($leadDetailsInfo['lead'][$lead['id']]['course_title'])?$leadDetailsInfo['lead'][$lead['id']]['course_title']:'';
+                                                                        }
 
+                                                                        $courseData = CoursesInfo::where('course_code', '=', trim($courseCode))->first();
+                                                                        if ($courseData === null) {
 
-                                                           if(count($tempArray['lead'][$lead['id']]['data'])>0){
-                                                               foreach ($tempArray['lead'][$lead['id']]['data'] as $fieldValue){
-                                                                   if (strlen(stristr($fieldValue['name'],"live_in"))>0) {
+                                                                            $courseData = CoursesInfo::create([
+                                                                                'course_code' => $courseCode,
+                                                                                'course_title' => isset($leadDetailsInfo['lead'][$lead['id']]['course_title'])?$leadDetailsInfo['lead'][$lead['id']]['course_title']:'',
+                                                                                'course_description' => isset($leadDetailsInfo['lead'][$lead['id']]['course_title'])?$leadDetailsInfo['lead'][$lead['id']]['course_title']:'',
+                                                                                'status' => 1
+                                                                            ]);
+                                                                        }
+                                                                    }// EOF Course
+                                                                    // User Info
+                                                                    if (strlen(stristr($fieldValue['name'],"full_name"))>0) {
+                                                                        $leadDetailsInfo['lead'][$lead['id']]['full_name']= $fieldValue['values'][0];
+                                                                    }
+                                                                    if (strlen(stristr($fieldValue['name'],"phone_number"))>0) {
+                                                                        $leadDetailsInfo['lead'][$lead['id']]['phone_number']= $fieldValue['values'][0];
+                                                                    }
+                                                                    if (strlen(stristr($fieldValue['name'],"email"))>0) {
+                                                                        $leadDetailsInfo['lead'][$lead['id']]['email']= $fieldValue['values'][0];
+                                                                    }
+                                                                }
 
-                                                                       $leadDetailsInfo['lead'][$lead['id']]['work_location']= $fieldValue['values'][0];
-                                                                   }
-                                                                   if (strlen(stristr($fieldValue['name'],"qualification_are_you"))>0) {
+                                                            }
+                                                            $leadDetailsInfo['lead'][$lead['id']]['lead_id']=$lead['id'];
+                                                            $leadDetailsInfo['lead'][$lead['id']]['lead_apply_date']=$lead['created_time'];
+                                                            $leadDetailsInfo['lead'][$lead['id']]['form_data']= $lead['field_data'];
+                                                            //
+                                                            $leadData = LeadDetails::where('lead_id', '=', $lead['id'])->first();
 
-                                                                       $courseCodeArray = explode('_', $this->_cleanString($fieldValue['values'][0]));
-                                                                       $leadDetailsInfo['lead'][$lead['id']]['course_title']= $this->_cleanString(str_replace("_", " ",$fieldValue['values'][0]));
-                                                                       foreach ($courseCodeArray as $courseCodeString){
-                                                                           $isThereNumber = false;
-                                                                           for ($i = 0; $i < strlen($courseCodeString); $i++) {
-                                                                               if ( ctype_digit($courseCodeString[$i]) ) {
-                                                                                   $isThereNumber = true;
-                                                                                   break;
-                                                                               }
-                                                                           }
-                                                                           if($isThereNumber){
-                                                                               $leadDetailsInfo['lead'][$lead['id']]['course_code']= trim(rtrim($courseCodeString, '-'));
-                                                                           }
-                                                                       }
-                                                                       $courseCode =isset($leadDetailsInfo['lead'][$lead['id']]['course_code'])?$leadDetailsInfo['lead'][$lead['id']]['course_code']:'';
-                                                                       if($courseCode ==""){
-                                                                           $courseCode = isset($leadDetailsInfo['lead'][$lead['id']]['course_title'])?$leadDetailsInfo['lead'][$lead['id']]['course_title']:'';
-                                                                       }
+                                                            $lead_apply_date = Carbon::parse($lead['created_time'])->toDateTime();
+                                                            //dd($start_time); // 2020-11-23 13:26:02
+                                                            if ($leadData === null) {
+                                                                DB::table('lead_details')->insert([
+                                                                    'lead_id' => $lead['id'] ,
+                                                                    'student_id' => '0',
+                                                                    'full_name' => isset($leadDetailsInfo['lead'][$lead['id']]['full_name'])?$leadDetailsInfo['lead'][$lead['id']]['full_name']:'',
+                                                                    'phone_number' => isset($leadDetailsInfo['lead'][$lead['id']]['phone_number'])?$leadDetailsInfo['lead'][$lead['id']]['phone_number']:'',
+                                                                    'student_email' => isset($leadDetailsInfo['lead'][$lead['id']]['email'])?$leadDetailsInfo['lead'][$lead['id']]['email']:'',
+                                                                    'client_id' => isset($client_id)?$client_id:'1' ,
+                                                                    'campaign_id' => isset($campaign['id'])?$campaign['id']:'',
+                                                                    'sales_user_id' => '0',
+                                                                    'document_certificate_id' => '0',
+                                                                    'course_id' => isset($courseData->id)?$courseData->id:'0',
+                                                                    'work_location' => isset($leadDetailsInfo['lead'][$lead['id']]['work_location'])?$leadDetailsInfo['lead'][$lead['id']]['work_location']:'',
+                                                                    'lead_from' => $leadFrom,
+                                                                    'form_data' => json_encode($lead['field_data']),
+                                                                    'star_review' => '0',
+                                                                    'lead_apply_date' => isset($lead_apply_date)?$lead_apply_date:''
+                                                                ]);
 
-                                                                       $courseData = CoursesInfo::where('course_code', '=', trim($courseCode))->first();
-                                                                       if ($courseData === null) {
+                                                            }
+                                                        }
 
-                                                                               $courseData = CoursesInfo::create([
-                                                                               'course_code' => $courseCode,
-                                                                               'course_title' => isset($leadDetailsInfo['lead'][$lead['id']]['course_title'])?$leadDetailsInfo['lead'][$lead['id']]['course_title']:'',
-                                                                               'course_description' => isset($leadDetailsInfo['lead'][$lead['id']]['course_title'])?$leadDetailsInfo['lead'][$lead['id']]['course_title']:'',
-                                                                               'status' => 1
-                                                                           ]);
-                                                                       }
-                                                                   }// EOF Course
-                                                                   // User Info
-                                                                   if (strlen(stristr($fieldValue['name'],"full_name"))>0) {
-                                                                       $leadDetailsInfo['lead'][$lead['id']]['full_name']= $fieldValue['values'][0];
-                                                                   }
-                                                                   if (strlen(stristr($fieldValue['name'],"phone_number"))>0) {
-                                                                       $leadDetailsInfo['lead'][$lead['id']]['phone_number']= $fieldValue['values'][0];
-                                                                   }
-                                                                   if (strlen(stristr($fieldValue['name'],"email"))>0) {
-                                                                       $leadDetailsInfo['lead'][$lead['id']]['email']= $fieldValue['values'][0];
-                                                                   }
-                                                               }
+                                                    }
 
-                                                           }
-                                                           $leadDetailsInfo['lead'][$lead['id']]['lead_id']=$lead['id'];
-                                                           $leadDetailsInfo['lead'][$lead['id']]['lead_apply_date']=$lead['created_time'];
-                                                           $leadDetailsInfo['lead'][$lead['id']]['form_data']= $lead['field_data'];
+                                                }
 
-                                                           //
-                                                           $leadData = LeadDetails::where('lead_id', '=', $lead['id'])->first();
-
-                                                           $lead_apply_date = Carbon::parse($lead['created_time'])->toDateTime();
-                                                           //dd($start_time); // 2020-11-23 13:26:02
-
-                                                           if ($leadData === null) {
-                                                               DB::table('lead_details')->insert([
-                                                                   'lead_id' => $lead['id'] ,
-                                                                   'student_id' => '0',
-                                                                   'full_name' => isset($leadDetailsInfo['lead'][$lead['id']]['full_name'])?$leadDetailsInfo['lead'][$lead['id']]['full_name']:'',
-                                                                   'phone_number' => isset($leadDetailsInfo['lead'][$lead['id']]['phone_number'])?$leadDetailsInfo['lead'][$lead['id']]['phone_number']:'',
-                                                                   'student_email' => isset($leadDetailsInfo['lead'][$lead['id']]['email'])?$leadDetailsInfo['lead'][$lead['id']]['email']:'',
-                                                                   'client_id' => isset($client_id)?$client_id:'1' ,
-                                                                   'campaign_id' => isset($campaign['id'])?$campaign['id']:'',
-                                                                   'sales_user_id' => '0',
-                                                                   'document_certificate_id' => '0',
-                                                                   'course_id' => isset($courseData->id)?$courseData->id:'0',
-                                                                   'work_location' => isset($leadDetailsInfo['lead'][$lead['id']]['work_location'])?$leadDetailsInfo['lead'][$lead['id']]['work_location']:'',
-                                                                   'lead_from' => $leadFrom,
-                                                                   'form_data' => json_encode($lead['field_data']),
-                                                                   'star_review' => '0',
-                                                                   'lead_apply_date' => isset($lead_apply_date)?$lead_apply_date:''
-                                                               ]);
-
-                                                           }
-                                                           //EOF Lead
-
-                                                       }
-
-                                                   }
-                                               }
                                                 $campaignDetails['campaign_name'] = $campaign['name'];
                                                 $campaignDetails['campaign_id'] = $campaign['id'];
                                                 $campaignDetails['start_time'] = $campaign['start_time'];
@@ -169,7 +167,7 @@ class LeadScraper extends Controller
 
 
                                                 if ($campaignData === null) {
-                                                        $campaign = CampaignDetails::create([
+                                                    $campaign = CampaignDetails::create([
                                                         'campaign_name' => $campaign['name'],
                                                         'campaign_id' => $campaign['id'],
                                                         'client_id' => $client_id,
@@ -215,9 +213,10 @@ class LeadScraper extends Controller
 
                 }
             } // EOF AdAccount
+            //dd($tempArray);
             //dd($leads);
 
-           // dd($leads);
+            // dd($leads);
             return response()->json([
                 'status' => true,
                 'message' => 'Data Scrap Successfully',
@@ -230,6 +229,17 @@ class LeadScraper extends Controller
             ], 500);
         }
 
+    }
+
+    private function _checkFBInboxData($array){
+        //dd($array);
+        $noInboxURL = true;
+        foreach ($array as $fieldData){
+            if($fieldData['name']=='inbox_url'){
+                $noInboxURL =false;
+            }
+        }
+        return $noInboxURL;
     }
 
     private function _cleanString($text) {
