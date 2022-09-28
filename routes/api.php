@@ -20,3 +20,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
 Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'createLead']);
+Route::get('/lead/list', [\App\Http\Controllers\Api\LeadController::class, 'leadList']);
+Route::get('/campaign/list', [\App\Http\Controllers\Api\CampaignController::class, 'campaignList']);
