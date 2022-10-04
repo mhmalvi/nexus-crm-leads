@@ -73,10 +73,11 @@ class LeadScraper extends Controller
                                                                     }
                                                                     if (strlen(stristr($fieldValue['name'],"qualification_are_you"))>0) {
 
-                                                                        $courseCodeArray = explode('_', $this->_cleanString($fieldValue['values'][0]));
-                                                                        $leadDetailsInfo['lead'][$lead['id']]['course_title']= $this->_cleanString(str_replace("_", " ",$fieldValue['values'][0]));
+                                                                        $courseCodeArray = explode('_', iconv('utf-8', 'ascii//TRANSLIT', $this->_cleanString($fieldValue['values'][0])));
+                                                                        $leadDetailsInfo['lead'][$lead['id']]['course_title']= $this->_cleanString(str_replace("_", " ",iconv('utf-8', 'ascii//TRANSLIT',$fieldValue['values'][0])));
                                                                         foreach ($courseCodeArray as $courseCodeString){
                                                                             $isThereNumber = false;
+                                                                            $courseCodeString = iconv('utf-8', 'ascii//TRANSLIT', $courseCodeString);
                                                                             for ($i = 0; $i < strlen($courseCodeString); $i++) {
                                                                                 if ( ctype_digit($courseCodeString[$i]) ) {
                                                                                     $isThereNumber = true;
@@ -220,6 +221,7 @@ class LeadScraper extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data Scrap Successfully',
+                //'data'   =>$leads
             ], 201);
 
         } catch (\Throwable $th) {
