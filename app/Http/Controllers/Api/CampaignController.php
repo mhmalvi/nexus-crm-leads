@@ -16,9 +16,17 @@ class CampaignController extends Controller
      */
     public function campaignList(Request $request){
 
+        if(!isset($request->client_id)){
+            return response()->json([
+                'status' => false,
+                'message' => 'Client id required',
+                'data'=>$request->client_id
+            ], 406);
+        }
+
         try {
 
-            $data = DB::table('campaign_details')->get();
+            $data = DB::table('campaign_details')->where('client_id', '=', $request->client_id)->get();
 
             return response()->json([
                 'status' => true,

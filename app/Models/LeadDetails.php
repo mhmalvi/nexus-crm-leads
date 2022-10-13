@@ -29,6 +29,7 @@ class LeadDetails extends Model
         'lead_from',
         //'form_data',
         'star_review',
-        'lead_apply_date'
+        'lead_apply_date',
+        'lead_details_status'
     ];
 }

@@ -141,8 +141,11 @@ class LeadScraper extends Controller
                                                                     'lead_from' => $leadFrom,
                                                                     'form_data' => json_encode($lead['field_data']),
                                                                     'star_review' => '0',
-                                                                    'lead_apply_date' => isset($lead_apply_date)?$lead_apply_date:''
+                                                                    'lead_apply_date' => isset($lead_apply_date)?$lead_apply_date:'',
+                                                                    'lead_details_status' => 1 // Default New Lead
                                                                 ]);
+
+                                                                //
 
                                                             }
                                                         }

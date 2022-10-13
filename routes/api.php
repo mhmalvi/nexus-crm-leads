@@ -18,7 +18,18 @@ use Illuminate\Support\Facades\Route;
 //    return $request->user();
 //});
 
-Route::get('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
+Route::post('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
 Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'createLead']);
-Route::get('/lead/list', [\App\Http\Controllers\Api\LeadController::class, 'leadList']);
-Route::get('/campaign/list', [\App\Http\Controllers\Api\CampaignController::class, 'campaignList']);
+Route::post('/lead/list', [\App\Http\Controllers\Api\LeadController::class, 'leadList']);
+Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
+Route::post('/lead/filter', [\App\Http\Controllers\Api\LeadController::class, 'leadFilter']);
+
+Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
+Route::put('/lead/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
+
+Route::post('/campaign/list', [\App\Http\Controllers\Api\CampaignController::class, 'campaignList']);
+
+Route::post('/lead/checklist', [\App\Http\Controllers\Api\LeadCheckListController::class, 'index']);
+Route::post('/lead/checklist/create', [\App\Http\Controllers\Api\LeadCheckListController::class, 'create']);
+Route::put('/lead/checklist/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'update']);
+Route::post('/lead/checklist/delete', [\App\Http\Controllers\Api\LeadCheckListController::class, 'delete']);
