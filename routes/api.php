@@ -25,7 +25,8 @@ Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, '
 Route::post('/lead/filter', [\App\Http\Controllers\Api\LeadController::class, 'leadFilter']);
 
 Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
-Route::put('/lead/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
+Route::put('/lead/quality/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
+Route::post('/lead/assign', [\App\Http\Controllers\Api\LeadController::class, 'leadAssign']);
 
 Route::post('/campaign/list', [\App\Http\Controllers\Api\CampaignController::class, 'campaignList']);
 
@@ -33,3 +34,6 @@ Route::post('/lead/checklist', [\App\Http\Controllers\Api\LeadCheckListControlle
 Route::post('/lead/checklist/create', [\App\Http\Controllers\Api\LeadCheckListController::class, 'create']);
 Route::put('/lead/checklist/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'update']);
 Route::post('/lead/checklist/delete', [\App\Http\Controllers\Api\LeadCheckListController::class, 'delete']);
+
+Route::post('/lead/add/amount', [\App\Http\Controllers\Api\LeadController::class, 'leadAddAmount']);
+Route::post('/lead/add/call', [\App\Http\Controllers\Api\LeadController::class, 'leadAddCallHistory']);

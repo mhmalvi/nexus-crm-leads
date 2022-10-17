@@ -98,7 +98,7 @@ class LeadScraper extends Controller
 
                                                                             $courseData = CoursesInfo::create([
                                                                                 'course_code' => $courseCode,
-                                                                                'course_title' => isset($leadDetailsInfo['lead'][$lead['id']]['course_title'])?$leadDetailsInfo['lead'][$lead['id']]['course_title']:'',
+                                                                                'course_title' => isset($leadDetailsInfo['lead'][$lead['id']]['course_title'])?trim($leadDetailsInfo['lead'][$lead['id']]['course_title']):'',
                                                                                 'course_description' => isset($leadDetailsInfo['lead'][$lead['id']]['course_title'])?$leadDetailsInfo['lead'][$lead['id']]['course_title']:'',
                                                                                 'status' => 1
                                                                             ]);

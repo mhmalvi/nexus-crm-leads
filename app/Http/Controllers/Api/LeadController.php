@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CampaignDetails;
 use App\Models\CoursesInfo;
+use App\Models\LeadAmountHistory;
+use App\Models\LeadCallHistory;
 use App\Models\LeadDetails;
+use App\Models\LeadSalesEmployee;
 use App\Models\LeadStatus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -147,7 +150,7 @@ class LeadController extends Controller
         if(!isset($request->lead_id)){
             return response()->json([
                 'status' => false,
-                'message' => 'Client id required'
+                'message' => 'Lead id required'
             ], 406);
         }
 
@@ -155,51 +158,77 @@ class LeadController extends Controller
 
         try {
 
-            $leadDetails = LeadDetails::where('lead_id', '=', $leadId)->first();
-            if($leadDetails==""){
+            //$leadDetails = LeadDetails::where('lead_id', '=', $leadId)->first();
+
+            $leadDetails = DB::table('lead_details')
+                ->join('courses_info', function ($join) {
+                    $join->on('lead_details.course_id', '=', 'courses_info.id');
+                })->where('lead_details.lead_id', '=', $leadId)
+                ->get();
+            //dd($leadDetails);
+
+            if(count($leadDetails)==0){
+                //dd($leadDetails);
                 return response()->json([
                     'status' => false,
-                    'message' => 'Lead details Not found',
-                    'data'=>$request->lead_id
+                    'message' => 'Lead details Not found'
                 ], 404);
             }
 
             $leadAllStatus = LeadStatus::where('lead_id', '=', $leadId)->get();
+            $isData = false;
+            if($leadAllStatus!="") {
 
-            if($leadAllStatus!=""){
-              $isData = false;
-              foreach ($leadAllStatus as $leadAStatus){
-                  if($leadAStatus['lead_status']== '1'){
-                      $isData = true;
-                      break;
-                  }
-              }
+                foreach ($leadAllStatus as $leadAStatus) {
+                    if ($leadAStatus['lead_status'] == '1') {
+                        $isData = true;
+                        break;
+                    }
+                }
+            }
               if($isData){
                   $leadAllStatus = $leadAllStatus->toArray();
               }else{
-                  $leadAllStatus = LeadStatus::create([
-                      'lead_status' => 1,
-                      'lead_id' => $leadId,
-                      'created_at' =>$request->lead_apply_date
 
-                  ])->get()->toArray();
-              }
+                  $leadAllStatus = new LeadStatus;
+                  $leadAllStatus->lead_status =1;
+                  $leadAllStatus->lead_id =$leadId;
+                  $leadAllStatus->created_at =$leadDetails[0]->lead_apply_date;
+                  $leadAllStatus->save();
+                  $leadAllStatus = $leadAllStatus->toArray();
 
-            }else{
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Lead details Not found',
-                    'data'=>$request->lead_id
-                ], 404);
+//                  $leadAllStatus = LeadStatus::create([
+//                      'lead_status' => 1,
+//                      'lead_id' => $leadId,
+//                      'created_at' =>$leadDetails->lead_apply_date
+//
+//                  ])->get()->toArray();
 
-            }
+                }
 
-            $leadDetails->form_data = json_decode($leadDetails->form_data);
+            //dd($leadAllStatus->toArray());
+//            }else{
+//                return response()->json([
+//                    'status' => false,
+//                    'message' => 'Lead details Not found',
+//                    'data'=>$request->lead_id
+//                ], 404);
+//
+//            }
+
+            $leadDetails[0]->form_data = json_decode($leadDetails[0]->form_data);
+
+            $leadAmountHistory = LeadAmountHistory::where('lead_id','=',$request->lead_id)->get()->toArray();
+            $leadCallHistory = LeadCallHistory::where('lead_id','=',$request->lead_id)->get()->toArray();
+            $leadSalesEmployeeHistory = LeadSalesEmployee::where('lead_id','=',$request->lead_id)->get()->toArray();
             return response()->json([
                 'status' => true,
                 'message' => 'All Lead List',
-                'leadDetails' => $leadDetails->toArray(),
-                'leadAllStatus' => $leadAllStatus
+                'leadDetails' => $leadDetails[0],
+                'leadAllStatus' => $leadAllStatus,
+                'leadCallHistory' => $leadCallHistory,
+                'leadAmountHistory' => $leadAmountHistory,
+                'leadSalesEmployeeHistory' => $leadSalesEmployeeHistory
 
             ], 200);
 
@@ -244,6 +273,14 @@ class LeadController extends Controller
             }
 
             if($leadDetails->sales_user_id == 0){
+
+                LeadSalesEmployee::create([
+                    'sales_user_id'=>isset($request->sales_user_id)?$request->sales_user_id:0,
+                    'lead_id'=>$request->lead_id,
+                    'assign_by'=>isset($request->sales_user_id)?$request->sales_user_id:0,
+                    'active_status'=>1
+                ]);
+
                 $leadDetails->sales_user_id = isset($request->sales_user_id)?$request->sales_user_id:0;
             }
             $leadDetails->lead_details_status = $leadStatus;
@@ -260,6 +297,7 @@ class LeadController extends Controller
                 $leadAllStatus = LeadStatus::create([
                     'lead_status' => $leadStatus,
                     'lead_id' => $leadId,
+                    'updated_by' => $request->sales_user_id,
                    // 'created_at' =>Carbon::now()
                 ])->toArray();
             }
@@ -290,7 +328,7 @@ class LeadController extends Controller
         if(!isset($request->lead_id) && !isset($request->sales_user_id) ){
             return response()->json([
                 'status' => false,
-                'message' => 'Client id required'
+                'message' => 'Lead id and Sales Id required '
             ], 406);
         }
 
@@ -336,5 +374,121 @@ class LeadController extends Controller
         }
 
     }
+
+    /**
+     * Lead Assign to Sales Employee
+     * @param Request $request
+     * @return Lead Assign history
+     */
+    public function leadAssign(Request $request){
+
+        if(!isset($request->lead_id) && !isset($request->sales_user_id) ){
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead id and Sales Id required'
+            ], 406);
+        }
+
+        try {
+
+            LeadSalesEmployee::updateOrcreate([
+                'sales_user_id' => $request->sales_user_id,
+                'lead_id' => $request->lead_id,
+                'assign_by'=>$request->assign_by
+            ])->toArray();
+            $leadSalesEmployeeHistory = LeadSalesEmployee::where('lead_id','=',$request->lead_id)->get()->toArray();
+            return response()->json([
+                'status' => true,
+                'message' => 'Lead Sales Employee added successfully',
+                'data'   =>$leadSalesEmployeeHistory
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+
+    }
+
+    /**
+     * Lead Amount History
+     * @param Request $request
+     * @return Lead History
+     */
+    public function leadAddAmount(Request $request){
+
+        if(!isset($request->lead_id) && !isset($request->amount)){
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead id and Lead Amount required'
+            ], 406);
+        }
+
+
+        try {
+
+            LeadAmountHistory::updateOrcreate([
+                'lead_id' => $request->lead_id,
+                'amount' => $request->amount
+            ])->toArray();
+            $leadAmountHistory = LeadAmountHistory::where('lead_id','=',$request->lead_id)->get()->toArray();
+            return response()->json([
+                'status' => true,
+                'message' => 'Lead amount added successfully',
+                'data'   =>$leadAmountHistory
+
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Lead Call History
+     * @param Request $request
+     * @return Lead Call History
+     */
+    public function leadAddCallHistory(Request $request){
+
+        if(!isset($request->lead_id) && !isset($request->call_start_time) && !isset($request->call_end_time)){
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead id and Call start and end time required'
+            ], 406);
+        }
+
+        $callStartTime = Carbon::parse($request->call_start_time)->toDateTimeString();
+        $callEndTime = Carbon::parse($request->call_end_time)->toDateTimeString();
+        try {
+
+            LeadCallHistory::updateOrcreate([
+                'lead_id' => $request->lead_id,
+                'call_start_time' => $callStartTime,
+                'call_end_time' => $callEndTime,
+                'call_remark' => $request->call_remark
+            ])->toArray();
+
+            $leadCallHistory = LeadCallHistory::where('lead_id','=',$request->lead_id)->get()->toArray();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lead Call history added successfully',
+                'data'   => $leadCallHistory
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
 
 }
