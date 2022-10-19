@@ -25,7 +25,8 @@ Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, '
 Route::post('/lead/filter', [\App\Http\Controllers\Api\LeadController::class, 'leadFilter']);
 
 Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
-Route::put('/lead/quality/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
+Route::put('/lead/quality/update', [\App\Http\Controllers\Api\LeadController::class, 'leadQualityUpdate']);
+Route::put('/lead/{lead_id}/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
 Route::post('/lead/assign', [\App\Http\Controllers\Api\LeadController::class, 'leadAssign']);
 
 Route::post('/campaign/list', [\App\Http\Controllers\Api\CampaignController::class, 'campaignList']);

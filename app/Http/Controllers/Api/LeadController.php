@@ -321,9 +321,56 @@ class LeadController extends Controller
     /**
      * Lead Update
      * @param Request $request
-     * @return Lead
+     * @return \Illuminate\Http\JsonResponse
      */
     public function leadUpdate(Request $request){
+
+        if(!isset($request->lead_id) && !isset($request->student_id) ){
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead id and Student Id required '
+            ], 406);
+        }
+
+
+        try {
+
+            $leadDetails = LeadDetails::where('lead_id','=', $request->lead_id)->first();
+            if($leadDetails == ""){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Lead details Not found',
+                    'data'=>$request->lead_id
+                ], 404);
+
+            }
+
+            if(isset($request->student_id))
+                $leadDetails->student_id = $request->student_id;
+            $leadDetails->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lead update successfully',
+                'lead' => $leadDetails->toArray()
+
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+
+    }
+
+    /**
+     * Lead Quality Update
+     * @param Request $request
+     * @return Lead
+     */
+    public function leadQualityUpdate(Request $request){
 
         if(!isset($request->lead_id) && !isset($request->sales_user_id) ){
             return response()->json([
