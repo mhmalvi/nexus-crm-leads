@@ -104,7 +104,7 @@ class LeadController extends Controller
     /**
      * Create Lead
      * @param Request $request
-     * @return LeadDetails
+     * @return \Illuminate\Http\JsonResponse
      */
     public function leadList(Request $request){
 
@@ -143,7 +143,7 @@ class LeadController extends Controller
     /**
      * Lead Details
      * @param Request $request
-     * @return Lead Details, Lead Status
+     * @return \Illuminate\Http\JsonResponse Details, Lead Status
      */
     public function leadDetails(Request $request){
 
@@ -244,11 +244,11 @@ class LeadController extends Controller
     /**
      * Lead Status Update
      * @param Request $request
-     * @return Lead Status
+     * @return \Illuminate\Http\JsonResponse Status
      */
     public function leadStatusUpdate(Request $request){
 
-        if(!isset($request->lead_id) && !isset($request->sales_user_id) ){
+        if(!isset($request->lead_id) || !isset($request->sales_user_id) ){
             return response()->json([
                 'status' => false,
                 'message' => 'Client id required'
@@ -378,11 +378,11 @@ class LeadController extends Controller
     /**
      * Lead Assign to Sales Employee
      * @param Request $request
-     * @return Lead Assign history
+     * @return \Illuminate\Http\JsonResponse Assign history
      */
     public function leadAssign(Request $request){
 
-        if(!isset($request->lead_id) && !isset($request->sales_user_id) ){
+        if(!isset($request->lead_id) || !isset($request->sales_user_id) ){
             return response()->json([
                 'status' => false,
                 'message' => 'Lead id and Sales Id required'
@@ -415,11 +415,11 @@ class LeadController extends Controller
     /**
      * Lead Amount History
      * @param Request $request
-     * @return Lead History
+     * @return \Illuminate\Http\JsonResponse History
      */
     public function leadAddAmount(Request $request){
 
-        if(!isset($request->lead_id) && !isset($request->amount)){
+        if(!isset($request->lead_id) || !isset($request->amount)){
             return response()->json([
                 'status' => false,
                 'message' => 'Lead id and Lead Amount required'
@@ -452,11 +452,11 @@ class LeadController extends Controller
     /**
      * Lead Call History
      * @param Request $request
-     * @return Lead Call History
+     * @return \Illuminate\Http\JsonResponse Call History
      */
     public function leadAddCallHistory(Request $request){
 
-        if(!isset($request->lead_id) && !isset($request->call_start_time) && !isset($request->call_end_time)){
+        if(!isset($request->lead_id) || !isset($request->call_start_time) || !isset($request->call_end_time)){
             return response()->json([
                 'status' => false,
                 'message' => 'Lead id and Call start and end time required'
