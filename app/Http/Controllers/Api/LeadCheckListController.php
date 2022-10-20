@@ -8,6 +8,7 @@ use App\Models\LeadChecklist;
 use App\Models\LeadStudentDocuments;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LeadCheckListController extends Controller
 {
@@ -179,19 +180,28 @@ class LeadCheckListController extends Controller
      */
     public function addStudentDocuments(Request $request)
     {
-        if(!isset($request->checklist_id) || !isset($request->lead_id) || !isset($request->document_id) || !isset($request->student_id))
+        if(!isset($request->checklist_id) || !isset($request->lead_id) || !isset($request->document_id))
             return response()->json([
                 'status' => false,
                 'message' => 'Checklist Id Id, Lead Id, Document Id and Student id required',
             ], 401);
-
+            //dd($request->lead_id);
         try {
-
+            $chekData = LeadStudentDocuments::where('checklist_id', '=', $request->checklist_id)
+                //->where('student_id', '=', $request->student_id)
+                ->where('lead_id', '=', $request->lead_id)->first();
+            //dd($chekData);
+            if($chekData!=""){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User Document already exist'
+                ], 201);
+            }
             $data = LeadStudentDocuments::updateOrcreate([
                 'checklist_id' => $request->checklist_id,
                 'lead_id' => $request->lead_id,
                 'document_id' => $request->document_id,
-                'student_id' => isset($request->student_id)?$request->student_id:''
+                'student_id' => isset($request->student_id)?$request->student_id:0
             ])->toArray();
 
             return response()->json([
@@ -216,22 +226,40 @@ class LeadCheckListController extends Controller
      */
     public function getStudentDocuments(Request $request){
 
-        if(!isset($request->lead_id) || !isset($request->checklist) || !isset($request->student_id)){
+        if(!isset($request->lead_id) || !isset($request->course_id) || !isset($request->student_id)){
             return response()->json([
                 'status' => false,
-                'message' => 'Lead id , student id and Checklist required'
+                'message' => 'Lead id , student id and Course id required'
             ], 406);
         }
-        $checklistIds = json_decode($request->checklist);
+        
+       // $checklistIds = json_decode($request->checklist);
 
         try {
+            //$data = LeadStudentDocuments::where('lead_id','=',$request->lead_id)->where('student_id','=',$request->student_id)->whereIn('checklist_id', $checklistIds)->get()->toArray();
+            $data = LeadChecklist::select('id', 'title','course_id')->where('course_id','=',$request->course_id)->get()->toArray();
+            //dd($data);
+            $array =[];
+            $dataArray =[];
+            if(count($data)>0){
+                foreach ($data as $val){
 
-            $data = LeadStudentDocuments::where('lead_id','=',$request->lead_id)->where('student_id','=',$request->student_id)->whereIn('checklist_id', $checklistIds)->get()->toArray();
+                    $data = LeadStudentDocuments::where('lead_id','=',$request->lead_id)->where('student_id','=',$request->student_id)->where('checklist_id', $val['id'])->first();
+//                    if($data!=""){
+//                       dd($data);
+//                    }
+                    $array['checklist_id']=$val['id'];
+                    $array['title']=$val['title'];
+                    $array['document_id']= isset($data->document_id)?$data->document_id:'';
+                    array_push($dataArray, $array);
+                }
+            }
+           // dd($array);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Students List',
-                'data'   => $data
+                'data'   => $dataArray
             ], 200);
 
         } catch (\Throwable $th) {
