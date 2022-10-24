@@ -17,4 +17,8 @@ class LeadStudentDocuments extends Model
         'document_id',
         'student_id'
     ];
+
+    protected $attributes=[
+      'status'=>1
+    ];
 }

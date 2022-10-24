@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CoursesInfo;
 use App\Models\LeadCallHistory;
 use App\Models\LeadChecklist;
 use App\Models\LeadStudentDocuments;
 use Carbon\Carbon;
+use http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -232,7 +234,7 @@ class LeadCheckListController extends Controller
                 'message' => 'Lead id , student id and Course id required'
             ], 406);
         }
-        
+
        // $checklistIds = json_decode($request->checklist);
 
         try {
@@ -244,7 +246,7 @@ class LeadCheckListController extends Controller
             if(count($data)>0){
                 foreach ($data as $val){
 
-                    $data = LeadStudentDocuments::where('lead_id','=',$request->lead_id)->where('student_id','=',$request->student_id)->where('checklist_id', $val['id'])->first();
+                    $data = LeadStudentDocuments::where('lead_id','=',$request->lead_id)->where('student_id','=',$request->student_id)->where('checklist_id', $val['id'])->where('status', 1)->first();
 //                    if($data!=""){
 //                       dd($data);
 //                    }
@@ -261,6 +263,84 @@ class LeadCheckListController extends Controller
                 'message' => 'Students List',
                 'data'   => $dataArray
             ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Soft Delete Student CheckList Document
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function removeStudentDocument(Request $request)
+    {
+//        return response()->json([
+//            'status' => false,
+//            'message' => 'Document Id and Student Id not found',
+//            //'data' =>json_encode($request)
+//        ], 401);
+        if(!isset($request->document_id) || !isset($request->student_id))
+            return response()->json([
+                'status' => false,
+                'message' => 'Document Id and Student Id not found',
+            ], 401);
+
+        //dd($request->document_id);
+        try {
+            $leadCheckList = LeadStudentDocuments::where('document_id',$request->document_id)->where('student_id', $request->student_id)->first();
+            //dd($leadCheckList);
+            if($leadCheckList==""){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Student Documents not found',
+                ], 401);
+            }
+
+            $leadCheckList->status = 0;
+            $leadCheckList->save();
+            return response()->json([
+                'status' => true,
+                'message' => 'Student Documents remove Successfully',
+            ], 201);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Courses List
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCoursesList(Request $request)
+    {
+        try {
+            $coursesList = CoursesInfo::select('*');
+
+            $coursesList =$coursesList->where('status',1);
+            $coursesList = $coursesList->get();
+            // dd($leadCheckList);
+            if($coursesList==""){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Courses not found',
+                ], 401);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'All Courses',
+                'data'    => $coursesList->toArray()
+            ], 201);
 
         } catch (\Throwable $th) {
             return response()->json([

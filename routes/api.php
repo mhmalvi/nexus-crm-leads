@@ -29,15 +29,18 @@ Route::put('/lead/quality/update', [\App\Http\Controllers\Api\LeadController::cl
 Route::put('/lead/{lead_id}/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
 Route::post('/lead/assign', [\App\Http\Controllers\Api\LeadController::class, 'leadAssign']);
 
+
 Route::post('/campaign/list', [\App\Http\Controllers\Api\CampaignController::class, 'campaignList']);
 
 Route::post('/lead/checklist', [\App\Http\Controllers\Api\LeadCheckListController::class, 'index']);
 Route::post('/lead/checklist/create', [\App\Http\Controllers\Api\LeadCheckListController::class, 'create']);
 Route::post('/lead/checklist/add/document', [\App\Http\Controllers\Api\LeadCheckListController::class, 'addStudentDocuments']);
 Route::post('/lead/checklist/student/documents', [\App\Http\Controllers\Api\LeadCheckListController::class, 'getStudentDocuments']);
+Route::delete('/lead/checklist/{document_id}/delete/documents', [\App\Http\Controllers\Api\LeadCheckListController::class, 'removeStudentDocument']);
 Route::put('/lead/checklist/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'update']);
 Route::post('/lead/checklist/delete', [\App\Http\Controllers\Api\LeadCheckListController::class, 'delete']);
 
+Route::get('/lead/courses', [\App\Http\Controllers\Api\LeadCheckListController::class, 'getCoursesList']);
 
 
 Route::post('/lead/add/amount', [\App\Http\Controllers\Api\LeadController::class, 'leadAddAmount']);
