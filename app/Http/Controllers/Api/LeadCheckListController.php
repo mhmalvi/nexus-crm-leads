@@ -191,7 +191,7 @@ class LeadCheckListController extends Controller
         try {
             $chekData = LeadStudentDocuments::where('checklist_id', '=', $request->checklist_id)
                 //->where('student_id', '=', $request->student_id)
-                ->where('lead_id', '=', $request->lead_id)->first();
+                ->where('lead_id', '=', $request->lead_id)->where('status', 1)->first();
             //dd($chekData);
             if($chekData!=""){
                 return response()->json([
@@ -239,7 +239,7 @@ class LeadCheckListController extends Controller
 
         try {
             //$data = LeadStudentDocuments::where('lead_id','=',$request->lead_id)->where('student_id','=',$request->student_id)->whereIn('checklist_id', $checklistIds)->get()->toArray();
-            $data = LeadChecklist::select('id', 'title','course_id')->where('course_id','=',$request->course_id)->get()->toArray();
+            $data = LeadChecklist::select('id', 'title','course_id')->where('course_id','=',$request->course_id)->where('status', 1)->get()->toArray();
             //dd($data);
             $array =[];
             $dataArray =[];
@@ -256,7 +256,7 @@ class LeadCheckListController extends Controller
                     array_push($dataArray, $array);
                 }
             }
-           // dd($array);
+            //dd($array);
 
             return response()->json([
                 'status' => true,
