@@ -21,9 +21,17 @@ class LeadScraper extends Controller
      * @return
      */
     public function dataScraper(Request $request){
+        if(!isset($request->client_id)){
+            return response()->json([
+                'status' => false,
+                'message' => 'Client id required '
+            ], 406);
+        }
+
 
         // Your code here!
-        $client_id = 2; // Set Client ID
+        //$client_id = 2; // Set Client ID
+        $client_id = $request->client_id;
 
         try {
 
