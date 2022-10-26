@@ -21,7 +21,7 @@ class LeadScraper extends Controller
      * @return
      */
     public function dataScraper(Request $request){
-        if(!isset($request->client_id)){
+        if(!isset($request->client_id) || !isset($request->ac_k)){
             return response()->json([
                 'status' => false,
                 'message' => 'Client id required '
@@ -31,13 +31,14 @@ class LeadScraper extends Controller
 
         // Your code here!
         //$client_id = 2; // Set Client ID
+        $accessToken = $request->ac_k;
         $client_id = $request->client_id;
 
         try {
 
             //$accessToken  =  "EAAKu5ZBYpE2cBAMOvGwtJwDv96WezHbxpdBbcFnBaqgmiMUNqMCNPAZApA0YuInf5AxHSiThsAIWETluZCPM7Bk4aLnBnAlrZBUChP9Lhoy9IFMbi9xSce8qCaJcaxUOln0lrKZAsjitJZAPTzJs7ay2T3XYhubnb7GNL0geO6DHkWSaZCIwE5EJZB54VxFruxgTr0KbFIGf7AZDZD";
 
-            $accessToken  = "EAAIfArqorGcBAMU8HzLfJ0KNrdHNWqOUZC1hSc2gcTd7ELcnDagLSlBuAInAtUFgPw5VB3PIMSZBIbPTswY9lQQ0K84XaJ5h2Pod01Y2lp1rJmXNamaQW3wFR006U3dGDRB31GfZCWZBxKZATGWVWVZAblnLPpY3XIZCw3EUoLmXbAmDlB9TGfmNXCZBO7z9HVIlzR4G7l0RLQZDZD";
+            //$accessToken  = "EAAIfArqorGcBAMU8HzLfJ0KNrdHNWqOUZC1hSc2gcTd7ELcnDagLSlBuAInAtUFgPw5VB3PIMSZBIbPTswY9lQQ0K84XaJ5h2Pod01Y2lp1rJmXNamaQW3wFR006U3dGDRB31GfZCWZBxKZATGWVWVZAblnLPpY3XIZCw3EUoLmXbAmDlB9TGfmNXCZBO7z9HVIlzR4G7l0RLQZDZD";
             $url = "https://graph.facebook.com/v15.0/me?fields=id,name,adaccounts{campaigns.limit(10000){name,start_time,stop_time,status,ads{leads.limit(10000)}},business_name}&access_token=".$accessToken;
             $dataArray = json_decode(file_get_contents($url), true);
 //dd($dataArray);
