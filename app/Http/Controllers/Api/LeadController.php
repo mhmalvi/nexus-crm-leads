@@ -117,9 +117,20 @@ class LeadController extends Controller
         try {
 
             $data = DB::table('lead_details')
+                ->select('lead_details.id as lid', 'lead_details.lead_id  as lead_id', 'lead_details.student_id as student_id', 'lead_details.full_name as full_name', 'lead_details.phone_number as phone_number',
+                    'lead_details.student_email as student_email', 'lead_details.client_id as client_id', 'lead_details.campaign_id as campaign_id',
+                    'lead_details.sales_user_id as sales_user_id', 'lead_details.document_certificate_id as document_certificate_id',
+                    'lead_details.course_id as course_id', 'lead_details.work_location as work_location',
+                    'lead_details.lead_from as lead_from', 'lead_details.form_data as form_data',
+                    'lead_details.star_review as star_review', 'lead_details.lead_apply_date as lead_apply_date',
+                    'lead_details.lead_remarks as lead_remarks', 'lead_details.lead_details_status as lead_details_status',
+                    'lead_details.created_at as created_at',
+                    'lead_details.updated_at as updated_at',
+                    'courses_info.id as cid', 'courses_info.course_code as course_code', 'courses_info.course_title as course_title',
+                    'courses_info.course_description as course_description', 'courses_info.status as status')
                 ->join('courses_info', function ($join) {
                     $join->on('lead_details.course_id', '=', 'courses_info.id');
-                })->where('lead_details.client_id', '=', $request->client_id)
+                })->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.id', 'desc')
                 ->get();
 
             //dd($data);
