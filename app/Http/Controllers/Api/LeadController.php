@@ -130,7 +130,7 @@ class LeadController extends Controller
                     'courses_info.course_description as course_description', 'courses_info.status as status')
                 ->join('courses_info', function ($join) {
                     $join->on('lead_details.course_id', '=', 'courses_info.id');
-                })->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.id', 'desc')
+                })->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc')
                 ->get();
 
             //dd($data);
