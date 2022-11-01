@@ -336,10 +336,10 @@ class LeadController extends Controller
      */
     public function leadUpdate(Request $request){
 
-        if(!isset($request->lead_id) && !isset($request->student_id) ){
+        if(!isset($request->lead_id)){
             return response()->json([
                 'status' => false,
-                'message' => 'Lead id and Student Id required '
+                'message' => 'Lead id  required '
             ], 406);
         }
 
@@ -358,6 +358,8 @@ class LeadController extends Controller
 
             if(isset($request->student_id))
                 $leadDetails->student_id = $request->student_id;
+            if(isset($request->document_certificate_id))
+                $leadDetails->document_certificate_id = $request->document_certificate_id;
             $leadDetails->save();
 
             return response()->json([
@@ -379,7 +381,7 @@ class LeadController extends Controller
     /**
      * Lead Quality Update
      * @param Request $request
-     * @return Lead
+     * @return \Illuminate\Http\JsonResponse
      */
     public function leadQualityUpdate(Request $request){
 
