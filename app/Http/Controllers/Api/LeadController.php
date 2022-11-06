@@ -13,6 +13,7 @@ use App\Models\LeadStatus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class LeadController extends Controller
@@ -227,11 +228,53 @@ class LeadController extends Controller
 //
 //            }
 
-            $leadDetails[0]->form_data = json_decode($leadDetails[0]->form_data);
 
-            $leadAmountHistory = LeadAmountHistory::where('lead_id','=',$request->lead_id)->get()->toArray();
-            $leadCallHistory = LeadCallHistory::where('lead_id','=',$request->lead_id)->get()->toArray();
-            $leadSalesEmployeeHistory = LeadSalesEmployee::where('lead_id','=',$request->lead_id)->get()->toArray();
+            $leadDetails[0]->form_data = json_decode($leadDetails[0]->form_data);
+            $leadAmountHistory = LeadAmountHistory::where('lead_id','=',$request->lead_id)->orderBy('id', 'desc')->get()->toArray();
+            $leadCallHistory = LeadCallHistory::where('lead_id','=',$request->lead_id)->orderBy('id', 'desc')->get()->toArray();
+            $leadSalesEmployeeHistory = LeadSalesEmployee::where('lead_id','=',$request->lead_id)->orderBy('id', 'desc')->get()->toArray();
+            //dd($leadSalesEmployeeHistory);
+
+            $salesUserIds = [];
+            $salesEmployeDetails = '';
+            $salesUserList = [];
+
+            if($leadSalesEmployeeHistory!=""){
+                foreach ($leadSalesEmployeeHistory as $value){
+                    $salesUserIds[]=$value['sales_user_id'];
+                    $salesUserIds[]=$value['assign_by'];
+                }
+                //dd(json_encode($salesUserIds));
+                $userServiceAPI = env('USER_SERVICE_API', '');
+                //dd($userServiceAPI);
+
+                $response = Http::post($userServiceAPI.'/user/list', [
+                    'users' => json_encode($salesUserIds)
+                ]);
+
+
+                $salesEmployeDetails = isset(json_decode($response->body())->data)?json_decode($response->body())->data:'';
+                $salesEmployeDetailsArray = [];
+                //dd($salesEmployeDetails);
+                if($salesEmployeDetails!=""){
+                    foreach ($salesEmployeDetails as $row){
+                        $salesEmployeDetailsArray[$row->user_id] = $row;
+                    }
+                    //dd($salesEmployeDetailsArray);
+                    $temp=[];
+                    foreach ($leadSalesEmployeeHistory as $salesUser){
+                        $temp['sales_user_name'] = isset($salesEmployeDetailsArray[$salesUser['sales_user_id']]->full_name)?$salesEmployeDetailsArray[$salesUser['sales_user_id']]->full_name:'';
+                        $temp['assignee_user_name'] = isset($salesEmployeDetailsArray[$salesUser['assign_by']]->full_name)?$salesEmployeDetailsArray[$salesUser['assign_by']]->full_name:'';
+                        $temp['sales_user_id'] = $salesUser['sales_user_id'];
+                        $temp['assign_by'] = $salesUser['assign_by'];
+
+                        array_push($salesUserList, $temp);
+                    }
+                }
+                //dd($salesUserList);
+            }
+
+            //dd($salesEmployeDetails);
             return response()->json([
                 'status' => true,
                 'message' => 'All Lead List',
@@ -239,7 +282,7 @@ class LeadController extends Controller
                 'leadAllStatus' => $leadAllStatus,
                 'leadCallHistory' => $leadCallHistory,
                 'leadAmountHistory' => $leadAmountHistory,
-                'leadSalesEmployeeHistory' => $leadSalesEmployeeHistory
+                'leadSalesEmployeeHistory' => $salesUserList
 
             ], 200);
 
