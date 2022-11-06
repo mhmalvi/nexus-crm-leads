@@ -450,7 +450,9 @@ class LeadController extends Controller
         }
 
         try {
-
+            $leadDetails = LeadDetails::where('lead_id','=', $request->lead_id)->first();
+            $leadDetails->sales_user_id = $request->sales_user_id;
+            $leadDetails->save();
             LeadSalesEmployee::updateOrcreate([
                 'sales_user_id' => $request->sales_user_id,
                 'lead_id' => $request->lead_id,
