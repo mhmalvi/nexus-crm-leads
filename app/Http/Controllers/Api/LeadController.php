@@ -267,6 +267,7 @@ class LeadController extends Controller
                         $temp['assignee_user_name'] = isset($salesEmployeDetailsArray[$salesUser['assign_by']]->full_name)?$salesEmployeDetailsArray[$salesUser['assign_by']]->full_name:'';
                         $temp['sales_user_id'] = $salesUser['sales_user_id'];
                         $temp['assign_by'] = $salesUser['assign_by'];
+                        $temp['created_at'] = $salesUser['created_at'];
 
                         array_push($salesUserList, $temp);
                     }
