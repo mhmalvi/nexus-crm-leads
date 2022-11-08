@@ -33,8 +33,8 @@ class LeadScraper extends Controller
         //$client_id = 2; // Set Client ID
         $accessToken = $request->ac_k;
         $client_id = $request->client_id;
-
-        try {
+        //dd($accessToken);
+       // try {
 
             //$accessToken  =  "EAAKu5ZBYpE2cBAMOvGwtJwDv96WezHbxpdBbcFnBaqgmiMUNqMCNPAZApA0YuInf5AxHSiThsAIWETluZCPM7Bk4aLnBnAlrZBUChP9Lhoy9IFMbi9xSce8qCaJcaxUOln0lrKZAsjitJZAPTzJs7ay2T3XYhubnb7GNL0geO6DHkWSaZCIwE5EJZB54VxFruxgTr0KbFIGf7AZDZD";
 
@@ -73,6 +73,7 @@ class LeadScraper extends Controller
                                                                 $tempArray['lead'][$lead['id']]['name'][]=$fieldData['name'];
                                                                 $tempArray['lead'][$lead['id']]['data'][]=$fieldData;
                                                             }
+                                                            //dd($tempArray);
 
                                                             if(count($tempArray['lead'][$lead['id']]['data'])>0){
                                                                 foreach ($tempArray['lead'][$lead['id']]['data'] as $fieldValue){
@@ -115,6 +116,7 @@ class LeadScraper extends Controller
                                                                     }// EOF Course
                                                                     // User Info
                                                                     if (strlen(stristr($fieldValue['name'],"full_name"))>0) {
+                                                                        //dd('here');
                                                                         $leadDetailsInfo['lead'][$lead['id']]['full_name']= $fieldValue['values'][0];
                                                                     }
                                                                     if (strlen(stristr($fieldValue['name'],"phone_number"))>0) {
@@ -130,7 +132,9 @@ class LeadScraper extends Controller
                                                             $leadDetailsInfo['lead'][$lead['id']]['lead_apply_date']=$lead['created_time'];
                                                             $leadDetailsInfo['lead'][$lead['id']]['form_data']= $lead['field_data'];
                                                             //
+                                                            //dd($leadDetailsInfo);
                                                             $leadData = LeadDetails::where('lead_id', '=', $lead['id'])->first();
+                                                            //dd($leadData);
 
                                                             $lead_apply_date = Carbon::parse($lead['created_time'])->toDateTime();
                                                             //dd($start_time); // 2020-11-23 13:26:02
@@ -235,14 +239,14 @@ class LeadScraper extends Controller
                 'message' => 'Data Scrap Successfully',
                 //'data'   =>$leads
             ], 201);
-
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
-        }
-
+///////////////////////////////
+//        } catch (\Throwable $th) {
+//            return response()->json([
+//                'status' => false,
+//                'message' => $th->getMessage()
+//            ], 500);
+//        }
+//////////////////////////////////////////
     }
 
     private function _checkFBInboxData($array){
