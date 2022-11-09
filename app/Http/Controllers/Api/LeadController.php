@@ -36,63 +36,11 @@ class LeadController extends Controller
 
         try {
 
-            $leadsDataArray =  $request->data;
-
-//            return response()->json([
-//                'status' => false,
-//                'message' => '',
-//                'data'=>$leadsDataArray
-//            ], 200);
-
-//
-//            $campign = CampaignDetails::create([
-//                'campaign_name' => $request->campaign_name,
-//                'campaign_id' => $request->campaign_id,
-//                'client_id' => $request->client_id,
-//                'business_id' => $request->business_id,
-//                'business_name' => $request->business_name,
-//                'start_time' => $request->start_time,
-//                'stop_time' => $request->start_time,
-//                'campaign_status' => $request->campaign_status
-//            ]);
-//
-//            $courses = CoursesInfo::create([
-//                'course_code' => $request->campaign_name,
-//                'course_title' => $request->start_time,
-//                'course_description' => $request->start_time,
-//                'status' => $request->campaign_status
-//            ]);
-//
-//            $leadDetails = LeadDetails::create([
-//                'lead_id' => $request->lead_id ,
-//                'student_id' => isset($request->student_id)?$request->student_id:'',
-//                'full_name' => isset($request->full_name)?$request->full_name:'',
-//                'phone_number' => isset($request->phone_number)?$request->phone_number:'',
-//                'student_email' => isset($request->student_email)?$request->student_email:'',
-//                'client_id' => isset($client_id)?$client_id:'' ,
-//                'campaign_id' => isset($campign->id)?$campign->id:'',
-//                'sales_user_id' => isset($request->sales_user_id)?$request->sales_user_id:'',
-//                'document_certificate_id' => isset($request->document_certificate_id)?$request->document_certificate_id:'',
-//                'course_id' => isset($courses->id)?$courses->id:'',
-//                'work_location' => isset($request->work_location)?$request->work_location:'',
-//                'lead_from' => isset($request->lead_from)?$request->lead_from:'',
-//                'star_review' => isset($request->star_review)?$request->star_review:'',
-//                'lead_apply_date' => isset($request->lead_apply_date)?$request->lead_apply_date:'',
-//                'lead_remarks' => isset($request->lead_remarks)?$request->lead_remarks:''
-//            ]);
-
             return response()->json([
                 'status' => true,
                 'message' => 'Lead Created Successfully',
                // 'token' => $user->createToken("API TOKEN")->plainTextToken
             ], 201);
-
-//            return response()->json([
-//                'status' => true,
-//                'message' => 'User Created Successfully',
-//                // 'token' => $user->createToken("API TOKEN")->plainTextToken
-//                'data'=>$request->data
-//            ], 200);
 
         } catch (\Throwable $th) {
             return response()->json([
@@ -103,18 +51,13 @@ class LeadController extends Controller
     }
 
     /**
-     * Create Lead
+     * Lead List
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function leadList(Request $request){
 
-        if(!isset($request->client_id)){
-            return response()->json([
-                'status' => false,
-                'message' => 'Client id required'
-            ], 406);
-        }
+
         try {
 
             $data = DB::table('lead_details')
@@ -131,11 +74,16 @@ class LeadController extends Controller
                     'courses_info.course_description as course_description', 'courses_info.status as status')
                 ->leftJoin('courses_info', function ($join) {
                     $join->on('lead_details.course_id', '=', 'courses_info.id');
-                })->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc')
-                ->get();
+                });
+            if(isset($request->client_id))
+                $data =$data->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc');
+
+            if(isset($request->student_id))
+                $data =$data->where('lead_details.student_id', '=', $request->student_id)->orderBy('lead_details.lead_apply_date', 'desc');
+
+            $data =$data->get();
 
             //dd($data);
-
             return response()->json([
                 'status' => true,
                 'message' => 'All Lead List',
@@ -225,25 +173,7 @@ class LeadController extends Controller
                   $leadAllStatus->save();
                   $leadAllStatus = $leadAllStatus->toArray();
 
-//                  $leadAllStatus = LeadStatus::create([
-//                      'lead_status' => 1,
-//                      'lead_id' => $leadId,
-//                      'created_at' =>$leadDetails->lead_apply_date
-//
-//                  ])->get()->toArray();
-
                 }
-
-            //dd($leadAllStatus->toArray());
-//            }else{
-//                return response()->json([
-//                    'status' => false,
-//                    'message' => 'Lead details Not found',
-//                    'data'=>$request->lead_id
-//                ], 404);
-//
-//            }
-
 
             $leadDetails[0]->form_data = json_decode($leadDetails[0]->form_data);
             $leadAmountHistory = LeadAmountHistory::where('lead_id','=',$request->lead_id)->orderBy('id', 'desc')->get()->toArray();
@@ -372,6 +302,44 @@ class LeadController extends Controller
                    // 'created_at' =>Carbon::now()
                 ])->toArray();
             }
+            $array = [5,6];
+            //////////Email Service/////////
+           if(in_array($request->lead_status, $array)){
+               $userServiceAPI = env('EMAIL_SERVICE_API', '');
+               //dd($userServiceAPI);
+               $leadDetails = DB::table('lead_details')
+                   ->select('lead_details.id as lid', 'lead_details.lead_id  as lead_id', 'lead_details.student_id as student_id', 'lead_details.full_name as full_name', 'lead_details.phone_number as phone_number',
+                       'lead_details.student_email as student_email', 'lead_details.client_id as client_id', 'lead_details.campaign_id as campaign_id',
+                       'lead_details.sales_user_id as sales_user_id', 'lead_details.document_certificate_id as document_certificate_id',
+                       'lead_details.course_id as course_id', 'lead_details.work_location as work_location',
+                       'lead_details.lead_from as lead_from', 'lead_details.form_data as form_data',
+                       'lead_details.star_review as star_review', 'lead_details.lead_apply_date as lead_apply_date',
+                       'lead_details.lead_remarks as lead_remarks', 'lead_details.lead_details_status as lead_details_status',
+                       'lead_details.created_at as created_at',
+                       'lead_details.updated_at as updated_at',
+                       'courses_info.id as cid', 'courses_info.course_code as course_code', 'courses_info.course_title as course_title',
+                       'courses_info.course_description as course_description', 'courses_info.status as status')
+                   ->leftJoin('courses_info', function ($join) {
+                       $join->on('lead_details.course_id', '=', 'courses_info.id');
+                   })->where('lead_details.lead_id', '=', $leadId)
+                   ->first();
+
+               $response = Http::post($userServiceAPI.'/lead-status', [
+                   'data' => json_encode($leadDetails)
+               ]);
+
+               // dd($response->status());
+            }
+
+//
+//            if($response->status()!= '201'){
+//                return response()->json([
+//                    'status' => false,
+//                    'message' => 'Email Not Sent',
+//                ], 401);
+//            }
+
+            ///EOF Email Service ///
 
             return response()->json([
                 'status' => true,
