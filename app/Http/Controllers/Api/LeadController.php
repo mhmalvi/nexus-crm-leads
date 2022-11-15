@@ -180,6 +180,18 @@ class LeadController extends Controller
             $leadCallHistory = LeadCallHistory::where('lead_id','=',$request->lead_id)->orderBy('id', 'desc')->get()->toArray();
             $leadSalesEmployeeHistory = LeadSalesEmployee::where('lead_id','=',$request->lead_id)->orderBy('id', 'desc')->get()->toArray();
             //dd($leadSalesEmployeeHistory);
+            // Lead Payment Histories
+
+            $paymentServiceAPI = env('PAYMENT_SERVICE_API', '');
+            $response = Http::get($paymentServiceAPI.'/payment/'.$request->lead_id.'/details');
+            $paymentHistories = '';
+
+            if($response->status()=='200'){
+                $responseData = json_decode($response->body());
+                $paymentHistories = isset($responseData->data)?$responseData->data:'';
+            }
+            //dd(json_decode($response->body()));
+
 
             $salesUserIds = [];
             $salesEmployeDetails = '';
@@ -229,7 +241,8 @@ class LeadController extends Controller
                 'leadAllStatus' => $leadAllStatus,
                 'leadCallHistory' => $leadCallHistory,
                 'leadAmountHistory' => $leadAmountHistory,
-                'leadSalesEmployeeHistory' => $salesUserList
+                'leadSalesEmployeeHistory' => $salesUserList,
+                'paymentHistories' => $paymentHistories
 
             ], 200);
 
