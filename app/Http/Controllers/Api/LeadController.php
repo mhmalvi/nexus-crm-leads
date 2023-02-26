@@ -144,6 +144,7 @@ class LeadController extends Controller
                 ->select(
                     'lead_details.id as lid',
                     'lead_details.lead_id  as lead_id',
+                    'lead_details.lead_remarks as comment',
                     'lead_details.student_id as student_id',
                     'lead_details.full_name as full_name',
                     'lead_details.phone_number as phone_number',
@@ -184,6 +185,13 @@ class LeadController extends Controller
 
             $leadAllStatus = LeadStatus::where('lead_id', '=', $leadId)->get();
             $isData = false;
+            
+            $multi_comments = LeadMultiComment::where('lead_id', $leadId)->get();
+            $multi_comment=array();
+            foreach($multi_comments as $comment){
+                $multi_comment = $comment;
+            }
+            dd($multi_comment);
             if ($leadAllStatus != "") {
 
                 foreach ($leadAllStatus as $leadAStatus) {
@@ -268,6 +276,7 @@ class LeadController extends Controller
                 'status' => true,
                 'message' => 'All Lead List',
                 'leadDetails' => $leadDetails[0],
+                'leadComments'=> $multi_comments,
                 'leadAllStatus' => $leadAllStatus,
                 'leadCallHistory' => $leadCallHistory,
                 'leadAmountHistory' => $leadAmountHistory,
