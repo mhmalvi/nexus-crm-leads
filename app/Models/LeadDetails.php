@@ -27,6 +27,7 @@ class LeadDetails extends Model
         'course_id',
         'work_location',
         'lead_from',
+        'lead_remarks',
         //'form_data',
         'star_review',
         'lead_apply_date',

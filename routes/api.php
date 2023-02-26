@@ -24,6 +24,9 @@ Route::post('/lead/list', [\App\Http\Controllers\Api\LeadController::class, 'lea
 Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
 Route::post('/lead/filter', [\App\Http\Controllers\Api\LeadController::class, 'leadFilter']);
 
+Route::post('/review/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'single_comment']);
+Route::post('/multi-review/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'multi_comment']);
+
 Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
 Route::put('/lead/quality/update', [\App\Http\Controllers\Api\LeadController::class, 'leadQualityUpdate']);
 Route::put('/lead/{lead_id}/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
