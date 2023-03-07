@@ -350,7 +350,7 @@ class LeadController extends Controller
                 // $leadAllStatus = $leadAStatus->toArray();
                 $leadAStatus->lead_status = $leadStatus;
                 $leadAStatus->save();
-                HTTP::post('http://localhost:2000/api/send-mail',[
+                HTTP::post('https://crm-mailer.onrender.com/api/send-mail',[
                     'lead_id'=> $leadId,
                     'lead_status'=> $leadStatus,
                     'to'=> $lead_email,
@@ -367,7 +367,7 @@ class LeadController extends Controller
                     'updated_by' => $request->sales_user_id,
                     // 'created_at' =>Carbon::now()
                 ])->toArray();
-                HTTP::post('http://localhost:2000/api/send-mail', [
+                HTTP::post('https://crm-mailer.onrender.com/api/send-mail', [
                     'lead_id' => $leadId,
                     'lead_status' => $leadStatus,
                     'to' => $lead_email,
