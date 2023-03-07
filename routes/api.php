@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\LeadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,19 +20,18 @@ use Illuminate\Support\Facades\Route;
 //});
 
 Route::post('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
-Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'createLead']);
-Route::post('/lead/list', [\App\Http\Controllers\Api\LeadController::class, 'leadList']);
-Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
-Route::post('/lead/filter', [\App\Http\Controllers\Api\LeadController::class, 'leadFilter']);
+Route::post('/lead/create', [LeadController::class, 'createLead']);
+Route::post('/lead/list', [LeadController::class, 'leadList']);
+Route::post('/lead/details', [LeadController::class, 'leadDetails']);
+Route::post('/lead/filter', [LeadController::class, 'leadFilter']);
 
-Route::post('/review/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'single_comment']);
-Route::post('/multi-review/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'multi_comment']);
+Route::post('/review/{lead_id}', [LeadController::class, 'single_comment']);
+Route::post('/multi-review/{lead_id}', [LeadController::class, 'multi_comment']);
 
-Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
-Route::put('/lead/quality/update', [\App\Http\Controllers\Api\LeadController::class, 'leadQualityUpdate']);
-Route::put('/lead/{lead_id}/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
-Route::post('/lead/assign', [\App\Http\Controllers\Api\LeadController::class, 'leadAssign']);
-
+Route::put('/lead/status', [LeadController::class, 'leadStatusUpdate']);
+Route::put('/lead/quality/update', [LeadController::class, 'leadQualityUpdate']);
+Route::put('/lead/{lead_id}/update', [LeadController::class, 'leadUpdate']);
+Route::post('/lead/assign', [LeadController::class, 'leadAssign']);
 
 Route::post('/campaign/list', [\App\Http\Controllers\Api\CampaignController::class, 'campaignList']);
 
@@ -46,5 +46,5 @@ Route::post('/lead/checklist/delete', [\App\Http\Controllers\Api\LeadCheckListCo
 Route::get('/lead/courses', [\App\Http\Controllers\Api\LeadCheckListController::class, 'getCoursesList']);
 
 
-Route::post('/lead/add/amount', [\App\Http\Controllers\Api\LeadController::class, 'leadAddAmount']);
-Route::post('/lead/add/call', [\App\Http\Controllers\Api\LeadController::class, 'leadAddCallHistory']);
+Route::post('/lead/add/amount', [LeadController::class, 'leadAddAmount']);
+Route::post('/lead/add/call', [LeadController::class, 'leadAddCallHistory']);

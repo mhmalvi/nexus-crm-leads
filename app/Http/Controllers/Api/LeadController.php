@@ -299,7 +299,6 @@ class LeadController extends Controller
      */
     public function leadStatusUpdate(Request $request)
     {
-
         if (!isset($request->lead_id) || !isset($request->sales_user_id)) {
             return response()->json([
                 'status' => false,
@@ -310,7 +309,7 @@ class LeadController extends Controller
         $leadId = $request->lead_id;
         $leadStatus = $request->lead_status;
 
-        //dd($leadAStatus);
+        
 
         try {
 
@@ -338,20 +337,43 @@ class LeadController extends Controller
             $leadDetails->save();
 
             $leadAStatus = LeadStatus::where([
-                ['lead_id', '=', $leadId],
-                ['lead_status', '=', $leadStatus]
-            ])
-                ->first();
-            // dd($leadAStatus);
+                ['lead_id', '=', $leadId]
+            ])->first();
+            // dd($leadId);
+            $lead_info = LeadDetails::where('lead_id','=', $leadId)->first();
+            
+            $lead_email = $lead_info->student_email;
+            $name = $lead_info->full_name;
+            $student_id = $lead_info->student_id;
+            // dd($lead_email);
             if ($leadAStatus != "") {
-                $leadAllStatus = $leadAStatus->toArray();
+                // $leadAllStatus = $leadAStatus->toArray();
+                $leadAStatus->lead_status = $leadStatus;
+                $leadAStatus->save();
+                HTTP::post('http://localhost:2000/api/send-mail',[
+                    'lead_id'=> $leadId,
+                    'lead_status'=> $leadStatus,
+                    'to'=> $lead_email,
+                    'name'=> $name,
+                    'student_id'=> $student_id
+                ]);
             } else {
                 $leadAllStatus = LeadStatus::create([
                     'lead_status' => $leadStatus,
                     'lead_id' => $leadId,
+                    'to' => $lead_email,
+                    'name' => $name,
+                    'student_id' => $student_id,
                     'updated_by' => $request->sales_user_id,
                     // 'created_at' =>Carbon::now()
                 ])->toArray();
+                HTTP::post('http://localhost:2000/api/send-mail', [
+                    'lead_id' => $leadId,
+                    'lead_status' => $leadStatus,
+                    'to' => $lead_email,
+                    'name' => $name,
+                    'student_id' => $student_id
+                ]);
             }
             $array = [5, 6];
             //////////Email Service/////////
@@ -411,7 +433,6 @@ class LeadController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Record for this Lead Status',
-                'leadAllStatus' => $leadAllStatus
 
             ], 200);
         } catch (\Throwable $th) {
@@ -448,19 +469,31 @@ class LeadController extends Controller
 
     public function multi_comment(Request $request, $lead_id)
     {
+        // dd($lead_id);
+        $request->validate([
+            'comments'=>'required'
+        ]);
         $multiComment = new LeadMultiComment();
-        $multiComment->comments = $request->comments;
-        $multiComment->lead_id = $lead_id;
-        $save = $multiComment->save();
-        if ($save) {
-            return response()->json([
-                'status' => 200,
-                'message' => 'success'
-            ], 200);
+
+        if ($request->comments !== "") {
+            $multiComment->comments = $request->comments;
+            $multiComment->lead_id = $lead_id;
+            $save = $multiComment->save();
+            if ($save) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'success'
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 424,
+                    'message' => 'failed'
+                ], 424);
+            }
         } else {
             return response()->json([
                 'status' => 424,
-                'message' => 'failed'
+                'message' => 'column name should be comments'
             ], 424);
         }
     }
