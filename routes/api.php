@@ -29,6 +29,7 @@ Route::post('/review/{lead_id}', [LeadController::class, 'single_comment']);
 Route::post('/multi-review/{lead_id}', [LeadController::class, 'multi_comment']);
 
 Route::put('/lead/status', [LeadController::class, 'leadStatusUpdate']);
+Route::put('/lead/response', [LeadController::class, 'leadResponse']);
 Route::put('/lead/quality/update', [LeadController::class, 'leadQualityUpdate']);
 Route::put('/lead/{lead_id}/update', [LeadController::class, 'leadUpdate']);
 Route::post('/lead/assign', [LeadController::class, 'leadAssign']);
