@@ -21,7 +21,7 @@ class LeadCheckListController extends Controller
      */
     public function index(Request $request)
     {
-        if(!isset($request->course_id))
+        if (!isset($request->course_id))
             return response()->json([
                 'status' => false,
                 'message' => 'Course Id not found',
@@ -31,15 +31,15 @@ class LeadCheckListController extends Controller
         try {
             $leadCheckList = LeadChecklist::select('*');
 
-            $leadCheckList =$leadCheckList->where('course_id',$request->course_id);
-            if(isset($request->client_id))
-                $leadCheckList =$leadCheckList->where('client_id',$request->client_id);
-            if(isset($request->lead_id))
-                $leadCheckList =$leadCheckList->where('lead_id',$request->lead_id);
-            $leadCheckList =$leadCheckList->where('status',1);
+            $leadCheckList = $leadCheckList->where('course_id', $request->course_id);
+            if (isset($request->client_id))
+                $leadCheckList = $leadCheckList->where('client_id', $request->client_id);
+            if (isset($request->lead_id))
+                $leadCheckList = $leadCheckList->where('lead_id', $request->lead_id);
+            $leadCheckList = $leadCheckList->where('status', 1);
             $leadCheckList = $leadCheckList->get();
-           // dd($leadCheckList);
-            if($leadCheckList==""){
+            // dd($leadCheckList);
+            if ($leadCheckList == "") {
                 return response()->json([
                     'status' => false,
                     'message' => 'Lead Checklist Data not found',
@@ -51,7 +51,6 @@ class LeadCheckListController extends Controller
                 'message' => 'All Lead Checklist',
                 'data'    => $leadCheckList->toArray()
             ], 201);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -67,7 +66,7 @@ class LeadCheckListController extends Controller
      */
     public function create(Request $request)
     {
-        if(!isset($request->user_id) || !isset($request->client_id) || !isset($request->course_id))
+        if (!isset($request->user_id) || !isset($request->client_id) || !isset($request->course_id))
             return response()->json([
                 'status' => false,
                 'message' => 'User Id, Client Id and Course id required',
@@ -79,7 +78,7 @@ class LeadCheckListController extends Controller
                 'client_id' => $request->client_id,
                 'user_id' => $request->user_id,
                 'course_id' => $request->course_id,
-                'title' => isset($request->title)?$request->title:''
+                'title' => isset($request->title) ? $request->title : ''
             ])->toArray();
 
             return response()->json([
@@ -87,7 +86,6 @@ class LeadCheckListController extends Controller
                 'message' => 'Payment Setting Created Successfully',
                 'data'  => $data
             ], 201);
-
         } catch (\Throwable $th) {
 
             return response()->json([
@@ -104,7 +102,7 @@ class LeadCheckListController extends Controller
      */
     public function update(Request $request)
     {
-        if(!isset($request->id))
+        if (!isset($request->id))
             return response()->json([
                 'status' => false,
                 'message' => 'Id not found',
@@ -112,23 +110,22 @@ class LeadCheckListController extends Controller
 
         try {
             $leadCheckList = LeadChecklist::find($request->id);
-            if($leadCheckList==""){
+            if ($leadCheckList == "") {
                 return response()->json([
                     'status' => false,
                     'message' => 'Lead Checklist Data not found',
                 ], 401);
             }
 
-            if(isset($request->course_id))
+            if (isset($request->course_id))
                 $leadCheckList->course_id = $request->course_id;
-            if(isset($request->title))
+            if (isset($request->title))
                 $leadCheckList->title = $request->title;
             $leadCheckList->save();
             return response()->json([
                 'status' => true,
                 'message' => 'Lead Checklist Update Successfully',
             ], 201);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -144,7 +141,7 @@ class LeadCheckListController extends Controller
      */
     public function delete(Request $request)
     {
-        if(!isset($request->id))
+        if (!isset($request->id))
             return response()->json([
                 'status' => false,
                 'message' => 'Id not found',
@@ -153,7 +150,7 @@ class LeadCheckListController extends Controller
         //dd($request->id);
         try {
             $leadCheckList = LeadChecklist::find($request->id);
-            if($leadCheckList==""){
+            if ($leadCheckList == "") {
                 return response()->json([
                     'status' => false,
                     'message' => 'Lead Checklist Data not found',
@@ -166,7 +163,6 @@ class LeadCheckListController extends Controller
                 'status' => true,
                 'message' => 'Lead Checklist Delete Successfully',
             ], 201);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -182,18 +178,18 @@ class LeadCheckListController extends Controller
      */
     public function addStudentDocuments(Request $request)
     {
-        if(!isset($request->checklist_id) || !isset($request->lead_id) || !isset($request->document_id))
+        if (!isset($request->checklist_id) || !isset($request->lead_id) || !isset($request->document_id))
             return response()->json([
                 'status' => false,
                 'message' => 'Checklist Id Id, Lead Id, Document Id and Student id required',
             ], 401);
-            //dd($request->lead_id);
+        //dd($request->lead_id);
         try {
             $chekData = LeadStudentDocuments::where('checklist_id', '=', $request->checklist_id)
                 //->where('student_id', '=', $request->student_id)
                 ->where('lead_id', '=', $request->lead_id)->where('status', 1)->first();
             //dd($chekData);
-            if($chekData!=""){
+            if ($chekData != "") {
                 return response()->json([
                     'status' => false,
                     'message' => 'User Document already exist'
@@ -203,7 +199,7 @@ class LeadCheckListController extends Controller
                 'checklist_id' => $request->checklist_id,
                 'lead_id' => $request->lead_id,
                 'document_id' => $request->document_id,
-                'student_id' => isset($request->student_id)?$request->student_id:0
+                'student_id' => isset($request->student_id) ? $request->student_id : 0
             ])->toArray();
 
             return response()->json([
@@ -211,7 +207,6 @@ class LeadCheckListController extends Controller
                 'message' => 'Student documents Added Successfully',
                 'data'  => $data
             ], 201);
-
         } catch (\Throwable $th) {
 
             return response()->json([
@@ -226,33 +221,34 @@ class LeadCheckListController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse Call History
      */
-    public function getStudentDocuments(Request $request){
+    public function getStudentDocuments(Request $request)
+    {
 
-        if(!isset($request->lead_id) || !isset($request->course_id) || !isset($request->student_id)){
+        if (!isset($request->lead_id) || !isset($request->course_id) || !isset($request->student_id)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Lead id , student id and Course id required'
             ], 406);
         }
 
-       // $checklistIds = json_decode($request->checklist);
+        // $checklistIds = json_decode($request->checklist);
 
         try {
             //$data = LeadStudentDocuments::where('lead_id','=',$request->lead_id)->where('student_id','=',$request->student_id)->whereIn('checklist_id', $checklistIds)->get()->toArray();
-            $data = LeadChecklist::select('id', 'title','course_id')->where('course_id','=',$request->course_id)->where('status', 1)->get()->toArray();
+            $data = LeadChecklist::select('id', 'title', 'course_id')->where('course_id', '=', $request->course_id)->where('status', 1)->get()->toArray();
             //dd($data);
-            $array =[];
-            $dataArray =[];
-            if(count($data)>0){
-                foreach ($data as $val){
+            $array = [];
+            $dataArray = [];
+            if (count($data) > 0) {
+                foreach ($data as $val) {
 
-                    $data = LeadStudentDocuments::where('lead_id','=',$request->lead_id)->where('student_id','=',$request->student_id)->where('checklist_id', $val['id'])->where('status', 1)->first();
-//                    if($data!=""){
-//                       dd($data);
-//                    }
-                    $array['checklist_id']=$val['id'];
-                    $array['title']=$val['title'];
-                    $array['document_id']= isset($data->document_id)?$data->document_id:'';
+                    $data = LeadStudentDocuments::where('lead_id', '=', $request->lead_id)->where('student_id', '=', $request->student_id)->where('checklist_id', $val['id'])->where('status', 1)->first();
+                    //                    if($data!=""){
+                    //                       dd($data);
+                    //                    }
+                    $array['checklist_id'] = $val['id'];
+                    $array['title'] = $val['title'];
+                    $array['document_id'] = isset($data->document_id) ? $data->document_id : '';
                     array_push($dataArray, $array);
                 }
             }
@@ -263,7 +259,6 @@ class LeadCheckListController extends Controller
                 'message' => 'Students List',
                 'data'   => $dataArray
             ], 200);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -279,24 +274,26 @@ class LeadCheckListController extends Controller
      */
     public function removeStudentDocument(Request $request)
     {
-//        return response()->json([
-//            'status' => false,
-//            'message' => 'Document Id and Student Id not found',
-//            //'data' =>json_encode($request)
-//        ], 401);
-        if(!isset($request->document_id) || !isset($request->student_id))
+        //        return response()->json([
+        //            'status' => false,
+        //            'message' => 'Document Id and Student Id not found',
+        //            //'data' =>json_encode($request)
+        //        ], 401);
+        if (!isset($request->document_id) || !isset($request->student_id))
             return response()->json([
                 'status' => false,
+                'code' => 401,
                 'message' => 'Document Id and Student Id not found',
             ], 401);
 
         //dd($request->document_id);
         try {
-            $leadCheckList = LeadStudentDocuments::where('document_id',$request->document_id)->where('student_id', $request->student_id)->first();
+            $leadCheckList = LeadStudentDocuments::where('document_id', $request->document_id)->where('student_id', $request->student_id)->first();
             //dd($leadCheckList);
-            if($leadCheckList==""){
+            if ($leadCheckList == "") {
                 return response()->json([
                     'status' => false,
+                    'code' => 401,
                     'message' => 'Student Documents not found',
                 ], 401);
             }
@@ -305,12 +302,13 @@ class LeadCheckListController extends Controller
             $leadCheckList->save();
             return response()->json([
                 'status' => true,
+                'code' => 204,
                 'message' => 'Student Documents remove Successfully',
-            ], 201);
-
+            ], 204);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
+                'code' => 500,
                 'message' => $th->getMessage()
             ], 500);
         }
@@ -326,10 +324,10 @@ class LeadCheckListController extends Controller
         try {
             $coursesList = CoursesInfo::select('*');
 
-            $coursesList =$coursesList->where('status',1);
+            $coursesList = $coursesList->where('status', 1);
             $coursesList = $coursesList->get();
             // dd($leadCheckList);
-            if($coursesList==""){
+            if ($coursesList == "") {
                 return response()->json([
                     'status' => false,
                     'message' => 'Courses not found',
@@ -341,7 +339,6 @@ class LeadCheckListController extends Controller
                 'message' => 'All Courses',
                 'data'    => $coursesList->toArray()
             ], 201);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -349,5 +346,4 @@ class LeadCheckListController extends Controller
             ], 500);
         }
     }
-
 }
