@@ -279,6 +279,7 @@ class LeadCheckListController extends Controller
         //            'message' => 'Document Id and Student Id not found',
         //            //'data' =>json_encode($request)
         //        ], 401);
+        // dd($request->student_id);
         if (!isset($request->document_id) || !isset($request->student_id))
             return response()->json([
                 'status' => false,

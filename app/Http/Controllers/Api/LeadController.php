@@ -13,9 +13,11 @@ use App\Models\LeadSalesEmployee;
 use App\Models\LeadStatus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use DB;
+use Illuminate\Support\Arr;
 
 class LeadController extends Controller
 {
@@ -185,7 +187,7 @@ class LeadController extends Controller
 
             $leadAllStatus = LeadStatus::where('lead_id', '=', $leadId)->get();
             $isData = false;
-            $lead_status_response = LeadStatus::where('lead_id', '=', $leadId)->where('lead_status','=',3)->first();
+            $lead_status_response = LeadStatus::where('lead_id', '=', $leadId)->where('lead_status', '=', 3)->first();
             // dd($lead_status_response->response);
             $status_response = $lead_status_response->response;
             if ($status_response != "") {
@@ -306,7 +308,7 @@ class LeadController extends Controller
      */
     public function leadResponse(Request $request)
     {
-// dd($request->all());
+        // dd($request->all());
         $lead_info = LeadDetails::where('lead_id', '=', $request->lead_id)->first();
         // dd($lead_info);
         $lead_email = $lead_info->student_email;
@@ -314,7 +316,7 @@ class LeadController extends Controller
         $student_id = $lead_info->student_id;
         // dd($student_id);
 
-        $lead_status = LeadStatus::where('lead_id', $request->lead_id)->where('lead_status','=',3)->first();
+        $lead_status = LeadStatus::where('lead_id', $request->lead_id)->where('lead_status', '=', 3)->first();
         // dd($lead_status);
         if ($lead_status->lead_status == 3) {
             if (!$lead_status) {
@@ -350,6 +352,60 @@ class LeadController extends Controller
                     ], 500);
                 }
             }
+        }
+    }
+
+    public function sales_wise_lead_amount(Request $request)
+    {
+        // dd($request->company_id);
+        $lead = LeadDetails::select(
+            DB::raw('lead_id as leads'),
+            DB::raw('sales_user_id as sales')
+        )
+        ->groupBy('sales')
+            ->where('lead_details_status', '=', 6)
+            ->where('client_id', $request->company_id)
+            ->get();
+
+        $record = array();
+        $last = array();
+        $sum = 0.00;
+
+        foreach ($lead as $lead_id) {
+            // return response()->json([
+            //         "data" => $lead_id->leads
+            //     ]);
+            $amount = LeadAmountHistory::select(DB::raw('amount as amounts'), DB::raw('lead_id as leads'))->where('lead_id', $lead_id->leads)->get();
+            // dd(json_encode($lead_id->sales));
+            $last_value = $amount->last();
+            // dd(json_encode($last_value->amounts));
+            // dd(json_encode($last_value));
+            $sum = $sum + $last_value->amounts;
+            // dd($sum);
+            $record = [
+                $last = [
+                    'sales' => $lead_id->sales,
+                    'amounts' => $last_value->amounts,
+                    // ]
+                ]
+            ];
+            // dd(json_encode($last));
+            // $record=$last;
+        }
+
+        // $record = $last;
+
+        if ($record) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 200,
+                'data' => $record
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'not found',
+                'status' => 404
+            ], 404);
         }
     }
 
