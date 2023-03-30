@@ -50,4 +50,4 @@ Route::get('/lead/courses', [\App\Http\Controllers\Api\LeadCheckListController::
 Route::post('/lead/add/amount', [LeadController::class, 'leadAddAmount']);
 Route::post('/lead/add/call', [LeadController::class, 'leadAddCallHistory']);
 
-Route::post('sales-wise-lead-amount',[LeadController::class, 'sales_wise_lead_amount']);
+Route::post('/create-lead',[LeadController::class, 'create_lead']);

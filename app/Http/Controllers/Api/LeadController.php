@@ -363,6 +363,47 @@ class LeadController extends Controller
         }
     }
 
+    public function create_lead(Request $request)
+    {
+        $id = round(microtime(true) * 1000);
+        $lead_id = intval($id);
+        // dd($lead_id);
+        $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
+        if (!$existing_lead) {
+            $save = LeadDetails::create([
+                'lead_id' => $lead_id,
+                'student_id' => 0,
+                'full_name' => $request->full_name,
+                'phone_number' => $request->phone_number,
+                'student_email' => $request->student_email,
+                'client_id' => $request->company_id,
+                'campaign_id' => $request->campaign_id,
+                'sales_user_id' => 0,
+                'document_certificate_id' => 0,
+                'course_id' => $request->course_id,
+                'work_location' => $request->work_location,
+                'lead_from' => 'manual',
+                'star_review' => 0,
+                'lead_apply_date' => Carbon::now(),
+                'lead_details_status' => 0
+            ]);
+            if ($save) {
+                return response()->json([
+                    'message' => 'success',
+                    'status' => 201,
+                    'data' => $save
+                ], 200);
+            } else {
+                abort(500);
+            }
+        } else {
+            return response()->json([
+                'message' => 'exists',
+                'status' => 403
+            ], 403);
+        }
+    }
+
     public function sales_wise_lead_amount(Request $request)
     {
         // dd($request->company_id);
@@ -488,19 +529,21 @@ class LeadController extends Controller
                         $lead_info->lead_details_status = 1;
                         $lead_info->save();
                     }
-                    // $lead_inactive_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->where('lead_status', '!=', $leadStatus)->get();
+                    $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
 
-                    // for ($i = 0; $i < count($lead_inactive_status->is_active); $i++) {
-                    //     $lead_inactive_status->is_active = 0;
-                    //     $lead_inactive_status->save();
-
+                    if ($lead_info) {
+                        $lead_info->lead_details_status = $lead_max_status;
+                        $lead_info->save();
+                    }
                 } else if ($leadAStatus->is_active == 1) {
                     // if($leadAStatus-)
                     $$leadAStatus->is_active = 0;
                     $leadAStatus->save();
 
+                    $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
+
                     if ($lead_info) {
-                        $lead_info->lead_details_status = 0;
+                        $lead_info->lead_details_status = $lead_max_status;
                         $lead_info->save();
                     }
                 }
