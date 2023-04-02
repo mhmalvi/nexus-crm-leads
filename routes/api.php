@@ -51,3 +51,7 @@ Route::post('/lead/add/amount', [LeadController::class, 'leadAddAmount']);
 Route::post('/lead/add/call', [LeadController::class, 'leadAddCallHistory']);
 
 Route::post('/create-lead',[LeadController::class, 'create_lead']);
+
+Route::post('/excel-read', [LeadController::class, 'uploadLeadExcel']);
+
+Route::put('lead-update/{lead_id}',[LeadController::class, 'lead_update']);
