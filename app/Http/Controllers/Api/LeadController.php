@@ -423,7 +423,7 @@ class LeadController extends Controller
                 'phone_number' => $request->phone_number,
                 'student_email' => $request->student_email,
                 'client_id' => $request->company_id,
-                'campaign_id' => $request->campaign_id,
+                'campaign_id' => $request->campaign_id,                
                 'sales_user_id' => 0,
                 'document_certificate_id' => 0,
                 'course_id' => $request->course_id,
@@ -562,7 +562,8 @@ class LeadController extends Controller
             $name = $lead_info->full_name;
             $student_id = $lead_info->student_id;
             // dd($lead_email);
-            if ($leadAStatus != "") {
+            if ($leadAStatus != "" || $leadAStatus != null) {
+                // dd("hello");
                 // $leadAllStatus = $leadAStatus->toArray();
                 if ($leadAStatus->is_active == 0) {
                     // $leadAStatus->lead_id = $leadId;
@@ -604,6 +605,7 @@ class LeadController extends Controller
                 //     ]);
                 // }
             } else {
+                // dd("or");
                 $leadAllStatus = LeadStatus::create([
                     'lead_status' => $leadStatus,
                     'lead_id' => $leadId,
@@ -701,7 +703,7 @@ class LeadController extends Controller
             //            }
 
             ///EOF Email Service ///
-            $leadAllStatus = LeadStatus::where('lead_id', $leadId)->where('is_active', 1)->get();
+            $leadAllStatus = LeadStatus::where('lead_id', $leadId)->where('is_active','=', 1)->get();
             return response()->json([
                 'status' => true,
                 'message' => 'Record for this Lead Status',
