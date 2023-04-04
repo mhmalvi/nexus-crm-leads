@@ -29,6 +29,8 @@ class LeadController extends Controller
      * @param Request $request
      * @return
      */
+
+
     public function createLead(Request $request)
     {
 
@@ -423,7 +425,7 @@ class LeadController extends Controller
                 'phone_number' => $request->phone_number,
                 'student_email' => $request->student_email,
                 'client_id' => $request->company_id,
-                'campaign_id' => $request->campaign_id,                
+                'campaign_id' => $request->campaign_id,
                 'sales_user_id' => 0,
                 'document_certificate_id' => 0,
                 'course_id' => $request->course_id,
@@ -514,18 +516,19 @@ class LeadController extends Controller
 
     public function leadStatusUpdate(Request $request)
     {
+        // dd("gfdgfdgb");
         if (!isset($request->lead_id) || !isset($request->sales_user_id)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Client id required'
             ], 406);
         }
+
         $leadId = $request->lead_id;
         $leadStatus = $request->lead_status;
-        // $lead_inactive_status = array();
-        // $lead_inactive_status = LeadStatus::where('lead_id', $leadId)->max('id');
-        // $lead_inactive_status = (array) $lead_inactive_status;
-        // dd($lead_inactive_status);
+
+
+
         try {
 
             $leadDetails = LeadDetails::where('lead_id', '=', $leadId)->first();
@@ -563,18 +566,17 @@ class LeadController extends Controller
             $student_id = $lead_info->student_id;
             // dd($lead_email);
             if ($leadAStatus != "" || $leadAStatus != null) {
-                // dd("hello");
                 // $leadAllStatus = $leadAStatus->toArray();
                 if ($leadAStatus->is_active == 0) {
                     // $leadAStatus->lead_id = $leadId;
                     // $leadAStatus->lead_status = $leadStatus;
                     $leadAStatus->is_active = 1;
                     $leadAStatus->save();
-                    $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('id');
-                    $lead_prev_status = LeadStatus::find($lead_max_status);
+                    $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
+                    // $lead_prev_status = LeadStatus::find($lead_max_status);
 
                     if ($lead_info) {
-                        $lead_info->lead_details_status = $lead_prev_status->lead_status;
+                        $lead_info->lead_details_status = $lead_max_status;
                         $lead_info->save();
                     }
                 } else if ($leadAStatus->is_active == 1) {
@@ -582,10 +584,10 @@ class LeadController extends Controller
                     $leadAStatus->is_active = 0;
                     $leadAStatus->save();
 
-                    $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('id');
-                    $lead_prev_status = LeadStatus::find($lead_max_status);
+                    $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
+                    // $lead_prev_status = LeadStatus::find($lead_max_status);
                     if ($lead_info) {
-                        $lead_info->lead_details_status = $lead_prev_status->lead_status;
+                        $lead_info->lead_details_status = $lead_max_status;
                         $lead_info->save();
                     }
                 }
@@ -605,7 +607,6 @@ class LeadController extends Controller
                 //     ]);
                 // }
             } else {
-                // dd("or");
                 $leadAllStatus = LeadStatus::create([
                     'lead_status' => $leadStatus,
                     'lead_id' => $leadId,
@@ -618,7 +619,7 @@ class LeadController extends Controller
                 ])->toArray();
 
                 if ($lead_info) {
-                    $lead_info->lead_details_status = 1;
+                    $lead_info->lead_details_status = $leadStatus;
                     $lead_info->save();
                 }
                 // $lead_inactive_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->where('lead_status', '!=', $leadStatus)->get();
@@ -655,37 +656,37 @@ class LeadController extends Controller
                 $userServiceAPI = env('EMAIL_SERVICE_API', '');
                 //dd($userServiceAPI);
                 $leadDetails = DB::table('lead_details')
-                ->select(
-                    'lead_details.id as lid',
-                    'lead_details.lead_id  as lead_id',
-                    'lead_details.student_id as student_id',
-                    'lead_details.full_name as full_name',
-                    'lead_details.phone_number as phone_number',
-                    'lead_details.student_email as student_email',
-                    'lead_details.client_id as client_id',
-                    'lead_details.campaign_id as campaign_id',
-                    'lead_details.sales_user_id as sales_user_id',
-                    'lead_details.document_certificate_id as document_certificate_id',
-                    'lead_details.course_id as course_id',
-                    'lead_details.work_location as work_location',
-                    'lead_details.lead_from as lead_from',
-                    'lead_details.form_data as form_data',
-                    'lead_details.star_review as star_review',
-                    'lead_details.lead_apply_date as lead_apply_date',
-                    'lead_details.lead_remarks as lead_remarks',
-                    'lead_details.lead_details_status as lead_details_status',
-                    'lead_details.created_at as created_at',
-                    'lead_details.updated_at as updated_at',
-                    'courses_info.id as cid',
-                    'courses_info.course_code as course_code',
-                    'courses_info.course_title as course_title',
-                    'courses_info.course_description as course_description',
-                    'courses_info.status as status'
-                )
-                ->leftJoin('courses_info', function ($join) {
-                    $join->on('lead_details.course_id', '=', 'courses_info.id');
-                })->where('lead_details.lead_id', '=', $leadId)
-                ->first();
+                    ->select(
+                        'lead_details.id as lid',
+                        'lead_details.lead_id  as lead_id',
+                        'lead_details.student_id as student_id',
+                        'lead_details.full_name as full_name',
+                        'lead_details.phone_number as phone_number',
+                        'lead_details.student_email as student_email',
+                        'lead_details.client_id as client_id',
+                        'lead_details.campaign_id as campaign_id',
+                        'lead_details.sales_user_id as sales_user_id',
+                        'lead_details.document_certificate_id as document_certificate_id',
+                        'lead_details.course_id as course_id',
+                        'lead_details.work_location as work_location',
+                        'lead_details.lead_from as lead_from',
+                        'lead_details.form_data as form_data',
+                        'lead_details.star_review as star_review',
+                        'lead_details.lead_apply_date as lead_apply_date',
+                        'lead_details.lead_remarks as lead_remarks',
+                        'lead_details.lead_details_status as lead_details_status',
+                        'lead_details.created_at as created_at',
+                        'lead_details.updated_at as updated_at',
+                        'courses_info.id as cid',
+                        'courses_info.course_code as course_code',
+                        'courses_info.course_title as course_title',
+                        'courses_info.course_description as course_description',
+                        'courses_info.status as status'
+                    )
+                    ->leftJoin('courses_info', function ($join) {
+                        $join->on('lead_details.course_id', '=', 'courses_info.id');
+                    })->where('lead_details.lead_id', '=', $leadId)
+                    ->first();
 
                 $response = Http::post($userServiceAPI . '/lead-status', [
                     'data' => json_encode($leadDetails)
@@ -703,7 +704,7 @@ class LeadController extends Controller
             //            }
 
             ///EOF Email Service ///
-            $leadAllStatus = LeadStatus::where('lead_id', $leadId)->where('is_active','=', 1)->get();
+            $leadAllStatus = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->get();
             return response()->json([
                 'status' => true,
                 'message' => 'Record for this Lead Status',
@@ -819,14 +820,50 @@ class LeadController extends Controller
 
     public function uploadLeadExcel(Request $request)
     {
-        Excel::import(new LeadsImport, $request->file);
-        return response()->json([
-            'message' => 'success',
-            'status' => 201
-        ]);
+        $client_id = $request->client_id;
+        $lead_import = new LeadsImport($client_id);
+        $data = Excel::import($lead_import, $request->file);
     }
 
+    public function sales_assign_to_lead(Request $request)
+    {
+        // dd($request->all());
+        $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->where('client_id', $request->client_id)->get();
+        // dd(json_encode($lead_id));
+        // $data = array();
+        $sales = explode(',', $request->sales_id);
+        // dd($sales);
+        for ($i = 0; $i < count($sales); $i++) {
+            for ($j = 0; $j < count($lead_id); $j++) {
+                // dd(json_encode($lead_id[$j]->lead_id));
+                // $sales_person = new LeadSalesEmployee();
+                // $sales_person->sales_user_id = $sales[$i];
+                // $sales_person->lead_id = $lead_id[$j]->lead_id;
+                // $save = $sales_person->save();
 
+                $data[] = LeadSalesEmployee::create([
+                    "sales_user_id" => $sales[$i],
+                    "lead_id" => $lead_id[$j]->lead_id,
+                    "active_status" => 1,
+                    "assign_by" => $request->assigned_by
+                ]);
+
+            }
+        }
+        // dd(json_encode($data));
+        if ($data) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 201,
+                'data'=>$data
+            ], 201);
+        } else {
+            return response()->json([
+                'message' => 'failed',
+                'status' => 500
+            ], 500);
+        }
+    }
 
     /**
      * Lead Quality Update
@@ -938,7 +975,6 @@ class LeadController extends Controller
 
 
         try {
-
             LeadAmountHistory::updateOrcreate([
                 'lead_id' => $request->lead_id,
                 'amount' => $request->amount
