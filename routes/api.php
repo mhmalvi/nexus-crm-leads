@@ -57,3 +57,5 @@ Route::post('/excel-read', [LeadController::class, 'uploadLeadExcel']);
 Route::put('lead-update/{lead_id}',[LeadController::class, 'lead_update']);
 
 Route::post('assign-sales-to-lead',[LeadController::class, 'sales_assign_to_lead']);
+
+Route::post('course-details-by-client', [LeadController::class, 'course_details']);

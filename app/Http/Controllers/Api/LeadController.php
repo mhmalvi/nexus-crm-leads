@@ -64,10 +64,7 @@ class LeadController extends Controller
      */
     public function leadList(Request $request)
     {
-
-
         try {
-
             $data = DB::table('lead_details')
                 ->select(
                     'lead_details.id as lid',
@@ -107,17 +104,71 @@ class LeadController extends Controller
 
             $data = $data->get();
 
+            $lead_id = LeadDetails::select('lead_id')->where('client_id', $request->client_id)->get();
+            dd(json_encode($lead_id[1]));
+            for ($i = 0; $i < count($lead_id); $i++) {
+                $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->get();
+            }
+            dd(json_encode($sales_objects));
+            // array_push($data,)
             //dd($data);
             return response()->json([
                 'status' => true,
                 'message' => 'All Lead List',
-                'data' => $data
+                'data' => $data, 'assignedHistory' => collect($sales_objects)->flatten(1)->toArray()
+
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
             ], 500);
+        }
+    }
+
+    public function course_details(Request $request)
+    {
+        // dd($request->all());
+
+        // $chat = DB::table('chats')
+        //     ->join('users', 'users.id', '=',
+        //         'chats.user_id'
+        //     )
+        //     ->select('users.avatar', 'user_id', DB::raw('count(*) as total'))
+        //     ->where('admin_id', Auth::user()->id)
+        //     ->where('status', 2)
+        //     ->groupBy('user_id')
+        //     ->get();
+
+        // $chat = DB::table('chats')
+        //     ->join('users', 'users.id', '=', 'chats.user_id')
+        //     ->select('users.avatar', 'user_id', DB::raw('count(*) as total'))
+        //     ->where('admin_id', Auth::user()->id)
+        //     ->where('status', 2)
+        //     ->groupBy('user_id')
+        //     ->get();
+
+        // $course = LeadDetails::select('course_id')->where('client_id', $request->client_id)->groupBy('course_id')->get();
+        $course = DB::table("lead_details")
+            ->select("course_id")
+            ->where("client_id", "=", $request->client_id)
+            ->groupBy("course_id")
+            ->get();
+        // dd(json_encode($course));
+        for ($i = 0; $i < count($course); $i++) {
+            $course_details[] = CoursesInfo::where('id', $course[$i]->course_id)->get();
+        }
+        if ($course_details) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 200,
+                'data' => collect($course_details)->flatten(1)->toArray()
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'not found',
+                'status' => 404,
+            ]);
         }
     }
 
@@ -285,12 +336,14 @@ class LeadController extends Controller
                 //dd($salesUserList);
             }
 
+            // dd()
             //dd($salesEmployeDetails);
             return response()->json([
                 'status' => true,
                 'message' => 'All Lead List',
                 'leadDetails' => $leadDetails[0],
                 'leadComments' => $multi_comments,
+
                 // 'status_response' => $lead_response,
                 'leadAllStatus' => [$lead_all_status],
                 'leadCallHistory' => $leadCallHistory,
@@ -823,6 +876,23 @@ class LeadController extends Controller
         $client_id = $request->client_id;
         $lead_import = new LeadsImport($client_id);
         $data = Excel::import($lead_import, $request->file);
+        // dd($lead_import->data);
+        if ($lead_import->flag == 1) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 200
+            ]);
+        } elseif ($lead_import->flag == 0) {
+            return response()->json([
+                'message' => 'please reformat excel sheet columns',
+                'status' => 400
+            ], 400);
+        } elseif ($lead_import->flag == 3) {
+            return response()->json([
+                'message' => 'Data already exists',
+                'status' => 403
+            ], 403);
+        }
     }
 
     public function sales_assign_to_lead(Request $request)
@@ -847,7 +917,6 @@ class LeadController extends Controller
                     "active_status" => 1,
                     "assign_by" => $request->assigned_by
                 ]);
-
             }
         }
         // dd(json_encode($data));
@@ -855,7 +924,7 @@ class LeadController extends Controller
             return response()->json([
                 'message' => 'success',
                 'status' => 201,
-                'data'=>$data
+                'data' => $data
             ], 201);
         } else {
             return response()->json([
