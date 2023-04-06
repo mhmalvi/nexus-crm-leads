@@ -8,6 +8,7 @@ use App\Models\LeadDetails;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -54,7 +55,7 @@ class LeadsImport implements ToCollection
                             "work_location" => $row[$i][7],
                             "client_id" => $this->client_id,
                             "phone_number" => $row[$i][3],
-                            "lead_apply_date" => $row[$i][0],
+                            "lead_apply_date" => Date::excelToDateTimeObject($row[$i][0])->format('Y-m-d'),
                             "lead_remarks" => $row[$i][8],
                             "lead_details_status" => 1,
                             'course_id' => $courseId->id
@@ -88,7 +89,7 @@ class LeadsImport implements ToCollection
                             "work_location" => $row[$i][7],
                             "client_id" => $this->client_id,
                             "phone_number" => $row[$i][3],
-                            "lead_apply_date" => $row[$i][0],
+                            "lead_apply_date" => Date::excelToDateTimeObject($row[$i][0])->format('Y-m-d'),
                             "lead_remarks" => $row[$i][8],
                             "lead_details_status" => 1,
                             'course_id' => $course_id->id
@@ -110,7 +111,7 @@ class LeadsImport implements ToCollection
             }
             $this->flag = $flag;
         } catch (\Throwable $th) {
-            $data = 0;
+            $flag = 0;
             $this->flag = $flag;
             return response()->json([
                 'status' => false,

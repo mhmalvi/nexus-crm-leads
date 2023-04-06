@@ -66,33 +66,33 @@ class LeadController extends Controller
     {
         try {
             $data = DB::table('lead_details')
-                ->select(
-                    'lead_details.id as lid',
-                    'lead_details.lead_id  as lead_id',
-                    'lead_details.student_id as student_id',
-                    'lead_details.full_name as full_name',
-                    'lead_details.phone_number as phone_number',
-                    'lead_details.student_email as student_email',
-                    'lead_details.client_id as client_id',
-                    'lead_details.campaign_id as campaign_id',
-                    'lead_details.sales_user_id as sales_user_id',
-                    'lead_details.document_certificate_id as document_certificate_id',
-                    'lead_details.course_id as course_id',
-                    'lead_details.work_location as work_location',
-                    'lead_details.lead_from as lead_from',
-                    'lead_details.form_data as form_data',
-                    'lead_details.star_review as star_review',
-                    'lead_details.lead_apply_date as lead_apply_date',
-                    'lead_details.lead_remarks as lead_remarks',
-                    'lead_details.lead_details_status as lead_details_status',
-                    'lead_details.created_at as created_at',
-                    'lead_details.updated_at as updated_at',
-                    'courses_info.id as cid',
-                    'courses_info.course_code as course_code',
-                    'courses_info.course_title as course_title',
-                    'courses_info.course_description as course_description',
-                    'courses_info.status as status'
-                )
+            ->select(
+                'lead_details.id as lid',
+                'lead_details.lead_id  as lead_id',
+                'lead_details.student_id as student_id',
+                'lead_details.full_name as full_name',
+                'lead_details.phone_number as phone_number',
+                'lead_details.student_email as student_email',
+                'lead_details.client_id as client_id',
+                'lead_details.campaign_id as campaign_id',
+                'lead_details.sales_user_id as sales_user_id',
+                'lead_details.document_certificate_id as document_certificate_id',
+                'lead_details.course_id as course_id',
+                'lead_details.work_location as work_location',
+                'lead_details.lead_from as lead_from',
+                'lead_details.form_data as form_data',
+                'lead_details.star_review as star_review',
+                'lead_details.lead_apply_date as lead_apply_date',
+                'lead_details.lead_remarks as lead_remarks',
+                'lead_details.lead_details_status as lead_details_status',
+                'lead_details.created_at as created_at',
+                'lead_details.updated_at as updated_at',
+                'courses_info.id as cid',
+                'courses_info.course_code as course_code',
+                'courses_info.course_title as course_title',
+                'courses_info.course_description as course_description',
+                'courses_info.status as status'
+            )
                 ->leftJoin('courses_info', function ($join) {
                     $join->on('lead_details.course_id', '=', 'courses_info.id');
                 });
@@ -103,20 +103,33 @@ class LeadController extends Controller
                 $data = $data->where('lead_details.student_id', '=', $request->student_id)->orderBy('lead_details.lead_apply_date', 'desc');
 
             $data = $data->get();
-
             $lead_id = LeadDetails::select('lead_id')->where('client_id', $request->client_id)->get();
-            dd(json_encode($lead_id[1]));
+            // dd(json_encode($lead_id[1]->lead_id));
             for ($i = 0; $i < count($lead_id); $i++) {
-                $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->get();
+                if (isset($lead_id[$i])) {
+                    $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->orderBy('created_at','DESC')->get();
+                }
             }
-            dd(json_encode($sales_objects));
-            // array_push($data,)
+            // dd(json_encode($sales_objects));
+
             //dd($data);
+            for ($j = 0; $j < count($data); $j++) {
+                // dd("Hello");
+                for ($k = 0; $k < count($sales_objects); $k++) {
+                    // dd("Hello");
+                    if (isset($sales_objects[$k][0]->lead_id)) {
+                        if ($data[$j]->lead_id == $sales_objects[$k][0]->lead_id) {
+                            // dd("Hello");
+                            $data[$j]->assignedHistory = $sales_objects[$k];
+                            // $new_data[] = $data[$j];
+                        }
+                    }
+                }
+            }
             return response()->json([
                 'status' => true,
                 'message' => 'All Lead List',
-                'data' => $data, 'assignedHistory' => collect($sales_objects)->flatten(1)->toArray()
-
+                'data' => $data,
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -873,9 +886,10 @@ class LeadController extends Controller
 
     public function uploadLeadExcel(Request $request)
     {
+        // dd($request->file);
         $client_id = $request->client_id;
         $lead_import = new LeadsImport($client_id);
-        $data = Excel::import($lead_import, $request->file);
+        Excel::import($lead_import, $request->file);
         // dd($lead_import->data);
         if ($lead_import->flag == 1) {
             return response()->json([
@@ -1007,7 +1021,8 @@ class LeadController extends Controller
         try {
             $leadDetails = LeadDetails::where('lead_id', '=', $request->lead_id)->first();
             $leadDetails->sales_user_id = $request->sales_user_id;
-            $leadDetails->save();
+            $leadDetails->assigned_sales_history =
+                $leadDetails->save();
             LeadSalesEmployee::updateOrcreate([
                 'sales_user_id' => $request->sales_user_id,
                 'lead_id' => $request->lead_id,
