@@ -66,33 +66,33 @@ class LeadController extends Controller
     {
         try {
             $data = DB::table('lead_details')
-            ->select(
-                'lead_details.id as lid',
-                'lead_details.lead_id  as lead_id',
-                'lead_details.student_id as student_id',
-                'lead_details.full_name as full_name',
-                'lead_details.phone_number as phone_number',
-                'lead_details.student_email as student_email',
-                'lead_details.client_id as client_id',
-                'lead_details.campaign_id as campaign_id',
-                'lead_details.sales_user_id as sales_user_id',
-                'lead_details.document_certificate_id as document_certificate_id',
-                'lead_details.course_id as course_id',
-                'lead_details.work_location as work_location',
-                'lead_details.lead_from as lead_from',
-                'lead_details.form_data as form_data',
-                'lead_details.star_review as star_review',
-                'lead_details.lead_apply_date as lead_apply_date',
-                'lead_details.lead_remarks as lead_remarks',
-                'lead_details.lead_details_status as lead_details_status',
-                'lead_details.created_at as created_at',
-                'lead_details.updated_at as updated_at',
-                'courses_info.id as cid',
-                'courses_info.course_code as course_code',
-                'courses_info.course_title as course_title',
-                'courses_info.course_description as course_description',
-                'courses_info.status as status'
-            )
+                ->select(
+                    'lead_details.id as lid',
+                    'lead_details.lead_id  as lead_id',
+                    'lead_details.student_id as student_id',
+                    'lead_details.full_name as full_name',
+                    'lead_details.phone_number as phone_number',
+                    'lead_details.student_email as student_email',
+                    'lead_details.client_id as client_id',
+                    'lead_details.campaign_id as campaign_id',
+                    'lead_details.sales_user_id as sales_user_id',
+                    'lead_details.document_certificate_id as document_certificate_id',
+                    'lead_details.course_id as course_id',
+                    'lead_details.work_location as work_location',
+                    'lead_details.lead_from as lead_from',
+                    'lead_details.form_data as form_data',
+                    'lead_details.star_review as star_review',
+                    'lead_details.lead_apply_date as lead_apply_date',
+                    'lead_details.lead_remarks as lead_remarks',
+                    'lead_details.lead_details_status as lead_details_status',
+                    'lead_details.created_at as created_at',
+                    'lead_details.updated_at as updated_at',
+                    'courses_info.id as cid',
+                    'courses_info.course_code as course_code',
+                    'courses_info.course_title as course_title',
+                    'courses_info.course_description as course_description',
+                    'courses_info.status as status'
+                )
                 ->leftJoin('courses_info', function ($join) {
                     $join->on('lead_details.course_id', '=', 'courses_info.id');
                 });
@@ -107,7 +107,7 @@ class LeadController extends Controller
             // dd(json_encode($lead_id[1]->lead_id));
             for ($i = 0; $i < count($lead_id); $i++) {
                 if (isset($lead_id[$i])) {
-                    $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->orderBy('created_at','DESC')->get();
+                    $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->orderBy('created_at', 'DESC')->get();
                 }
             }
             // dd(json_encode($sales_objects));
@@ -115,17 +115,135 @@ class LeadController extends Controller
             //dd($data);
             for ($j = 0; $j < count($data); $j++) {
                 // dd("Hello");
-                for ($k = 0; $k < count($sales_objects); $k++) {
-                    // dd("Hello");
+                for (
+                    $k = 0;
+                    $k < count($sales_objects);
+                    $k++
+                ) {
+                    // for ($m = 0; $m < count($sales_objects[$k]); $m++) {
                     if (isset($sales_objects[$k][0]->lead_id)) {
-                        if ($data[$j]->lead_id == $sales_objects[$k][0]->lead_id) {
-                            // dd("Hello");
-                            $data[$j]->assignedHistory = $sales_objects[$k];
+                        // if ($data[$j]->lead_id == $sales_objects[$k][0]->lead_id) {
+                        // dd(json_encode($sales_objects[$k][$m]));
+                        for ($m = 0; $m < count($sales_objects[$k]); $m++) {
+                            // dd(json_encode($sales_objects[$k][$m]->id));
+                            // if (isset($sales_objects[$k][$m]->id)) {
+                            if ($data[$j]->lead_id == $sales_objects[$k][$m]->lead_id) {
+                                $data[$j]->assignedHistory[] = $sales_objects[$k][$m]->sales_user_id;
+                                // }
+                            }
+                            // else{
+                            //     $data[$j]->assignedHistory=null;
+                            // }
+
                             // $new_data[] = $data[$j];
                         }
+                        // else {
+                        //     $data[$j]->assignedHistory = [];
+                        // }
+                        // } else {
+                        //     $data[$j]->assignedHistory = [];
                     }
+                    // }
                 }
             }
+            return response()->json([
+                'status' => true,
+                'message' => 'All Lead List',
+                'data' => $data,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function course_details_by_course_id(Request $request)
+    {
+        // dd("dvdfv");
+        $course_id = $request->course_id;
+        try {
+            $data = DB::table('lead_details')
+                ->select(
+                    'lead_details.id as lid',
+                    'lead_details.lead_id  as lead_id',
+                    'lead_details.student_id as student_id',
+                    'lead_details.full_name as full_name',
+                    'lead_details.phone_number as phone_number',
+                    'lead_details.student_email as student_email',
+                    'lead_details.client_id as client_id',
+                    'lead_details.campaign_id as campaign_id',
+                    'lead_details.sales_user_id as sales_user_id',
+                    'lead_details.document_certificate_id as document_certificate_id',
+                    'lead_details.course_id as course_id',
+                    'lead_details.work_location as work_location',
+                    'lead_details.lead_from as lead_from',
+                    'lead_details.form_data as form_data',
+                    'lead_details.star_review as star_review',
+                    'lead_details.lead_apply_date as lead_apply_date',
+                    'lead_details.lead_remarks as lead_remarks',
+                    'lead_details.lead_details_status as lead_details_status',
+                    'lead_details.created_at as created_at',
+                    'lead_details.updated_at as updated_at',
+                    'courses_info.id as cid',
+                    'courses_info.course_code as course_code',
+                    'courses_info.course_title as course_title',
+                    'courses_info.course_description as course_description',
+                    'courses_info.status as status',
+                )
+                ->leftJoin('courses_info', function ($join) {
+                    $join->on('lead_details.course_id', '=', 'courses_info.id');
+                })
+                // ->leftJoin('lead_sales_employee', function ($join) {
+                //     $join->on('lead_details.sales_user_id', '=', 'lead_sales_employee.sales_user_id');
+                // })
+                ->where('course_id', $request->course_id)
+                ->get();
+            $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->get();
+            // dd(json_encode($lead_id[1]->lead_id));
+            for ($i = 0; $i < count($lead_id); $i++) {
+                if (isset($lead_id[$i])) {
+                    $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->orderBy('created_at', 'DESC')->get();
+                }
+            }
+            // dd(json_encode($sales_objects));
+
+            //dd($data);
+            for ($j = 0; $j < count($data); $j++) {
+                // dd("Hello");
+                for (
+                    $k = 0;
+                    $k < count($sales_objects);
+                    $k++
+                ) {
+                    // for ($m = 0; $m < count($sales_objects[$k]); $m++) {
+                    if (isset($sales_objects[$k][0]->lead_id)) {
+                        // if ($data[$j]->lead_id == $sales_objects[$k][0]->lead_id) {
+                        // dd(json_encode($sales_objects[$k][$m]));
+                        for ($m = 0; $m < count($sales_objects[$k]); $m++) {
+                            // dd(json_encode($sales_objects[$k][$m]->id));
+                            // if (isset($sales_objects[$k][$m]->id)) {
+                            if ($data[$j]->lead_id == $sales_objects[$k][$m]->lead_id) {
+                                $data[$j]->assignedHistory[] = $sales_objects[$k][$m]->sales_user_id;
+                                // }
+                            }
+                            else{
+                                $data[$j]->assignedHistory=null;
+                            }
+
+                            // $new_data[] = $data[$j];
+                        }
+                        // else {
+                        //     $data[$j]->assignedHistory = [];
+                        // }
+                        // } else {
+                        //     $data[$j]->assignedHistory = [];
+                    }
+                    // }
+                }
+            }
+            // dd(json_encode($data));
             return response()->json([
                 'status' => true,
                 'message' => 'All Lead List',
@@ -479,9 +597,26 @@ class LeadController extends Controller
 
     public function create_lead(Request $request)
     {
+        // dd($request->all());
         $id = round(microtime(true) * 1000);
         $lead_id = intval($id);
-        // dd($lead_id);
+        // dd($experience);
+        //    $exp= json_encode($experience);
+        // dd($exp);
+        $living_place = [
+            "name"
+            => "what_state_do_you_live_in?", "values" => $request->living_place
+        ];
+        // $form_data = ["experience"=>"how_many_years_of_relevant_work_experience_do_you_have?", "values" => $request->experience, "phone_number"=>"please_provide_your_present\/current_contact_number._", "values"=>[$request->phone_number], "work_experience"=>"are_you_able_to_provide_evidence_of_industry_work_experience?_eg:_reference_letters,_pay_slips,_pictures,_videos_and_more","values"=>[$request->work_experience], "email"=>"email","values"=>[$request->email], "industry_qualified"=>"are_you_ready_to_become_industry_qualified_immediately?","values"=>[$request->industry_qualified], "full_name"=>"full_name","values"=>[$request->full_name], "qualification"=>"do_you_hold_any_academic_qualifications_relating_to_the_course_being_enquired?","values"=>[$request->qualification], "phone_number"=>"phone_number","values"=>[$request->phone_number]];
+        // // dd($form_data);
+        // $data = json_encode([$form_data]);
+        // $info = [$data[0]];
+        // for($i=0;$i<count($form_data);$i++){
+        //     $data[] = $form_data[$i];
+
+        // }
+        // dd($data);
+
         $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
         if (!$existing_lead) {
             $save = LeadDetails::create([
@@ -490,13 +625,14 @@ class LeadController extends Controller
                 'full_name' => $request->full_name,
                 'phone_number' => $request->phone_number,
                 'student_email' => $request->student_email,
-                'client_id' => $request->company_id,
-                'campaign_id' => $request->campaign_id,
+                'client_id' => $request->client_id,
+                'campaign_id' => "",
                 'sales_user_id' => 0,
                 'document_certificate_id' => 0,
                 'course_id' => $request->course_id,
                 'work_location' => $request->work_location,
-                'lead_from' => 'manual',
+                'lead_from' => $request->lead_from,
+                'form_data' => $request->form_data,
                 'star_review' => 0,
                 'lead_apply_date' => Carbon::now(),
                 'lead_details_status' => 1
