@@ -227,9 +227,8 @@ class LeadController extends Controller
                             if ($data[$j]->lead_id == $sales_objects[$k][$m]->lead_id) {
                                 $data[$j]->assignedHistory[] = $sales_objects[$k][$m]->sales_user_id;
                                 // }
-                            }
-                            else{
-                                $data[$j]->assignedHistory=null;
+                            } else {
+                                $data[$j]->assignedHistory = null;
                             }
 
                             // $new_data[] = $data[$j];
@@ -595,27 +594,164 @@ class LeadController extends Controller
         }
     }
 
-    public function create_lead(Request $request)
+    public function delete_sales_employee_by_user_id(Request $request)
     {
-        // dd($request->all());
+        // dd("dfgfdgfg");
+        try {
+            if ($request->sales_user_id) {
+                $data = LeadSalesEmployee::where('sales_user_id', $request->sales_user_id)->get();
+                // dd(json_encode($data));
+                if ($data) {
+                    foreach ($data as $datas) {
+                        $delete = $datas->delete();
+                    }
+                    $leads = LeadDetails::where('sales_user_id', $request->sales_user_id)->where('course_id', $request->course_id)->get();
+                    foreach ($leads as $lead) {
+                        $lead->sales_user_id = 0;
+                    }
+                    // dd($delete);
+                    if ($delete == true) {
+                        return response()->json([
+                            'message' => 'deleted',
+                            'status' => 200
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'message' => 'not deleted',
+                            'status' => 500
+                        ], 500);
+                    }
+                } else {
+                    return response()->json([
+                        'message' => 'not found',
+                        'status' => 404
+                    ], 404);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'not found',
+                    'status' => 404
+                ], 404);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function create_lead_from_form(Request $request)
+    {
+        // dd($request->course);
         $id = round(microtime(true) * 1000);
         $lead_id = intval($id);
-        // dd($experience);
-        //    $exp= json_encode($experience);
-        // dd($exp);
         $living_place = [
             "name"
             => "what_state_do_you_live_in?", "values" => $request->living_place
         ];
-        // $form_data = ["experience"=>"how_many_years_of_relevant_work_experience_do_you_have?", "values" => $request->experience, "phone_number"=>"please_provide_your_present\/current_contact_number._", "values"=>[$request->phone_number], "work_experience"=>"are_you_able_to_provide_evidence_of_industry_work_experience?_eg:_reference_letters,_pay_slips,_pictures,_videos_and_more","values"=>[$request->work_experience], "email"=>"email","values"=>[$request->email], "industry_qualified"=>"are_you_ready_to_become_industry_qualified_immediately?","values"=>[$request->industry_qualified], "full_name"=>"full_name","values"=>[$request->full_name], "qualification"=>"do_you_hold_any_academic_qualifications_relating_to_the_course_being_enquired?","values"=>[$request->qualification], "phone_number"=>"phone_number","values"=>[$request->phone_number]];
-        // // dd($form_data);
-        // $data = json_encode([$form_data]);
-        // $info = [$data[0]];
-        // for($i=0;$i<count($form_data);$i++){
-        //     $data[] = $form_data[$i];
+        $course = $request->course;
+        $course_code = explode('-', $course);
+        $course_code = $course_code[0];
+        $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
+        $course_id = CoursesInfo::where('course_code', $course_code)->exists();
+        $name = $request->full_name;
+        $lead_status = 1;
+        $client_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents/' . $request->client_id);
+        // dd($client_logo);
+        if (!$course_id) {
+            $courseId = CoursesInfo::create([
+                'course_code' => $course_code,
+                'course_title' => $course,
+                'course_description' => $course,
+                'status' => 1
+            ]);
+            if (!$existing_lead) {
+                $save = LeadDetails::create([
+                    'lead_id' => $lead_id,
+                    'student_id' => 0,
+                    'full_name' => $request->full_name,
+                    'phone_number' => $request->phone_number,
+                    'student_email' => $request->student_email,
+                    'client_id' => $request->client_id,
+                    'campaign_id' => "",
+                    'sales_user_id' => 0,
+                    'document_certificate_id' => 0,
+                    'course_id' => $courseId->id,
+                    'work_location' => $request->work_location,
+                    'lead_from' => $request->lead_from,
+                    'form_data' => $request->form_data,
+                    'star_review' => 0,
+                    'lead_apply_date' => Carbon::now(),
+                    'lead_details_status' => 1
+                ]);
 
+                
+                if ($save) {
+                    HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $name, 'lead_status' => $lead_status]);
+                    return response()->json([
+                        'message' => 'success',
+                        'status' => 201,
+                        'data' => $save
+                    ], 200);
+                } else {
+                    abort(500);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'exists',
+                    'status' => 403
+                ], 403);
+            }
+        } else {
+            if (!$existing_lead) {
+                $course_id = CoursesInfo::where('course_code', $course_code)->first();
+                $save = LeadDetails::create([
+                    'lead_id' => $lead_id,
+                    'student_id' => 0,
+                    'full_name' => $request->full_name,
+                    'phone_number' => $request->phone_number,
+                    'student_email' => $request->student_email,
+                    'client_id' => $request->client_id,
+                    'campaign_id' => "",
+                    'sales_user_id' => 0,
+                    'document_certificate_id' => 0,
+                    'course_id' => $course_id->id,
+                    'work_location' => $request->work_location,
+                    'lead_from' => $request->lead_from,
+                    'form_data' => $request->form_data,
+                    'star_review' => 0,
+                    'lead_apply_date' => Carbon::now(),
+                    'lead_details_status' => 1
+                ]);
+                if ($save) {
+                    HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $name, 'lead_status' => $lead_status]);
+                    return response()->json([
+                        'message' => 'success',
+                        'status' => 201,
+                        'data' => $save
+                    ], 200);
+                } else {
+                    abort(500);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'exists',
+                    'status' => 403
+                ], 403);
+            }
+        }
         // }
-        // dd($data);
+    }
+
+    public function create_lead(Request $request)
+    {
+        $id = round(microtime(true) * 1000);
+        $lead_id = intval($id);
+        $living_place = [
+            "name"
+            => "what_state_do_you_live_in?", "values" => $request->living_place
+        ];
 
         $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
         if (!$existing_lead) {
@@ -637,6 +773,7 @@ class LeadController extends Controller
                 'lead_apply_date' => Carbon::now(),
                 'lead_details_status' => 1
             ]);
+            HTTP::post('http://localhost:2000/api/send-mail', ['name' => $request->full_name, 'lead_status' => 1]);
             if ($save) {
                 return response()->json([
                     'message' => 'success',

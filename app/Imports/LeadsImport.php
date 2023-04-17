@@ -33,11 +33,21 @@ class LeadsImport implements ToCollection
             for ($i = 1; $i < count($row); $i++) {
                 $id = round(microtime(true) * 1000);
                 $lead_id = intval($id);
-                $course_code = explode('-', $row[$i][12]);
-                $course_id = CoursesInfo::where('course_code', $course_code[0])->exists();
+                // dd(substr($row[$i][12],9,1));
+                if(substr($row[$i][12], 9, 1)=='-'){
+                    $course_code = explode('-', $row[$i][12]);
+                    $course_code = $course_code[0];
+                }else if(substr($row[$i][12], 9, 1) == ' '){
+                    $course_code = explode(' ', $row[$i][12]);
+                    // dd($course_code[1]);
+                    $course_code = $course_code[1];
+                    // dd($course_code);
+                }
+                
+                $course_id = CoursesInfo::where('course_code', $course_code)->exists();
                 if (!$course_id) {
                     $courseId = CoursesInfo::create([
-                        'course_code' => $course_code[0],
+                        'course_code' => $course_code,
                         'course_title' => $row[$i][12],
                         'course_description' => $row[$i][12],
                         'status' => 1

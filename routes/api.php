@@ -52,6 +52,8 @@ Route::post('/lead/add/call', [LeadController::class, 'leadAddCallHistory']);
 
 Route::post('/create-lead',[LeadController::class, 'create_lead']);
 
+Route::post('/create-lead-from-form', [LeadController::class, 'create_lead_from_form']);
+
 Route::post('/excel-read', [LeadController::class, 'uploadLeadExcel']);
 
 Route::put('lead-update/{lead_id}',[LeadController::class, 'lead_update']);
@@ -61,3 +63,5 @@ Route::post('assign-sales-to-lead',[LeadController::class, 'sales_assign_to_lead
 Route::post('course-details-by-client', [LeadController::class, 'course_details']);
 
 Route::post('course-details-by-course-id', [LeadController::class, 'course_details_by_course_id']);
+
+Route::post('delete-sales-employee-by-user-id', [LeadController::class, 'delete_sales_employee_by_user_id']);
