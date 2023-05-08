@@ -380,7 +380,7 @@ class LeadController extends Controller
                 $lead_response = $lead_status_response->response;
             }
             // dd($lead_response);
-            $multi_comments = LeadMultiComment::where('lead_id', $leadId)->get();
+            $multi_comments = LeadMultiComment::where('lead_id', $leadId)->latest('created_at', 'DESC');
             $multi_comment = array();
             foreach ($multi_comments as $comment) {
                 $multi_comment = $comment;
@@ -643,7 +643,7 @@ class LeadController extends Controller
 
     public function create_lead_from_form(Request $request)
     {
-        // dd($request->course);
+        // dd($request->client_id);
         $id = round(microtime(true) * 1000);
         $lead_id = intval($id);
         $living_place = [
@@ -657,90 +657,104 @@ class LeadController extends Controller
         $course_id = CoursesInfo::where('course_code', $course_code)->exists();
         $name = $request->full_name;
         $lead_status = 1;
-        $client_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents/' . $request->client_id);
-        // dd($client_logo);
-        if (!$course_id) {
-            $courseId = CoursesInfo::create([
-                'course_code' => $course_code,
-                'course_title' => $course,
-                'course_description' => $course,
-                'status' => 1
-            ]);
-            if (!$existing_lead) {
-                $save = LeadDetails::create([
-                    'lead_id' => $lead_id,
-                    'student_id' => 0,
-                    'full_name' => $request->full_name,
-                    'phone_number' => $request->phone_number,
-                    'student_email' => $request->student_email,
-                    'client_id' => $request->client_id,
-                    'campaign_id' => "",
-                    'sales_user_id' => 0,
-                    'document_certificate_id' => 0,
-                    'course_id' => $courseId->id,
-                    'work_location' => $request->work_location,
-                    'lead_from' => $request->lead_from,
-                    'form_data' => $request->form_data,
-                    'star_review' => 0,
-                    'lead_apply_date' => Carbon::now(),
-                    'lead_details_status' => 1
-                ]);
 
-                
-                if ($save) {
-                    HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $name, 'lead_status' => $lead_status]);
-                    return response()->json([
-                        'message' => 'success',
-                        'status' => 201,
-                        'data' => $save
-                    ], 200);
+        // dd($client_logo);
+        $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents/' . $request->client_id);
+        // dd(json_encode($logo_details_of_logo));
+        $logo_response_of_logo = json_decode($logo_details_of_logo->body());
+        $client_name = $logo_response_of_logo->client;
+
+        if ($logo_response_of_logo->status !== 404) {
+            $logo = $logo_response_of_logo->data->document_name;
+            if (!$course_id) {
+                $courseId = CoursesInfo::create([
+                    'course_code' => $course_code,
+                    'course_title' => $course,
+                    'course_description' => $course,
+                    'status' => 1
+                ]);
+                if (!$existing_lead) {
+                    $save = LeadDetails::create([
+                        'lead_id' => $lead_id,
+                        'student_id' => 0,
+                        'full_name' => $request->full_name,
+                        'phone_number' => $request->phone_number,
+                        'student_email' => $request->student_email,
+                        'client_id' => $request->client_id,
+                        'campaign_id' => "",
+                        'sales_user_id' => 0,
+                        'document_certificate_id' => 0,
+                        'course_id' => $courseId->id,
+                        'work_location' => $request->work_location,
+                        'lead_from' => $request->lead_from,
+                        'form_data' => $request->form_data,
+                        'star_review' => 0,
+                        'lead_apply_date' => Carbon::now(),
+                        'lead_details_status' => 1
+                    ]);
+
+                    if ($save) {
+                        HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $name, 'lead_status' => $lead_status, 'logo' => $logo, 'client' => $client_name, 'course' => $courseId->course_title]);
+                        return response()->json([
+                            'message' => 'success',
+                            'status' => 201,
+                            'data' => $save
+                        ], 200);
+                    } else {
+                        abort(500);
+                    }
                 } else {
-                    abort(500);
+                    return response()->json([
+                        'message' => 'exists',
+                        'status' => 403
+                    ], 403);
                 }
             } else {
-                return response()->json([
-                    'message' => 'exists',
-                    'status' => 403
-                ], 403);
+                if (!$existing_lead) {
+                    $course_id = CoursesInfo::where('course_code', $course_code)->first();
+                    $save = LeadDetails::create([
+                        'lead_id' => $lead_id,
+                        'student_id' => 0,
+                        'full_name' => $request->full_name,
+                        'phone_number' => $request->phone_number,
+                        'student_email' => $request->student_email,
+                        'client_id' => $request->client_id,
+                        'campaign_id' => "",
+                        'sales_user_id' => 0,
+                        'document_certificate_id' => 0,
+                        'course_id' => $course_id->id,
+                        'work_location' => $request->work_location,
+                        'lead_from' => $request->lead_from,
+                        'form_data' => $request->form_data,
+                        'star_review' => 0,
+                        'lead_apply_date' => Carbon::now(),
+                        'lead_details_status' => 1
+                    ]);
+                    if ($save) {
+                        HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $name, 'lead_status' => $lead_status, 'logo' => $logo, 'client' => $client_name, 'course' => $course_id->course_title]);
+                        return response()->json([
+                            'message' => 'success',
+                            'status' => 201,
+                            'data' => $save
+                        ], 200);
+                    } else {
+                        abort(500);
+                    }
+                } else {
+                    return response()->json([
+                        'message' => 'exists',
+                        'status' => 403
+                    ], 403);
+                }
             }
         } else {
-            if (!$existing_lead) {
-                $course_id = CoursesInfo::where('course_code', $course_code)->first();
-                $save = LeadDetails::create([
-                    'lead_id' => $lead_id,
-                    'student_id' => 0,
-                    'full_name' => $request->full_name,
-                    'phone_number' => $request->phone_number,
-                    'student_email' => $request->student_email,
-                    'client_id' => $request->client_id,
-                    'campaign_id' => "",
-                    'sales_user_id' => 0,
-                    'document_certificate_id' => 0,
-                    'course_id' => $course_id->id,
-                    'work_location' => $request->work_location,
-                    'lead_from' => $request->lead_from,
-                    'form_data' => $request->form_data,
-                    'star_review' => 0,
-                    'lead_apply_date' => Carbon::now(),
-                    'lead_details_status' => 1
-                ]);
-                if ($save) {
-                    HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $name, 'lead_status' => $lead_status]);
-                    return response()->json([
-                        'message' => 'success',
-                        'status' => 201,
-                        'data' => $save
-                    ], 200);
-                } else {
-                    abort(500);
-                }
-            } else {
-                return response()->json([
-                    'message' => 'exists',
-                    'status' => 403
-                ], 403);
-            }
+            return response()->json([
+                'message' => 'no logo found',
+                'status' => 404
+            ], 403);
         }
+        // dd($logo);
+
         // }
     }
 
@@ -752,8 +766,14 @@ class LeadController extends Controller
             "name"
             => "what_state_do_you_live_in?", "values" => $request->living_place
         ];
-
+        $lead_status = 1;
+        $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents/' . $request->client_id);
+        // dd(json_encode($logo_details_of_logo));
+        $logo_response_of_logo = json_decode($logo_details_of_logo->body());
+        $client_name = $logo_response_of_logo->client;
         $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
+        $course = CoursesInfo::where('id', $request->course_id)->first();
+        $logo = $logo_response_of_logo->data->document_name;
         if (!$existing_lead) {
             $save = LeadDetails::create([
                 'lead_id' => $lead_id,
@@ -773,7 +793,8 @@ class LeadController extends Controller
                 'lead_apply_date' => Carbon::now(),
                 'lead_details_status' => 1
             ]);
-            HTTP::post('http://localhost:2000/api/send-mail', ['name' => $request->full_name, 'lead_status' => 1]);
+            HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $request->full_name, 'lead_status' => $lead_status, 'logo' => $logo, 'client' => $client_name, 'course' => $course->course_title]);
+            // HTTP::post('http://localhost:2000/api/send-mail', ['name' => $request->full_name, 'lead_status' => 1]);
             if ($save) {
                 return response()->json([
                     'message' => 'success',
@@ -1384,6 +1405,69 @@ class LeadController extends Controller
                 'message' => 'Lead Call history added successfully',
                 'data'   => $leadCallHistory
             ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function delete_comment(Request $request)
+    {
+        // dd($request->comment_id);
+        if ($request->comment_id) {
+            $comment = LeadMultiComment::where('id', $request->comment_id)->first();
+            $comments = $comment->delete();
+            if ($comments) {
+                return response()->json([
+                    'message' => "deleted",
+                    "status" => 200
+                ]);
+            } else {
+                return response()->json([
+                    'message' => "failed",
+                    "status" => 500
+                ]);
+            }
+        } else {
+            return response()->json([
+                'message' => "not found",
+                "status" => 404
+            ]);
+        }
+    }
+
+    public function delete_amount_history(Request $request)
+    {
+        try {
+            if ($request->id) {
+                $history = LeadAmountHistory::find($request->id);
+                if ($history) {
+                    $delete = $history->delete();
+                    if ($delete) {
+                        return response()->json([
+                            'message' => 'deleted',
+                            'status' => 201
+                        ], 201);
+                    } else {
+                        return response()->json([
+                            'message' => 'failed',
+                            'status' => 500
+                        ], 500);
+                    }
+                } else {
+                    return response()->json([
+                        'message' => 'not found',
+                        'status' => 404
+                    ], 404);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'not found',
+                    'status' => 404
+                ], 404);
+            }
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,

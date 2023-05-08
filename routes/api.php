@@ -65,3 +65,7 @@ Route::post('course-details-by-client', [LeadController::class, 'course_details'
 Route::post('course-details-by-course-id', [LeadController::class, 'course_details_by_course_id']);
 
 Route::post('delete-sales-employee-by-user-id', [LeadController::class, 'delete_sales_employee_by_user_id']);
+
+Route::post('delete-lead-comments', [LeadController::class, 'delete_comment']);
+
+Route::post('delete-amount-history', [LeadController::class, 'delete_amount_history']);
