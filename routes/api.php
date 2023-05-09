@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\LeadController;
+use App\Models\LeadDetails;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,3 +70,5 @@ Route::post('delete-sales-employee-by-user-id', [LeadController::class, 'delete_
 Route::post('delete-lead-comments', [LeadController::class, 'delete_comment']);
 
 Route::post('delete-amount-history', [LeadController::class, 'delete_amount_history']);
+
+Route::get('campaign-wise-lead-percentage', [\App\Http\Controllers\Api\CampaignController::class, 'campaign_wise_lead_percentage']);
