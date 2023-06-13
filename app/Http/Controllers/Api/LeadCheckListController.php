@@ -347,4 +347,13 @@ class LeadCheckListController extends Controller
             ], 500);
         }
     }
+
+    // get single course information
+    public function courseInfo($id){
+        if(CoursesInfo::where('id', $id)->first()){
+            return response()->json(CoursesInfo::findOrFail($id));            
+        }else{
+            return response()->json(['message' => 'Course not found!'], 404);
+        }
+    }
 }
