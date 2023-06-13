@@ -356,4 +356,17 @@ class LeadCheckListController extends Controller
             return response()->json(['message' => 'Course not found!'], 404);
         }
     }
+
+    // update course info by id
+    public function updateCourse(Request $request, $id){
+        if(CoursesInfo::where('id', $id)->first()){
+            $findCourse = CoursesInfo::findOrFail($id);
+            $findCourse->course_title = $request->title;            
+            // $findCourse->course_description = $request->description; 
+            $findCourse->save();
+            return response()->json(['message'=> 'Course updated successfully !'], 200);           
+        }else{
+            return response()->json(['message' => 'Course not found!'], 404);
+        }
+    }
 }
