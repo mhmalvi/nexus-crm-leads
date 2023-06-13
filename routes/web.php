@@ -14,5 +14,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+        'status'=> 200,
+        'Project'=>'API Backend',        
+        'Programming Language'=>'PHP ' . phpversion(),
+        'Framework'=>'Laravel ' . app()->version()
+    ]);
 });
