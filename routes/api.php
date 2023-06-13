@@ -47,6 +47,7 @@ Route::post('/lead/checklist/delete', [\App\Http\Controllers\Api\LeadCheckListCo
 
 Route::get('/lead/courses', [\App\Http\Controllers\Api\LeadCheckListController::class, 'getCoursesList']);
 Route::get('/lead/{id}/course', [\App\Http\Controllers\Api\LeadCheckListController::class, 'courseInfo']);
+Route::post('/lead/{id}/course/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'updateCourse']);
 
 
 Route::post('/lead/add/amount', [LeadController::class, 'leadAddAmount']);
