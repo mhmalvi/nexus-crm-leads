@@ -83,4 +83,46 @@ class ChecklistMailController extends Controller
             ], 404);
         }
     }
+
+    public function fetch_mail_templates_by_id($id)
+    {
+        $template = MailTemplate::find($id);
+        if ($template) {
+            return response()->json([
+                'message' => 'success',
+                'data' => $template,
+                'status' => 200
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'not found',
+                'status' => 404
+            ], 404);
+        }
+    }
+
+    public function delete_template($id)
+    {
+        $template = MailTemplate::find($id);
+        if ($template) {
+            $delete = $template->delete();
+            if ($delete) {
+                return response()->json([
+                    'message' => 'deleted',
+                    'data' => $template,
+                    'status' => 200
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'failed',
+                    'status' => 500
+                ], 500);
+            }
+        } else {
+            return response()->json([
+                'message' => 'not found',
+                'status' => 404
+            ], 404);
+        }
+    }
 }

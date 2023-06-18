@@ -60,6 +60,10 @@ Route::post('/save-mail-template', [ChecklistMailController::class, 'save_mail_t
 
 Route::get('/mail-templates', [ChecklistMailController::class, 'fetch_mail_templates']);
 
+Route::get('/mail-templates/{id}', [ChecklistMailController::class, 'fetch_mail_templates_by_id']);
+
+Route::get('/delete-mail-templates/{id}', [ChecklistMailController::class, 'delete_template']);
+
 Route::post('/create-lead',[LeadController::class, 'create_lead']);
 
 Route::post('/create-lead-from-form', [LeadController::class, 'create_lead_from_form']);
