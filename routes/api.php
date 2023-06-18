@@ -58,6 +58,8 @@ Route::post('/lead/mail', [ChecklistMailController::class, 'leadMail']);
 
 Route::post('/save-mail-template', [ChecklistMailController::class, 'save_mail_template']);
 
+Route::get('/mail-templates', [ChecklistMailController::class, 'fetch_mail_templates']);
+
 Route::post('/create-lead',[LeadController::class, 'create_lead']);
 
 Route::post('/create-lead-from-form', [LeadController::class, 'create_lead_from_form']);
