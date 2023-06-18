@@ -62,6 +62,9 @@ class LeadController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
+
+    
+
     public function leadList(Request $request)
     {
         try {

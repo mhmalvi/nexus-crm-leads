@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ChecklistMailController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\LeadController;
@@ -52,6 +53,10 @@ Route::post('/lead/{id}/course/update', [\App\Http\Controllers\Api\LeadCheckList
 
 Route::post('/lead/add/amount', [LeadController::class, 'leadAddAmount']);
 Route::post('/lead/add/call', [LeadController::class, 'leadAddCallHistory']);
+
+Route::post('/lead/mail', [ChecklistMailController::class, 'leadMail']);
+
+Route::post('/save-mail-template', [ChecklistMailController::class, 'save_mail_template']);
 
 Route::post('/create-lead',[LeadController::class, 'create_lead']);
 
