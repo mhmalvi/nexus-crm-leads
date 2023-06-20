@@ -20,8 +20,8 @@
 </head>
 <body class="antialiased">
     <div>
-        <p>{{ $template }}</p>
-        <p>{{ $file_path }}</p>
+        <p>{!! $template !!}</p>
+        {{-- <p>{{ $file_path }}</p> --}}
 
     </div>
 </body>

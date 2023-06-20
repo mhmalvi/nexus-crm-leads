@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ChecklistMailController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\LeadController;
+use App\Http\Controllers\Api\SalesController;
 use App\Models\LeadDetails;
 
 /*
@@ -51,6 +52,12 @@ Route::get('/lead/{id}/course', [\App\Http\Controllers\Api\LeadCheckListControll
 Route::post('/lead/{id}/course/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'updateCourse']);
 
 
+Route::get('/sales-list', [SalesController::class, 'sales_list']);
+
+Route::get('/assigned-lead-list', [SalesController::class, 'assigned_leads']);
+
+Route::get('/unassigned-lead-list', [SalesController::class, 'unassigned_leads']);
+
 Route::post('/lead/add/amount', [LeadController::class, 'leadAddAmount']);
 Route::post('/lead/add/call', [LeadController::class, 'leadAddCallHistory']);
 
@@ -64,15 +71,15 @@ Route::get('/mail-templates/{id}', [ChecklistMailController::class, 'fetch_mail_
 
 Route::get('/delete-mail-templates/{id}', [ChecklistMailController::class, 'delete_template']);
 
-Route::post('/create-lead',[LeadController::class, 'create_lead']);
+Route::post('/create-lead', [LeadController::class, 'create_lead']);
 
 Route::post('/create-lead-from-form', [LeadController::class, 'create_lead_from_form']);
 
 Route::post('/excel-read', [LeadController::class, 'uploadLeadExcel']);
 
-Route::put('lead-update/{lead_id}',[LeadController::class, 'lead_update']);
+Route::put('lead-update/{lead_id}', [LeadController::class, 'lead_update']);
 
-Route::post('assign-sales-to-lead',[LeadController::class, 'sales_assign_to_lead']);
+Route::post('assign-sales-to-lead', [LeadController::class, 'sales_assign_to_lead']);
 
 Route::post('course-details-by-client', [LeadController::class, 'course_details']);
 
