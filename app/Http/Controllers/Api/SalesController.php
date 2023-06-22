@@ -31,9 +31,28 @@ class SalesController extends Controller
         }
     }
 
-    public function assigned_leads(Request $request)
+    public function assigned_leads($id)
     {
-        $leads = DB::table('lead_details')->join('lead_sales_employee', 'lead_details.lead_id', '=', 'lead_sales_employee.lead_id')->select('lead_details.lead_id', 'lead_details.full_name')->where('lead_details.sales_user_id', $request->sales_user_id)->get();
+        $leads = DB::table('lead_details')->join('lead_details', 'lead_details.lead_id', '=', 'lead_sales_employee.lead_id')->select('lead_sales_employee.lead_id', 'lead_details.full_name')->where('lead_details.sales_user_id', $id)->get();
+        // $leads  = DB::table('lead_sales_employee')->select('lead_id', 'full_name')->where('lead_details.sales_user_id', $id)->get();
+
+        if ($leads) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 200,
+                'data' => $leads
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'No leads found',
+                'status' => 404
+            ], 404);
+        }
+    }
+
+    public function unassigned_leads()
+    {
+        $leads = DB::table('lead_details')->join('lead_sales_employee', 'lead_details.lead_id', '!=', 'lead_sales_employee.lead_id')->select('lead_details.lead_id', 'lead_details.full_name')->get();
 
 
         if ($leads) {
@@ -50,22 +69,34 @@ class SalesController extends Controller
         }
     }
 
-    public function unassigned_leads(Request $request)
+    public function assign_leads_to_sales(Request $request)
     {
-        $leads = DB::table('lead_details')->join('lead_sales_employee', 'lead_details.lead_id', '!=', 'lead_sales_employee.lead_id')->select('lead_details.lead_id', 'lead_details.full_name')->groupBy('lead_details.lead_id')->get();
-
-
-        if ($leads) {
+        $lead_exist = LeadSalesEmployee::where('lead_id', $request->lead_id)->exists();
+        if ($lead_exist) {
             return response()->json([
-                'message' => 'success',
-                'status' => 200,
-                'data' => $leads
-            ], 200);
+                'message' => 'Lead is already assigned',
+                'status' => 403,
+            ]);
         } else {
-            return response()->json([
-                'message' => 'No leads found',
-                'status' => 404
-            ], 404);
+            $lead = LeadSalesEmployee::create([
+                'sales_user_id' => $request->sales_user_id,
+                'lead_id' => $request->lead_id,
+                'active_status' => 1,
+                'assign_by' => $request->sales_user_id
+            ]);
+            if ($lead) {
+                return response()->json([
+                    'message' => "Lead assigned successfully",
+                    'status' => 201,
+                    'data' => $lead
+                ], 201);
+            } else {
+                return response()->json([
+                    'message' => "Failed to assign lead",
+                    'status' => 500,
+                    'data' => $lead
+                ], 500);
+            }
         }
     }
 }

@@ -54,9 +54,13 @@ Route::post('/lead/{id}/course/update', [\App\Http\Controllers\Api\LeadCheckList
 
 Route::get('/sales-list', [SalesController::class, 'sales_list']);
 
-Route::get('/assigned-lead-list', [SalesController::class, 'assigned_leads']);
+Route::get('/assigned-lead-list/{id}', [SalesController::class, 'assigned_leads']);
+
+// Route::get('/assigned-lead-list/{id}', [SalesController::class, 'assigned_leads']);
 
 Route::get('/unassigned-lead-list', [SalesController::class, 'unassigned_leads']);
+
+Route::get('/assign-leads', [SalesController::class, 'assign_leads_to_sales']);
 
 Route::post('/lead/add/amount', [LeadController::class, 'leadAddAmount']);
 Route::post('/lead/add/call', [LeadController::class, 'leadAddCallHistory']);
