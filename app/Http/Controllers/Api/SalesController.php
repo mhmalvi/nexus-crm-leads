@@ -52,8 +52,7 @@ class SalesController extends Controller
 
     public function assigned_leads($id)
     {
-        $leads = DB::table('lead_details')->join('lead_sales_employee', 'lead_details.lead_id', '=', 'lead_sales_employee.lead_id')->select('lead_details.lead_id', 'lead_details.full_name', 'lead_sales_employee.lead_id', 'lead_details.sales_user_id')->where('lead_sales_employee.sales_user_id', $id)->get();
-
+        $leads = DB::table('lead_details')->join('lead_sales_employee', 'lead_details.lead_id', '=', 'lead_sales_employee.lead_id')->join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->select('lead_details.lead_id', 'lead_details.full_name', 'courses_info.course_title', 'lead_sales_employee.lead_id', 'lead_details.sales_user_id')->where('lead_sales_employee.sales_user_id', $id)->get();
         if ($leads) {
             return response()->json([
                 'message' => 'success',
@@ -70,7 +69,7 @@ class SalesController extends Controller
 
     public function unassigned_leads($id)
     {
-        $leads = DB::table('lead_sales_employee')->join('lead_details', 'lead_details.lead_id', '!=', 'lead_sales_employee.lead_id')->select('lead_details.lead_id', 'lead_details.full_name')->where('lead_details.client_id', '=', 1)->groupBy('lead_details.lead_id')->get();
+        $leads = DB::table('lead_sales_employee')->join('lead_details', 'lead_details.lead_id', '!=', 'lead_sales_employee.lead_id')->join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->select('lead_details.lead_id', 'lead_details.full_name', 'courses_info.course_title')->where('lead_details.client_id', '=', 1)->groupBy('lead_details.lead_id')->get();
         // $leads = DB::table('lead_sales_employee')->select('lead_id')->get();
         // // dd($leads);
         // for($i=0;$i<count($leads);$i++){
