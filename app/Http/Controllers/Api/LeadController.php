@@ -2,25 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use DB;
-use Carbon\Carbon;
-use App\Models\LeadStatus;
-use App\Models\CoursesInfo;
-use App\Models\LeadDetails;
-use Illuminate\Support\Arr;
-use App\Imports\LeadsImport;
-use Illuminate\Http\Request;
-use App\Models\CampaignDetails;
-use App\Models\LeadCallHistory;
-use App\Models\LeadMultiComment;
-// use Illuminate\Support\Facades\DB;
-use App\Models\LeadAmountHistory;
-use App\Models\LeadSalesEmployee;
 use App\Http\Controllers\Controller;
-// use User
+use App\Models\CampaignDetails;
+use App\Models\CoursesInfo;
+use App\Models\LeadAmountHistory;
+use App\Models\LeadCallHistory;
+use App\Models\LeadDetails;
+use App\Imports\LeadsImport;
+use App\Models\LeadMultiComment;
+use App\Models\LeadSalesEmployee;
+use App\Models\LeadStatus;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Arr;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LeadController extends Controller
 {
@@ -29,8 +27,6 @@ class LeadController extends Controller
      * @param Request $request
      * @return
      */
-
-
     public function createLead(Request $request)
     {
 
@@ -62,12 +58,10 @@ class LeadController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-
-    
-
     public function leadList(Request $request)
     {
         try {
+
             $data = DB::table('lead_details')
                 ->select(
                     'lead_details.id as lid',
@@ -100,208 +94,244 @@ class LeadController extends Controller
                     $join->on('lead_details.course_id', '=', 'courses_info.id');
                 });
             if (isset($request->client_id))
-                $data = $data->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc');
+                $data = $data->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.id', 'desc');
 
             if (isset($request->student_id))
-                $data = $data->where('lead_details.student_id', '=', $request->student_id)->orderBy('lead_details.lead_apply_date', 'desc');
+                $data = $data->where('lead_details.student_id', '=', $request->student_id)->orderBy('lead_details.id', 'desc');
 
-            $data = $data->get();
+            $paginate_data = $data->get();
             $lead_id = LeadDetails::select('lead_id')->where('client_id', $request->client_id)->get();
             // dd(json_encode($lead_id[1]->lead_id));
-            for ($i = 0; $i < count($lead_id); $i++) {
-                if (isset($lead_id[$i])) {
-                    $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->orderBy('created_at', 'DESC')->get();
-                }
-            }
-            // dd(json_encode($sales_objects));
+            // for ($i = 0; $i < count($lead_id); $i++) {
+            //     if(isset($lead_id[$i])){
+            //         $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->get();
+            //     }
+            // }
 
-            //dd($data);
-            for ($j = 0; $j < count($data); $j++) {
-                // dd("Hello");
-                for (
-                    $k = 0;
-                    $k < count($sales_objects);
-                    $k++
-                ) {
-                    // for ($m = 0; $m < count($sales_objects[$k]); $m++) {
-                    if (isset($sales_objects[$k][0]->lead_id)) {
-                        // if ($data[$j]->lead_id == $sales_objects[$k][0]->lead_id) {
-                        // dd(json_encode($sales_objects[$k][$m]));
-                        for ($m = 0; $m < count($sales_objects[$k]); $m++) {
-                            // dd(json_encode($sales_objects[$k][$m]->id));
-                            // if (isset($sales_objects[$k][$m]->id)) {
-                            if ($data[$j]->lead_id == $sales_objects[$k][$m]->lead_id) {
-                                $data[$j]->assignedHistory[] = $sales_objects[$k][$m]->sales_user_id;
-                                // }
-                            }
-                            // else{
-                            //     $data[$j]->assignedHistory=null;
-                            // }
-
-                            // $new_data[] = $data[$j];
-                        }
-                        // else {
-                        //     $data[$j]->assignedHistory = [];
-                        // }
-                        // } else {
-                        //     $data[$j]->assignedHistory = [];
-                    }
-                    // }
-                }
-            }
+            // for ($j = 0; $j < count($paginate_data); $j++) {
+            //     for ($k = 0; $k < count($sales_objects); $k++) {
+            //         if (isset($sales_objects[$k][0]->lead_id)) {
+            //                 for ($m = 0; $m < count($sales_objects[$k]); $m++) {
+            //                         if($paginate_data[$j]->lead_id == $sales_objects[$k][$m]->lead_id){
+            //                         $paginate_data[$j]->assignedHistory[] = $sales_objects[$k][$m]->sales_user_id;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
             return response()->json([
-                'status' => true,
+                'status' => 200,
                 'message' => 'All Lead List',
-                'data' => $data,
+                'data' => $paginate_data,
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
             ], 500);
+        }
+    }
+
+    public function lead_update(Request $request, $lead_id)
+    {
+        $lead = LeadDetails::where('lead_id', $lead_id)->first();
+        if ($lead) {
+            $lead->phone_number = $request->contact;
+            $lead->student_email = $request->email;
+            $lead->course_id = $request->course_id;
+            $lead->work_location = $request->work_location;
+
+            $lead->save();
+            return response()->json([
+                'message' => 'success',
+                'status' => 200,
+                'data' => [$lead]
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'lead id not found',
+                'status' => 404,
+                'data' => $lead_id
+            ], 404);
+        }
+    }
+
+    public function uploadLeadExcel(Request $request)
+    {
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $client_id = $request->client_id;
+                $lead_import = new LeadsImport($client_id);
+                $data = \Excel::import($lead_import, $request->file);
+                // dd($lead_import->data);
+                if ($lead_import->flag == 1) {
+                    return response()->json([
+                        'message' => 'success',
+                        'status' => 200
+                    ]);
+                } elseif ($lead_import->flag == 0) {
+                    return response()->json([
+                        'message' => 'Please reformat excel sheet columns',
+                        'status' => 400
+                    ], 400);
+                } elseif ($lead_import->flag == 3) {
+                    return response()->json([
+                        'message' => 'Data already exists',
+                        'status' => 403
+                    ], 403);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
+        }
+    }
+
+    public function sales_assign_to_lead(Request $request)
+    {
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->where('client_id', $request->client_id)->get();
+                $sales = explode(',', $request->sales_id);
+                // dd($sales);
+                for ($i = 0; $i < count($sales); $i++) {
+                    for ($j = 0; $j < count($lead_id); $j++) {
+                        $data[] = LeadSalesEmployee::create([
+                            "sales_user_id" => $sales[$i],
+                            "lead_id" => $lead_id[$j]->lead_id,
+                            "active_status" => 1,
+                            "assign_by" => $request->assigned_by
+                        ]);
+                    }
+                }
+                if ($data) {
+                    return response()->json([
+                        'message' => 'success',
+                        'status' => 201,
+                        'data' => $data
+                    ], 201);
+                } else {
+                    return response()->json([
+                        'message' => 'failed',
+                        'status' => 500
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
     public function course_details_by_course_id(Request $request)
     {
-        // dd("dvdfv");
-        $course_id = $request->course_id;
-        try {
-            $data = DB::table('lead_details')
-                ->select(
-                    'lead_details.id as lid',
-                    'lead_details.lead_id  as lead_id',
-                    'lead_details.student_id as student_id',
-                    'lead_details.full_name as full_name',
-                    'lead_details.phone_number as phone_number',
-                    'lead_details.student_email as student_email',
-                    'lead_details.client_id as client_id',
-                    'lead_details.campaign_id as campaign_id',
-                    'lead_details.sales_user_id as sales_user_id',
-                    'lead_details.document_certificate_id as document_certificate_id',
-                    'lead_details.course_id as course_id',
-                    'lead_details.work_location as work_location',
-                    'lead_details.lead_from as lead_from',
-                    'lead_details.form_data as form_data',
-                    'lead_details.star_review as star_review',
-                    'lead_details.lead_apply_date as lead_apply_date',
-                    'lead_details.lead_remarks as lead_remarks',
-                    'lead_details.lead_details_status as lead_details_status',
-                    'lead_details.created_at as created_at',
-                    'lead_details.updated_at as updated_at',
-                    'courses_info.id as cid',
-                    'courses_info.course_code as course_code',
-                    'courses_info.course_title as course_title',
-                    'courses_info.course_description as course_description',
-                    'courses_info.status as status',
-                )
-                ->leftJoin('courses_info', function ($join) {
-                    $join->on('lead_details.course_id', '=', 'courses_info.id');
-                })
-                // ->leftJoin('lead_sales_employee', function ($join) {
-                //     $join->on('lead_details.sales_user_id', '=', 'lead_sales_employee.sales_user_id');
-                // })
-                ->where('course_id', $request->course_id)
-                ->get();
-            $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->get();
-            // dd(json_encode($lead_id[1]->lead_id));
-            for ($i = 0; $i < count($lead_id); $i++) {
-                if (isset($lead_id[$i])) {
-                    $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->orderBy('created_at', 'DESC')->get();
-                }
-            }
-            // dd(json_encode($sales_objects));
-
-            //dd($data);
-            for ($j = 0; $j < count($data); $j++) {
-                // dd("Hello");
-                for (
-                    $k = 0;
-                    $k < count($sales_objects);
-                    $k++
-                ) {
-                    // for ($m = 0; $m < count($sales_objects[$k]); $m++) {
-                    if (isset($sales_objects[$k][0]->lead_id)) {
-                        // if ($data[$j]->lead_id == $sales_objects[$k][0]->lead_id) {
-                        // dd(json_encode($sales_objects[$k][$m]));
-                        for ($m = 0; $m < count($sales_objects[$k]); $m++) {
-                            // dd(json_encode($sales_objects[$k][$m]->id));
-                            // if (isset($sales_objects[$k][$m]->id)) {
-                            if ($data[$j]->lead_id == $sales_objects[$k][$m]->lead_id) {
-                                $data[$j]->assignedHistory[] = $sales_objects[$k][$m]->sales_user_id;
-                                // }
-                            } else {
-                                $data[$j]->assignedHistory = null;
-                            }
-
-                            // $new_data[] = $data[$j];
-                        }
-                        // else {
-                        //     $data[$j]->assignedHistory = [];
-                        // }
-                        // } else {
-                        //     $data[$j]->assignedHistory = [];
+        // dd($request->course_id);
+        if ($request->client_id !== "" || $request->course_id !== "") {
+            $course_id_in_lead_details = LeadDetails::where('course_id', $request->course_id)->first();
+            $course_id = $request->course_id;
+            if ($course_id_in_lead_details) {
+                try {
+                    $data = DB::table('lead_details')
+                        ->select(
+                            'lead_sales_employee.sales_user_id as sales_id'
+                        )
+                        ->leftJoin('lead_sales_employee', function ($join) {
+                            $join->on('lead_details.lead_id', '=', 'lead_sales_employee.lead_id');
+                        })
+                        ->where('course_id', $request->course_id)
+                        ->where('client_id', $request->client_id)
+                        ->where('lead_sales_employee.sales_user_id', '!=', null)
+                        ->groupBy('lead_sales_employee.sales_user_id')
+                        // ->where()
+                        ->get();
+                    if (!$data->isEmpty()) {
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'All Lead List',
+                            'data' => $data,
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'message' => 'Lead List not exists',
+                            'status' => 404
+                        ], 404);
                     }
-                    // }
+                } catch (\Throwable $th) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => $th->getMessage()
+                    ], 500);
                 }
+            } else {
+                return response()->json([
+                    'message' => "not found",
+                    'status' => 404
+                ]);
             }
-            // dd(json_encode($data));
+        } else {
             return response()->json([
-                'status' => true,
-                'message' => 'All Lead List',
-                'data' => $data,
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
+                'message' => "please enter course id or client id",
+                'status' => 400
+            ], 400);
         }
     }
 
     public function course_details(Request $request)
     {
-        // dd($request->all());
-
-        // $chat = DB::table('chats')
-        //     ->join('users', 'users.id', '=',
-        //         'chats.user_id'
-        //     )
-        //     ->select('users.avatar', 'user_id', DB::raw('count(*) as total'))
-        //     ->where('admin_id', Auth::user()->id)
-        //     ->where('status', 2)
-        //     ->groupBy('user_id')
-        //     ->get();
-
-        // $chat = DB::table('chats')
-        //     ->join('users', 'users.id', '=', 'chats.user_id')
-        //     ->select('users.avatar', 'user_id', DB::raw('count(*) as total'))
-        //     ->where('admin_id', Auth::user()->id)
-        //     ->where('status', 2)
-        //     ->groupBy('user_id')
-        //     ->get();
-
-        // $course = LeadDetails::select('course_id')->where('client_id', $request->client_id)->groupBy('course_id')->get();
-        $course = DB::table("lead_details")
-            ->select("course_id")
-            ->where("client_id", "=", $request->client_id)
-            ->groupBy("course_id")
-            ->get();
-        // dd(json_encode($course));
-        for ($i = 0; $i < count($course); $i++) {
-            $course_details[] = CoursesInfo::where('id', $course[$i]->course_id)->get();
-        }
-        if ($course_details) {
-            return response()->json([
-                'message' => 'success',
-                'status' => 200,
-                'data' => collect($course_details)->flatten(1)->toArray()
-            ]);
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $course = DB::table("lead_details")
+                    ->select("course_id")
+                    ->where("client_id", "=", $request->client_id)
+                    ->groupBy("course_id")
+                    ->get();
+                // dd(json_encode($course));
+                for ($i = 0; $i < count($course); $i++) {
+                    $course_details[] = CoursesInfo::where('id', $course[$i]->course_id)->get();
+                }
+                if ($course_details) {
+                    return response()->json([
+                        'message' => 'success',
+                        'status' => 200,
+                        'data' => collect($course_details)->flatten(1)->toArray()
+                    ]);
+                } else {
+                    return response()->json([
+                        'message' => 'not found',
+                        'status' => 404,
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
         } else {
             return response()->json([
-                'message' => 'not found',
-                'status' => 404,
-            ]);
+                'message' => 'unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
@@ -321,7 +351,7 @@ class LeadController extends Controller
         }
 
         $leadId = $request->lead_id;
-        // dd($leadId);
+
         try {
 
             //$leadDetails = LeadDetails::where('lead_id', '=', $leadId)->first();
@@ -376,14 +406,8 @@ class LeadController extends Controller
 
             $leadAllStatus = LeadStatus::where('lead_id', '=', $leadId)->where('is_active', 1)->get();
             $isData = false;
-            $lead_status_response = LeadStatus::where('lead_id', '=', $leadId)->where('lead_status', '=', 3)->first();
-            // dd($lead_status_response->response);
-            $status_response = $lead_status_response->response;
-            if ($status_response != "") {
-                $lead_response = $lead_status_response->response;
-            }
-            // dd($lead_response);
-            $multi_comments = LeadMultiComment::where('lead_id', $leadId)->latest('created_at', 'DESC');
+            $lead_status_response = LeadStatus::where('lead_id', '=', $leadId)->where('lead_status', 3)->first();
+            $multi_comments = LeadMultiComment::where('lead_id', $leadId)->orderBy('created_at', 'desc')->get();
             $multi_comment = array();
             foreach ($multi_comments as $comment) {
                 $multi_comment = $comment;
@@ -409,8 +433,8 @@ class LeadController extends Controller
                 $leadAllStatus->save();
                 $leadAllStatus = $leadAllStatus->toArray();
             }
+            $lead_all_status = LeadStatus::where('lead_id', $leadId)->where('is_active', 1)->get();
 
-            $lead_all_status = LeadStatus::where('lead_id', $leadId)->get();
             $leadDetails[0]->form_data = json_decode($leadDetails[0]->form_data);
             $leadAmountHistory = LeadAmountHistory::where('lead_id', '=', $request->lead_id)->orderBy('id', 'desc')->get()->toArray();
             $leadCallHistory = LeadCallHistory::where('lead_id', '=', $request->lead_id)->orderBy('id', 'desc')->get()->toArray();
@@ -468,23 +492,25 @@ class LeadController extends Controller
                 }
                 //dd($salesUserList);
             }
+            // if (isset($request->client_id)) {
+            //     $lead_id_by_client_id = LeadDetails::where('client_id', $request->client_id)->get();
 
-            // dd()
-            //dd($salesEmployeDetails);
+            //     $sales_user[] = LeadSalesEmployee::where('lead_id', $lead_id_by_client_id)->get();
+            // }
             return response()->json([
                 'status' => true,
                 'message' => 'All Lead List',
                 'leadDetails' => $leadDetails[0],
                 'leadComments' => $multi_comments,
-
-                // 'status_response' => $lead_response,
-                'leadAllStatus' => [$lead_all_status],
+                'leadAllStatus' => $lead_all_status,
                 'leadCallHistory' => $leadCallHistory,
                 'leadAmountHistory' => $leadAmountHistory,
                 'leadSalesEmployeeHistory' => $salesUserList,
                 'paymentHistories' => $paymentHistories
 
             ], 200);
+            // }
+
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -493,53 +519,6 @@ class LeadController extends Controller
         }
     }
 
-    // public function edit_lead($lead_id)
-    // {
-    //     $lead = LeadDetails::where('lead_id', $lead_id)->first();
-    //     if ($lead) {
-    //         return response()->json([
-    //             'message' => 'success',
-    //             'status' => 200,
-    //             'data' => [$lead]
-    //         ], 200);
-    //     } else {
-    //         return response()->json([
-    //             'message' => 'lead id not found',
-    //             'status' => 404,
-    //             'data' => $lead_id
-    //         ], 404);
-    //     }
-    // }
-
-    public function lead_update(Request $request, $lead_id)
-    {
-        $lead = LeadDetails::where('lead_id', $lead_id)->first();
-        if ($lead) {
-            $lead->phone_number = $request->contact;
-            $lead->student_email = $request->email;
-            $lead->course_id = $request->course_id;
-            $lead->work_location = $request->work_location;
-
-            $lead->save();
-            return response()->json([
-                'message' => 'success',
-                'status' => 200,
-                'data' => [$lead]
-            ], 200);
-        } else {
-            return response()->json([
-                'message' => 'lead id not found',
-                'status' => 404,
-                'data' => [$lead_id]
-            ], 404);
-        }
-    }
-
-    /**
-     * Lead Status Update
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse Status
-     */
     public function leadResponse(Request $request)
     {
         // dd($request->all());
@@ -571,15 +550,14 @@ class LeadController extends Controller
                     'name' => $name,
                     'student_id' => $student_id
                 ];
-
-                // 'lead_id' => $request->lead_id,
-                //     'lead_status' => $request->lead_status,
-                //     'to' => $lead_email,
-                //     'name' => $name,
-                //     'student_id' => $student_id,
-                //     'response' => $request->response
                 if ($save) {
-                    // HTTP::post('http://localhost:2000/api/send-mail', [                        
+                    // HTTP::post('https://crm-mailer.onrender.com/api/send-mail', [
+                    //     'lead_id' => $request->lead_id,
+                    //     'lead_status' => $request->lead_status,
+                    //     'to' => $lead_email,
+                    //     'name' => $name,
+                    //     'student_id' => $student_id,
+                    //     'response' => $request->response
                     // ]);
                     return response()->json([
                         'message' => "success",
@@ -599,48 +577,62 @@ class LeadController extends Controller
 
     public function delete_sales_employee_by_user_id(Request $request)
     {
-        // dd("dfgfdgfg");
-        try {
-            if ($request->sales_user_id) {
-                $data = LeadSalesEmployee::where('sales_user_id', $request->sales_user_id)->get();
-                // dd(json_encode($data));
-                if ($data) {
-                    foreach ($data as $datas) {
-                        $delete = $datas->delete();
-                    }
-                    $leads = LeadDetails::where('sales_user_id', $request->sales_user_id)->where('course_id', $request->course_id)->get();
-                    foreach ($leads as $lead) {
-                        $lead->sales_user_id = 0;
-                    }
-                    // dd($delete);
-                    if ($delete == true) {
-                        return response()->json([
-                            'message' => 'deleted',
-                            'status' => 200
-                        ], 200);
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                try {
+                    if ($request->sales_user_id) {
+                        $data = LeadSalesEmployee::where('sales_user_id', $request->sales_user_id)->get();
+                        // dd(json_encode($data));
+                        if ($data) {
+                            foreach ($data as $datas) {
+                                $delete = $datas->delete();
+                            }
+                            $leads = LeadDetails::where('sales_user_id', $request->sales_user_id)->where('course_id', $request->course_id)->get();
+                            foreach ($leads as $lead) {
+                                $lead->sales_user_id = 0;
+                            }
+                            if ($delete == true) {
+                                return response()->json([
+                                    'message' => 'deleted',
+                                    'status' => 200
+                                ], 200);
+                            } else {
+                                return response()->json([
+                                    'message' => 'not deleted',
+                                    'status' => 500
+                                ], 500);
+                            }
+                        } else {
+                            return response()->json([
+                                'message' => 'not found',
+                                'status' => 404
+                            ], 404);
+                        }
                     } else {
                         return response()->json([
-                            'message' => 'not deleted',
-                            'status' => 500
-                        ], 500);
+                            'message' => 'not found',
+                            'status' => 404
+                        ], 404);
                     }
-                } else {
+                } catch (\Throwable $th) {
                     return response()->json([
-                        'message' => 'not found',
-                        'status' => 404
-                    ], 404);
+                        'status' => false,
+                        'message' => $th->getMessage()
+                    ], 500);
                 }
             } else {
                 return response()->json([
-                    'message' => 'not found',
-                    'status' => 404
-                ], 404);
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
             }
-        } catch (\Throwable $th) {
+        } else {
             return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
@@ -662,7 +654,7 @@ class LeadController extends Controller
         $lead_status = 1;
 
         // dd($client_logo);
-        $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents/' . $request->client_id);
+        $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents-details/' . $request->client_id);
         // dd(json_encode($logo_details_of_logo));
         $logo_response_of_logo = json_decode($logo_details_of_logo->body());
         $client_name = $logo_response_of_logo->client;
@@ -763,55 +755,75 @@ class LeadController extends Controller
 
     public function create_lead(Request $request)
     {
-        $id = round(microtime(true) * 1000);
-        $lead_id = intval($id);
-        $living_place = [
-            "name"
-            => "what_state_do_you_live_in?", "values" => $request->living_place
-        ];
-        $lead_status = 1;
-        $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents/' . $request->client_id);
-        // dd(json_encode($logo_details_of_logo));
-        $logo_response_of_logo = json_decode($logo_details_of_logo->body());
-        $client_name = $logo_response_of_logo->client;
-        $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
-        $course = CoursesInfo::where('id', $request->course_id)->first();
-        $logo = $logo_response_of_logo->data->document_name;
-        if (!$existing_lead) {
-            $save = LeadDetails::create([
-                'lead_id' => $lead_id,
-                'student_id' => 0,
-                'full_name' => $request->full_name,
-                'phone_number' => $request->phone_number,
-                'student_email' => $request->student_email,
-                'client_id' => $request->client_id,
-                'campaign_id' => "",
-                'sales_user_id' => 0,
-                'document_certificate_id' => 0,
-                'course_id' => $request->course_id,
-                'work_location' => $request->work_location,
-                'lead_from' => $request->lead_from,
-                'form_data' => $request->form_data,
-                'star_review' => 0,
-                'lead_apply_date' => Carbon::now(),
-                'lead_details_status' => 1
-            ]);
-            HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $request->full_name, 'lead_status' => $lead_status, 'logo' => $logo, 'client' => $client_name, 'course' => $course->course_title]);
-            // HTTP::post('http://localhost:2000/api/send-mail', ['name' => $request->full_name, 'lead_status' => 1]);
-            if ($save) {
-                return response()->json([
-                    'message' => 'success',
-                    'status' => 201,
-                    'data' => $save
-                ], 200);
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $id = round(microtime(true) * 1000);
+                $lead_id = intval($id);
+                $living_place = [
+                    "name"
+                    => "what_state_do_you_live_in?", "values" => $request->living_place
+                ];
+
+                $lead_status = 1;
+
+                $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents-details/' . $request->client_id);
+                // dd(json_encode($logo_details_of_logo));
+                $logo_response_of_logo = json_decode($logo_details_of_logo->body());
+                // dd($logo_response_of_logo);
+                $client_name = $logo_response_of_logo->client;
+                // dd($client_name);
+                $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
+                $course = CoursesInfo::where('id', $request->course_id)->first();
+                $logo = $logo_response_of_logo->data->document_name;
+                if (!$existing_lead) {
+                    $save = LeadDetails::create([
+                        'lead_id' => $lead_id,
+                        'student_id' => 0,
+                        'full_name' => $request->full_name,
+                        'phone_number' => $request->phone_number,
+                        'student_email' => $request->student_email,
+                        'client_id' => $request->client_id,
+                        'campaign_id' => "",
+                        'sales_user_id' => 0,
+                        'document_certificate_id' => 0,
+                        'course_id' => $request->course_id,
+                        'work_location' => $request->work_location,
+                        'lead_from' => $request->lead_from,
+                        'form_data' => $request->form_data,
+                        'star_review' => 0,
+                        'lead_apply_date' => Carbon::now(),
+                        'lead_details_status' => 1
+                    ]);
+                    // HTTP::post('http://localhost:2000/api/send-mail', ['name' => $request->full_name, 'lead_status' => 1]);
+                    HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $request->full_name, 'lead_status' => $lead_status, 'logo' => $logo, 'client' => $client_name, 'course' => $course->course_title]);
+                    if ($save) {
+                        return response()->json([
+                            'message' => 'success',
+                            'status' => 201,
+                            'data' => $save
+                        ], 200);
+                    } else {
+                        abort(500);
+                    }
+                } else {
+                    return response()->json([
+                        'message' => 'exists',
+                        'status' => 403
+                    ], 403);
+                }
             } else {
-                abort(500);
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
             }
         } else {
             return response()->json([
-                'message' => 'exists',
-                'status' => 403
-            ], 403);
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
@@ -877,207 +889,236 @@ class LeadController extends Controller
     }
 
 
+
+
+    /**
+     * Lead Status Update
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse Status
+     */
     public function leadStatusUpdate(Request $request)
     {
-        // dd("gfdgfdgb");
-        if (!isset($request->lead_id) || !isset($request->sales_user_id)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Client id required'
-            ], 406);
-        }
-
-        $leadId = $request->lead_id;
-        $leadStatus = $request->lead_status;
-
-
-
-        try {
-
-            $leadDetails = LeadDetails::where('lead_id', '=', $leadId)->first();
-            if ($leadDetails == "") {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Lead details Not found',
-                    'data' => $request->lead_id
-                ], 404);
-            }
-
-            if ($leadDetails->sales_user_id == 0) {
-
-                LeadSalesEmployee::create([
-                    'sales_user_id' => isset($request->sales_user_id) ? $request->sales_user_id : 0,
-                    'lead_id' => $request->lead_id,
-                    'assign_by' => isset($request->sales_user_id) ? $request->sales_user_id : 0,
-                    'active_status' => 1
-                ]);
-
-                $leadDetails->sales_user_id = isset($request->sales_user_id) ? $request->sales_user_id : 0;
-            }
-            $leadDetails->lead_details_status = $leadStatus;
-            $leadDetails->save();
-
-            $leadAStatus = LeadStatus::where([
-                ['lead_id', '=', $leadId],
-                ['lead_status', '=', $leadStatus]
-            ])->first();
-            // dd(json_encode($leadAStatus));
-            $lead_info = LeadDetails::where('lead_id', '=', $leadId)->first();
-
-            $lead_email = $lead_info->student_email;
-            $name = $lead_info->full_name;
-            $student_id = $lead_info->student_id;
-            // dd($lead_email);
-            if ($leadAStatus != "" || $leadAStatus != null) {
-                // $leadAllStatus = $leadAStatus->toArray();
-                if ($leadAStatus->is_active == 0) {
-                    // $leadAStatus->lead_id = $leadId;
-                    // $leadAStatus->lead_status = $leadStatus;
-                    $leadAStatus->is_active = 1;
-                    $leadAStatus->save();
-                    $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
-                    // $lead_prev_status = LeadStatus::find($lead_max_status);
-
-                    if ($lead_info) {
-                        $lead_info->lead_details_status = $lead_max_status;
-                        $lead_info->save();
-                    }
-                } else if ($leadAStatus->is_active == 1) {
-                    // if($leadAStatus-)
-                    $leadAStatus->is_active = 0;
-                    $leadAStatus->save();
-
-                    $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
-                    // $lead_prev_status = LeadStatus::find($lead_max_status);
-                    if ($lead_info) {
-                        $lead_info->lead_details_status = $lead_max_status;
-                        $lead_info->save();
-                    }
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                if (!isset($request->lead_id) || !isset($request->sales_user_id)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Client id required'
+                    ], 406);
                 }
 
-                // return response()->json([
-                //         'message' => 'success',
-                //         'data' => $leadAllStatus
-                //     ]);
+                $leadId = $request->lead_id;
+                $leadStatus = $request->lead_status;
 
-                // if ($leadStatus !== 3) {
-                //     HTTP::post('https://crm-mailer.onrender.com/api/send-mail', [
-                //         'lead_id' => $leadId,
-                //         'lead_status' => $leadStatus,
-                //         'to' => $lead_email,
-                //         'name' => $name,
-                //         'student_id' => $student_id
-                //     ]);
-                // }
+
+
+                try {
+
+                    $leadDetails = LeadDetails::where('lead_id', '=', $leadId)->first();
+                    if ($leadDetails == "") {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Lead details Not found',
+                            'data' => $request->lead_id
+                        ], 404);
+                    }
+
+                    if ($leadDetails->sales_user_id == 0) {
+
+                        LeadSalesEmployee::create([
+                            'sales_user_id' => isset($request->sales_user_id) ? $request->sales_user_id : 0,
+                            'lead_id' => $request->lead_id,
+                            'assign_by' => isset($request->sales_user_id) ? $request->sales_user_id : 0,
+                            'active_status' => 1
+                        ]);
+
+                        $leadDetails->sales_user_id = isset($request->sales_user_id) ? $request->sales_user_id : 0;
+                    }
+                    $leadDetails->lead_details_status = $leadStatus;
+                    $leadDetails->save();
+
+                    $leadAStatus = LeadStatus::where([
+                        ['lead_id', '=', $leadId],
+                        ['lead_status', '=', $leadStatus]
+                    ])->first();
+                    // dd(json_encode($leadAStatus));
+                    $lead_info = LeadDetails::where('lead_id', '=', $leadId)->first();
+
+                    $lead_email = $lead_info->student_email;
+                    $name = $lead_info->full_name;
+                    $student_id = $lead_info->student_id;
+                    // dd($lead_email);
+                    if ($leadAStatus != "" || $leadAStatus != null) {
+                        // $leadAllStatus = $leadAStatus->toArray();
+                        if ($leadAStatus->is_active == 0) {
+                            // $leadAStatus->lead_id = $leadId;
+                            // $leadAStatus->lead_status = $leadStatus;
+                            $leadAStatus->is_active = 1;
+                            $leadAStatus->save();
+                            if ($leadStatus == 0) {
+                                if ($lead_info) {
+                                    $lead_info->lead_details_status = 0;
+                                    $lead_info->save();
+                                }
+                            } else {
+                                $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
+                                // $lead_prev_status = LeadStatus::find($lead_max_status);
+
+                                if ($lead_info) {
+                                    $lead_info->lead_details_status = $lead_max_status;
+                                    $lead_info->save();
+                                }
+                            }
+                        } else if ($leadAStatus->is_active == 1) {
+                            // if($leadAStatus-)
+                            $leadAStatus->is_active = 0;
+                            $leadAStatus->save();
+
+                            $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
+                            // $lead_prev_status = LeadStatus::find($lead_max_status);
+                            if ($lead_info) {
+                                $lead_info->lead_details_status = $lead_max_status;
+                                $lead_info->save();
+                            }
+                        }
+
+                        // return response()->json([
+                        //         'message' => 'success',
+                        //         'data' => $leadAllStatus
+                        //     ]);
+
+                        // if ($leadStatus !== 3) {
+                        //     HTTP::post('https://crm-mailer.onrender.com/api/send-mail', [
+                        //         'lead_id' => $leadId,
+                        //         'lead_status' => $leadStatus,
+                        //         'to' => $lead_email,
+                        //         'name' => $name,
+                        //         'student_id' => $student_id
+                        //     ]);
+                        // }
+                    } else {
+                        $leadAllStatus = LeadStatus::create([
+                            'lead_status' => $leadStatus,
+                            'lead_id' => $leadId,
+                            'to' => $lead_email,
+                            'name' => $name,
+                            'student_id' => $student_id,
+                            'updated_by' => $request->sales_user_id,
+                            'is_active' => 1
+                            // 'created_at' =>Carbon::now()
+                        ])->toArray();
+
+                        if ($lead_info) {
+                            $lead_info->lead_details_status = $leadStatus;
+                            $lead_info->save();
+                        }
+                        // $lead_inactive_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->where('lead_status', '!=', $leadStatus)->get();
+
+                        // for ($i = 0; $i < count($lead_inactive_status->is_active); $i++) {
+                        //     $lead_inactive_status->is_active = 0;
+                        //     $lead_inactive_status->save();
+                        // }
+                        // if ($leadAllStatus->is_active == 1) {
+                        // return response()->json([
+                        //     'message' => 'success',
+                        //     'data' => $leadAllStatus
+                        // ]);
+                        // }
+
+                        // return response()->json([
+                        //     'message' => 'success',
+                        //     'data' => $leadAll
+                        // ]);
+
+                        // if ($leadStatus !== 3) {
+                        //     HTTP::post('https://crm-mailer.onrender.com/api/send-mail', [
+                        //         'lead_id' => $leadId,
+                        //         'lead_status' => $leadStatus,
+                        //         'to' => $lead_email,
+                        //         'name' => $name,
+                        //         'student_id' => $student_id
+                        //     ]);
+                        // }
+                    }
+                    $array = [5, 6];
+                    //////////Email Service/////////
+                    if (in_array($request->lead_status, $array)) {
+                        $userServiceAPI = env('EMAIL_SERVICE_API', '');
+                        //dd($userServiceAPI);
+                        $leadDetails = DB::table('lead_details')
+                            ->select(
+                                'lead_details.id as lid',
+                                'lead_details.lead_id  as lead_id',
+                                'lead_details.student_id as student_id',
+                                'lead_details.full_name as full_name',
+                                'lead_details.phone_number as phone_number',
+                                'lead_details.student_email as student_email',
+                                'lead_details.client_id as client_id',
+                                'lead_details.campaign_id as campaign_id',
+                                'lead_details.sales_user_id as sales_user_id',
+                                'lead_details.document_certificate_id as document_certificate_id',
+                                'lead_details.course_id as course_id',
+                                'lead_details.work_location as work_location',
+                                'lead_details.lead_from as lead_from',
+                                'lead_details.form_data as form_data',
+                                'lead_details.star_review as star_review',
+                                'lead_details.lead_apply_date as lead_apply_date',
+                                'lead_details.lead_remarks as lead_remarks',
+                                'lead_details.lead_details_status as lead_details_status',
+                                'lead_details.created_at as created_at',
+                                'lead_details.updated_at as updated_at',
+                                'courses_info.id as cid',
+                                'courses_info.course_code as course_code',
+                                'courses_info.course_title as course_title',
+                                'courses_info.course_description as course_description',
+                                'courses_info.status as status'
+                            )
+                            ->leftJoin('courses_info', function ($join) {
+                                $join->on('lead_details.course_id', '=', 'courses_info.id');
+                            })->where('lead_details.lead_id', '=', $leadId)
+                            ->first();
+
+                        $response = Http::post($userServiceAPI . '/lead-status', [
+                            'data' => json_encode($leadDetails)
+                        ]);
+
+                        // dd($response->status());
+                    }
+
+                    //
+                    //            if($response->status()!= '201'){
+                    //                return response()->json([
+                    //                    'status' => false,
+                    //                    'message' => 'Email Not Sent',
+                    //                ], 401);
+                    //            }
+
+                    ///EOF Email Service ///
+                    $leadAllStatus = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->get();
+                    return response()->json([
+                        'status' => 201,
+                        'message' => 'Record for this Lead Status',
+                        'data' => $leadAllStatus
+                    ], 201);
+                } catch (\Throwable $th) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => $th->getMessage()
+                    ], 500);
+                }
             } else {
-                $leadAllStatus = LeadStatus::create([
-                    'lead_status' => $leadStatus,
-                    'lead_id' => $leadId,
-                    'to' => $lead_email,
-                    'name' => $name,
-                    'student_id' => $student_id,
-                    'updated_by' => $request->sales_user_id,
-                    'is_active' => 1
-                    // 'created_at' =>Carbon::now()
-                ])->toArray();
-
-                if ($lead_info) {
-                    $lead_info->lead_details_status = $leadStatus;
-                    $lead_info->save();
-                }
-                // $lead_inactive_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->where('lead_status', '!=', $leadStatus)->get();
-
-                // for ($i = 0; $i < count($lead_inactive_status->is_active); $i++) {
-                //     $lead_inactive_status->is_active = 0;
-                //     $lead_inactive_status->save();
-                // }
-                // if ($leadAllStatus->is_active == 1) {
-                // return response()->json([
-                //     'message' => 'success',
-                //     'data' => $leadAllStatus
-                // ]);
-                // }
-
-                // return response()->json([
-                //     'message' => 'success',
-                //     'data' => $leadAll
-                // ]);
-
-                // if ($leadStatus !== 3) {
-                //     HTTP::post('https://crm-mailer.onrender.com/api/send-mail', [
-                //         'lead_id' => $leadId,
-                //         'lead_status' => $leadStatus,
-                //         'to' => $lead_email,
-                //         'name' => $name,
-                //         'student_id' => $student_id
-                //     ]);
-                // }
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
             }
-            $array = [5, 6];
-            //////////Email Service/////////
-            if (in_array($request->lead_status, $array)) {
-                $userServiceAPI = env('EMAIL_SERVICE_API', '');
-                //dd($userServiceAPI);
-                $leadDetails = DB::table('lead_details')
-                    ->select(
-                        'lead_details.id as lid',
-                        'lead_details.lead_id  as lead_id',
-                        'lead_details.student_id as student_id',
-                        'lead_details.full_name as full_name',
-                        'lead_details.phone_number as phone_number',
-                        'lead_details.student_email as student_email',
-                        'lead_details.client_id as client_id',
-                        'lead_details.campaign_id as campaign_id',
-                        'lead_details.sales_user_id as sales_user_id',
-                        'lead_details.document_certificate_id as document_certificate_id',
-                        'lead_details.course_id as course_id',
-                        'lead_details.work_location as work_location',
-                        'lead_details.lead_from as lead_from',
-                        'lead_details.form_data as form_data',
-                        'lead_details.star_review as star_review',
-                        'lead_details.lead_apply_date as lead_apply_date',
-                        'lead_details.lead_remarks as lead_remarks',
-                        'lead_details.lead_details_status as lead_details_status',
-                        'lead_details.created_at as created_at',
-                        'lead_details.updated_at as updated_at',
-                        'courses_info.id as cid',
-                        'courses_info.course_code as course_code',
-                        'courses_info.course_title as course_title',
-                        'courses_info.course_description as course_description',
-                        'courses_info.status as status'
-                    )
-                    ->leftJoin('courses_info', function ($join) {
-                        $join->on('lead_details.course_id', '=', 'courses_info.id');
-                    })->where('lead_details.lead_id', '=', $leadId)
-                    ->first();
-
-                $response = Http::post($userServiceAPI . '/lead-status', [
-                    'data' => json_encode($leadDetails)
-                ]);
-
-                // dd($response->status());
-            }
-
-            //
-            //            if($response->status()!= '201'){
-            //                return response()->json([
-            //                    'status' => false,
-            //                    'message' => 'Email Not Sent',
-            //                ], 401);
-            //            }
-
-            ///EOF Email Service ///
-            $leadAllStatus = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->get();
+        } else {
             return response()->json([
-                'status' => true,
-                'message' => 'Record for this Lead Status',
-                'data' => $leadAllStatus
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
@@ -1089,19 +1130,30 @@ class LeadController extends Controller
 
     public function single_comment(Request $request, $lead_id)
     {
+        // dd($request->all());
         $single_comment = LeadDetails::where('lead_id', $lead_id)->first();
-        $single_comment->lead_remarks = $request->remarks;
-        $save = $single_comment->save();
-        if ($save) {
-            return response()->json([
-                'status' => 200,
-                'message' => 'success'
-            ], 200);
+        if ($request->remarks != "") {
+            $single_comment->lead_remarks = $request->remarks;
+            // $comment_create=$single_comment->update(['lead_remarks',$request->remarks],200);
+            // dd("here");
+            $comment_create = $single_comment->update();
+            // dd($comment_create);
+            if ($comment_create) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'success'
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 424,
+                    'message' => 'failed'
+                ], 424);
+            }
         } else {
             return response()->json([
                 'status' => 424,
                 'message' => 'failed'
-            ]);
+            ], 424);
         }
     }
 
@@ -1116,7 +1168,6 @@ class LeadController extends Controller
         if ($request->comments !== "") {
             $multiComment->comments = $request->comments;
             $multiComment->lead_id = $lead_id;
-            // dd(json_encode($multiComment));
             $save = $multiComment->save();
             $comments = LeadMultiComment::where('lead_id', $lead_id)->get();
             if ($save) {
@@ -1177,70 +1228,6 @@ class LeadController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
-            ], 500);
-        }
-    }
-
-    public function uploadLeadExcel(Request $request)
-    {
-        // dd($request->file);
-        $client_id = $request->client_id;
-        $lead_import = new LeadsImport($client_id);
-        Excel::import($lead_import, $request->file);
-        // dd($lead_import->data);
-        if ($lead_import->flag == 1) {
-            return response()->json([
-                'message' => 'success',
-                'status' => 200
-            ]);
-        } elseif ($lead_import->flag == 0) {
-            return response()->json([
-                'message' => 'please reformat excel sheet columns',
-                'status' => 400
-            ], 400);
-        } elseif ($lead_import->flag == 3) {
-            return response()->json([
-                'message' => 'Data already exists',
-                'status' => 403
-            ], 403);
-        }
-    }
-
-    public function sales_assign_to_lead(Request $request)
-    {
-        // dd($request->all());
-        $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->where('client_id', $request->client_id)->get();
-        // dd(json_encode($lead_id));
-        // $data = array();
-        $sales = explode(',', $request->sales_id);
-        // dd($sales);
-        for ($i = 0; $i < count($sales); $i++) {
-            for ($j = 0; $j < count($lead_id); $j++) {
-                // dd(json_encode($lead_id[$j]->lead_id));
-                // $sales_person = new LeadSalesEmployee();
-                // $sales_person->sales_user_id = $sales[$i];
-                // $sales_person->lead_id = $lead_id[$j]->lead_id;
-                // $save = $sales_person->save();
-
-                $data[] = LeadSalesEmployee::create([
-                    "sales_user_id" => $sales[$i],
-                    "lead_id" => $lead_id[$j]->lead_id,
-                    "active_status" => 1,
-                    "assign_by" => $request->assigned_by
-                ]);
-            }
-        }
-        // dd(json_encode($data));
-        if ($data) {
-            return response()->json([
-                'message' => 'success',
-                'status' => 201,
-                'data' => $data
-            ], 201);
-        } else {
-            return response()->json([
-                'message' => 'failed',
-                'status' => 500
             ], 500);
         }
     }
@@ -1318,8 +1305,7 @@ class LeadController extends Controller
         try {
             $leadDetails = LeadDetails::where('lead_id', '=', $request->lead_id)->first();
             $leadDetails->sales_user_id = $request->sales_user_id;
-            $leadDetails->assigned_sales_history =
-                $leadDetails->save();
+            $leadDetails->save();
             LeadSalesEmployee::updateOrcreate([
                 'sales_user_id' => $request->sales_user_id,
                 'lead_id' => $request->lead_id,
@@ -1339,6 +1325,40 @@ class LeadController extends Controller
         }
     }
 
+    public function unassign_lead(Request $request, $id)
+    {
+        // if($request->bearerToken()){
+        //         $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+        //         $flag_receive = $flag['data'];
+        //         if($flag_receive == 1){
+        $leadDetails = LeadDetails::where('lead_id', $id)->first();
+        $leadDetails->sales_user_id = 0;
+        $update = $leadDetails->save();
+        if ($update) {
+            return response()->json([
+                'message' => 'Lead unassigned',
+                'status' => 201
+            ], 201);
+        } else {
+            return response()->json([
+                'message' => 'failed',
+                'status' => 500
+            ], 500);
+        }
+        //     }else{
+        //         return response()->json([
+        //                 'message' => 'Unauthenticated',
+        //                 'status' => 401
+        //             ], 401);
+        //     }
+        // }else{
+        //     return response()->json([
+        //                 'message' => 'Unauthenticated',
+        //                 'status' => 401
+        //             ], 401);
+        // }
+    }
+
     /**
      * Lead Amount History
      * @param Request $request
@@ -1356,6 +1376,7 @@ class LeadController extends Controller
 
 
         try {
+
             LeadAmountHistory::updateOrcreate([
                 'lead_id' => $request->lead_id,
                 'amount' => $request->amount

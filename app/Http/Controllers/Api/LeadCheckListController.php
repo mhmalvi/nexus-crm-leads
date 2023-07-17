@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class LeadCheckListController extends Controller
 {
@@ -21,41 +22,57 @@ class LeadCheckListController extends Controller
      */
     public function index(Request $request)
     {
-        if (!isset($request->course_id))
-            return response()->json([
-                'status' => false,
-                'message' => 'Course Id not found',
-            ], 401);
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                if (!isset($request->course_id))
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Course Id not found',
+                    ], 401);
 
-        //dd($request->id);
-        try {
-            $leadCheckList = LeadChecklist::select('*');
+                //dd($request->id);
+                try {
+                    $leadCheckList = LeadChecklist::select('*');
 
-            $leadCheckList = $leadCheckList->where('course_id', $request->course_id);
-            if (isset($request->client_id))
-                $leadCheckList = $leadCheckList->where('client_id', $request->client_id);
-            if (isset($request->lead_id))
-                $leadCheckList = $leadCheckList->where('lead_id', $request->lead_id);
-            $leadCheckList = $leadCheckList->where('status', 1);
-            $leadCheckList = $leadCheckList->get();
-            // dd($leadCheckList);
-            if ($leadCheckList == "") {
+                    $leadCheckList = $leadCheckList->where('course_id', $request->course_id);
+                    if (isset($request->client_id))
+                        $leadCheckList = $leadCheckList->where('client_id', $request->client_id);
+                    if (isset($request->lead_id))
+                        $leadCheckList = $leadCheckList->where('lead_id', $request->lead_id);
+                    $leadCheckList = $leadCheckList->where('status', 1);
+                    $leadCheckList = $leadCheckList->get();
+                    // dd($leadCheckList);
+                    if ($leadCheckList == "") {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Lead Checklist Data not found',
+                        ], 401);
+                    }
+
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'All Lead Checklist',
+                        'data'    => $leadCheckList->toArray()
+                    ], 201);
+                } catch (\Throwable $th) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => $th->getMessage()
+                    ], 500);
+                }
+            } else {
                 return response()->json([
-                    'status' => false,
-                    'message' => 'Lead Checklist Data not found',
+                    'message' => 'Unauthenticated',
+                    'status' => 401
                 ], 401);
             }
-
+        } else {
             return response()->json([
-                'status' => true,
-                'message' => 'All Lead Checklist',
-                'data'    => $leadCheckList->toArray()
-            ], 201);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
@@ -66,32 +83,54 @@ class LeadCheckListController extends Controller
      */
     public function create(Request $request)
     {
-        if (!isset($request->user_id) || !isset($request->client_id) || !isset($request->course_id))
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                if (!isset($request->user_id) || !isset($request->client_id) || !isset($request->course_id))
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'User Id, Client Id and Course id required',
+                    ], 401);
+
+                try {
+
+                    $data = LeadChecklist::updateOrcreate([
+                        'client_id' => $request->client_id,
+                        'user_id' => $request->user_id,
+                        'course_id' => $request->course_id,
+                        'title' => isset($request->title) ? $request->title : ''
+                    ])->toArray();
+                    if ($data) {
+                        return response()->json([
+                            'status' => 201,
+                            'message' => 'Checklist inserted',
+                            'data'  => $data
+                        ], 201);
+                    } else {
+                        return response()->json([
+                            'status' => 500,
+                            'message' => 'Failed'
+                        ], 500);
+                    }
+                } catch (\Throwable $th) {
+
+                    return response()->json([
+                        'status' => false,
+                        'message' => $th->getMessage()
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
+        } else {
             return response()->json([
-                'status' => false,
-                'message' => 'User Id, Client Id and Course id required',
+                'message' => 'Unauthenticated',
+                'status' => 401
             ], 401);
-
-        try {
-
-            $data = LeadChecklist::updateOrcreate([
-                'client_id' => $request->client_id,
-                'user_id' => $request->user_id,
-                'course_id' => $request->course_id,
-                'title' => isset($request->title) ? $request->title : ''
-            ])->toArray();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Payment Setting Created Successfully',
-                'data'  => $data
-            ], 201);
-        } catch (\Throwable $th) {
-
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
         }
     }
 
@@ -141,33 +180,56 @@ class LeadCheckListController extends Controller
      */
     public function delete(Request $request)
     {
-        if (!isset($request->id))
-            return response()->json([
-                'status' => false,
-                'message' => 'Id not found',
-            ], 401);
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                if (!isset($request->id))
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Id not found',
+                    ], 401);
 
-        //dd($request->id);
-        try {
-            $leadCheckList = LeadChecklist::find($request->id);
-            if ($leadCheckList == "") {
+                //dd($request->id);
+                try {
+                    $leadCheckList = LeadChecklist::find($request->id);
+                    if ($leadCheckList == "") {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Lead Checklist Data not found',
+                        ], 401);
+                    }
+
+                    $leadCheckList->status = 0;
+                    $delete = $leadCheckList->save();
+                    if ($delete) {
+                        return response()->json([
+                            'status' => 201,
+                            'message' => 'Lead Checklist Delete Successfully',
+                        ], 201);
+                    } else {
+                        return response()->json([
+                            'status' => 500,
+                            'message' => 'Failed',
+                        ], 500);
+                    }
+                } catch (\Throwable $th) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => $th->getMessage()
+                    ], 500);
+                }
+            } else {
                 return response()->json([
-                    'status' => false,
-                    'message' => 'Lead Checklist Data not found',
+                    'message' => 'Unauthenticated',
+                    'status' => 401
                 ], 401);
             }
-
-            $leadCheckList->status = 0;
-            $leadCheckList->save();
+        } else {
             return response()->json([
-                'status' => true,
-                'message' => 'Lead Checklist Delete Successfully',
-            ], 201);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
@@ -246,6 +308,7 @@ class LeadCheckListController extends Controller
                     //                    if($data!=""){
                     //                       dd($data);
                     //                    }
+                    $array['id'] = isset($data->id) ? $data->id : "null";
                     $array['checklist_id'] = $val['id'];
                     $array['title'] = $val['title'];
                     $array['document_id'] = isset($data->document_id) ? $data->document_id : '';
@@ -279,22 +342,24 @@ class LeadCheckListController extends Controller
         //            'message' => 'Document Id and Student Id not found',
         //            //'data' =>json_encode($request)
         //        ], 401);
-        // dd($request->student_id);
-        if (!isset($request->document_id) || !isset($request->student_id))
+
+
+        // if(!isset($request->document_id) || !isset($request->student_id)){
+        if (!isset($request->document_id)) {
             return response()->json([
                 'status' => false,
-                'code' => 401,
-                'message' => 'Document Id and Student Id not found',
+                'message' => 'Document Id and Student Id not found' . $request->document_id . $request->student_id,
             ], 401);
+        }
 
         //dd($request->document_id);
         try {
-            $leadCheckList = LeadStudentDocuments::where('document_id', $request->document_id)->where('student_id', $request->student_id)->first();
+            // $leadCheckList = LeadStudentDocuments::where('document_id',$request->document_id)->where('student_id', $request->student_id)->first();
+            $leadCheckList = LeadStudentDocuments::where('id', $request->document_id)->first();
             //dd($leadCheckList);
             if ($leadCheckList == "") {
                 return response()->json([
                     'status' => false,
-                    'code' => 401,
                     'message' => 'Student Documents not found',
                 ], 401);
             }
@@ -303,13 +368,11 @@ class LeadCheckListController extends Controller
             $leadCheckList->save();
             return response()->json([
                 'status' => true,
-                'code' => 204,
                 'message' => 'Student Documents remove Successfully',
-            ], 204);
+            ], 201);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'code' => 500,
                 'message' => $th->getMessage()
             ], 500);
         }
@@ -349,24 +412,36 @@ class LeadCheckListController extends Controller
     }
 
     // get single course information
-    public function courseInfo($id){
-        if(CoursesInfo::where('id', $id)->first()){
-            return response()->json(CoursesInfo::findOrFail($id));            
-        }else{
+    public function courseInfo($id)
+    {
+        if (CoursesInfo::where('id', $id)->first()) {
+            return response()->json(CoursesInfo::findOrFail($id));
+        } else {
             return response()->json(['message' => 'Course not found!'], 404);
         }
     }
 
     // update course info by id
-    public function updateCourse(Request $request, $id){
-        if(CoursesInfo::where('id', $id)->first()){
-            $findCourse = CoursesInfo::findOrFail($id);
-            $findCourse->course_title = $request->title;            
-            // $findCourse->course_description = $request->description; 
-            $findCourse->save();
-            return response()->json(['message'=> 'Course updated successfully !'], 200);           
-        }else{
-            return response()->json(['message' => 'Course not found!'], 404);
+    public function updateCourse(Request $request, $id)
+    {
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                if (CoursesInfo::where('id', $id)->first()) {
+                    $findCourse = CoursesInfo::findOrFail($id);
+                    $findCourse->course_title = $request->title;
+                    // $findCourse->course_description = $request->description; 
+                    $findCourse->save();
+                    return response()->json(['message' => 'Course updated successfully !', 'status' => 201], 201);
+                } else {
+                    return response()->json(['message' => 'Course not found!'], 404);
+                }
+            } else {
+                return response()->json(['message' => 'Unauthenticated!', 'status' => 401], 401);
+            }
+        } else {
+            return response()->json(['message' => 'Unauthenticated!', 'status' => 401], 401);
         }
     }
 }
