@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\ChecklistMail;
 use App\Models\MailTemplate;
 use App\Models\Checklist;
+use Response;
 use Illuminate\Support\Facades\Mail;
 
 class ChecklistMailController extends Controller
@@ -14,9 +15,15 @@ class ChecklistMailController extends Controller
     public function save_checklist(Request $request)
     {       //////////// insert checklist to database //////////////
         // dd(json_encode($request->checklist_file));
-        $request->validate([
-            'checklist_file' => 'required|mimes:pdf'
-        ]);
+        // $request->validate([
+        //     'checklist_file' => 'required|mimes:pdf'
+        // ]);
+        // $request->validate([
+        //     'checklist_file'=> 'required|mimetypes:application/pdf'
+        // ]);
+        $rules  = [
+            "checklist_file" => "required|mimetypes:application/pdf|max:10000"
+        ];
         $checklists = new Checklist();
         if ($request->checklist_file) {
             $data = array();
@@ -54,10 +61,19 @@ class ChecklistMailController extends Controller
         }
     }
 
+    public function pdf_viewer(Request $request, $id)
+    {
+        $file = Checklist::find($id);
+        // dd($file->file_path);
+        return Response::make(file_get_contents('public/' . $file->file_path), 200, [
+            'content-type' => 'application/pdf',
+        ]);
+    }
+
     public function fetch_checklist(Request $request, $id)
     {
         // dd($id);
-        $checklists = Checklist::where('company_id', $id)->get();
+        $checklists = Checklist::where('company_id', $id)->orderBy('id', 'desc')->get();
         if ($checklists) {
             return response()->json([
                 'message' => 'success',
@@ -169,18 +185,16 @@ class ChecklistMailController extends Controller
 
     public function leadMail(Request $request)
     {
-        // dd("fghbfg");
+        // dd(json_decode($request->checklist));
         $template = $request->template;
+        $files = array();
         $subject = $request->mail_subject;
         if ($request->checklist) {
-
-            $fileName = time() . '.' . $request->checklist->getClientOriginalExtension();
-            // $request->checklist->move(public_path('assets/checklist_pdf'), $fileName);
-            // dd($fileName);
-            $file_path = "assets/checklist_pdf/" . $fileName;
+            $files = json_decode($request->checklist);
             if ($template) {
 
-                Mail::to($request->student_email)->cc($request->sender)->bcc($request->sender)->queue(new ChecklistMail($file_path, $template, $subject));
+                Mail::to($request->student_email)->cc($request->sender)->bcc($request->sender)->queue(new ChecklistMail($files, $template, $subject));
+                // dd("hello");
                 return response()->json([
                     'message' => 'Mail sent',
                     'status' => 200

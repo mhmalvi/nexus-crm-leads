@@ -47,6 +47,7 @@ Route::delete('/lead/checklist/{document_id}/delete/documents', [\App\Http\Contr
 Route::put('/lead/checklist/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'update']);
 Route::post('/lead/checklist/delete', [\App\Http\Controllers\Api\LeadCheckListController::class, 'delete']);
 
+Route::get('/checklist_id={id}/view-pdf-content', [\App\Http\Controllers\Api\ChecklistMailController::class, 'pdf_viewer']);
 Route::get('/lead/courses', [\App\Http\Controllers\Api\LeadCheckListController::class, 'getCoursesList']);
 Route::get('/lead/{id}/course', [\App\Http\Controllers\Api\LeadCheckListController::class, 'courseInfo']);
 Route::post('/lead/{id}/course/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'updateCourse']);
