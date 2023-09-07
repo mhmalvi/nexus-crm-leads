@@ -102,6 +102,53 @@ class LeadController extends Controller
         }
     }
 
+    /////////////////////////// update course details from accountant ////////////////////
+    public function update_course_details_from_accountant(Request $request, $course_id)
+    {
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $course_exist = CoursesInfo::find($course_id);
+                if ($course_exist->checklist_path != null && $request->checklist) {
+                    unlink(public_path($course_exist->checklist_path));
+                }
+                if (isset($request->checklist)) {
+                    $fileName = time() . '.' . $request->checklist->getClientOriginalExtension();
+                    $request->checklist->move(public_path('assets/course_checklist'), $fileName);
+                    $file_path = "assets/course_checklist/" . $fileName;
+                }
+                $course = CoursesInfo::where('id', $course_id)->update([
+                    'course_code' => $request->course_code,
+                    'course_title' => $request->course_title,
+                    'course_description' => $request->course_description,
+                    'checklist_name' => $request->checklist ? $request->checklist->getClientOriginalName() : $course_exist->checklist_name,
+                    'checklist_path' => isset($file_path) ? $file_path : $course_exist->checklist_path
+                ]);
+                if ($course == 1) {
+                    return response()->json([
+                        'message'    => 'Course updated'
+                    ]);
+                } else {
+                    return response()->json([
+                        'message'    => 'Course not found',
+                        'status' => 404
+                    ], 404);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
+        }
+    }
+
     public function leadAssign(Request $request)
     {
 
