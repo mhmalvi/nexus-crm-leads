@@ -152,19 +152,35 @@ class LeadController extends Controller
     /////////////////// delete course by accountant //////////////
     public function destroy_course_from_accountant(Request $request, $course_id)
     {
-        $course = CoursesInfo::find($course_id);
-        if ($course) {
-            if ($course->checklist_path != null) {
-                unlink(public_path($course->checklist_path));
-            }
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $course = CoursesInfo::find($course_id);
+                if ($course) {
+                    if ($course->checklist_path != null) {
+                        unlink(public_path($course->checklist_path));
+                    }
 
-            $response = $course->delete();
-            if ($response) {
+                    $response = $course->delete();
+                    if ($response) {
+                        return response()->json([
+                            'message'   => 'Deleted',
+                            'status' => 200
+                        ], 200);
+                    }
+                }
+            } else {
                 return response()->json([
-                    'message'   => 'Deleted',
-                    'status' => 200
-                ], 200);
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
             }
+        } else {
+            return response()->json([
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
