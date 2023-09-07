@@ -67,6 +67,25 @@ class LeadController extends Controller
         }
     }
 
+    ////////////////edit course from accountant //////////////////
+    public function get_course_details_in_accountant(Request $request, $course_id)
+    {
+        // dd("helllo");
+        $course = CoursesInfo::find($course_id);
+        if ($course) {
+            return response()->json([
+                'message'    => 'success',
+                'status' => 200,
+                'data' => $course
+            ], 200);
+        } else {
+            return response()->json([
+                'message'    => 'failed',
+                'status' => 500
+            ], 500);
+        }
+    }
+
     public function leadAssign(Request $request)
     {
 
