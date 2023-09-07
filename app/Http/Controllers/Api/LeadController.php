@@ -149,6 +149,25 @@ class LeadController extends Controller
         }
     }
 
+    /////////////////// delete course by accountant //////////////
+    public function destroy_course_from_accountant(Request $request, $course_id)
+    {
+        $course = CoursesInfo::find($course_id);
+        if ($course) {
+            if ($course->checklist_path != null) {
+                unlink(public_path($course->checklist_path));
+            }
+
+            $response = $course->delete();
+            if ($response) {
+                return response()->json([
+                    'message'   => 'Deleted',
+                    'status' => 200
+                ], 200);
+            }
+        }
+    }
+
     public function leadAssign(Request $request)
     {
 
