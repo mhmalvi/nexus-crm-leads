@@ -71,18 +71,34 @@ class LeadController extends Controller
     public function get_course_details_in_accountant(Request $request, $course_id)
     {
         // dd("helllo");
-        $course = CoursesInfo::find($course_id);
-        if ($course) {
-            return response()->json([
-                'message'    => 'success',
-                'status' => 200,
-                'data' => $course
-            ], 200);
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $course = CoursesInfo::find($course_id);
+                if ($course) {
+                    return response()->json([
+                        'message'    => 'success',
+                        'status' => 200,
+                        'data' => $course
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'message'    => 'failed',
+                        'status' => 500
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
         } else {
             return response()->json([
-                'message'    => 'failed',
-                'status' => 500
-            ], 500);
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
