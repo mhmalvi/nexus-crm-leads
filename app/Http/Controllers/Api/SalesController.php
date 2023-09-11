@@ -19,8 +19,10 @@ class SalesController extends Controller
             $auth_url = env('COMPANY_SERVICE_URL', 'https://crmcompany.quadque.digital/api/');
             // dd($auth_url);
             $sales_from_company_service = [];
+            // $id = 5;
             $sales = Http::get($auth_url . 'company/sales/' . $id);
             $sales_name = Http::get('https://crmuser.quadque.digital/api/user/sales-list');
+            // dd(json_decode($sales));
             // $sales_from_company_service = json_decode($sales);
             // dd($sales->json());
             $sales_from_company_service = $sales->object();
@@ -196,6 +198,39 @@ class SalesController extends Controller
         } else {
             return response()->json([
                 'message' => 'failed',
+                'status' => 401
+            ], 401);
+        }
+    }
+
+    public function lead_list_in_sales(Request $request, $sales_id, $company_id)
+    {
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $lead_list = LeadDetails::where('client_id', $company_id)->where('sales_user_id', $sales_id)->get();
+                if ($lead_list) {
+                    return response()->json([
+                        'message'    => 'success',
+                        'status' => 200,
+                        'data' => $lead_list
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'message'    => 'Not found',
+                        'status' => 404
+                    ], 404);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Unauthenticated',
                 'status' => 401
             ], 401);
         }
