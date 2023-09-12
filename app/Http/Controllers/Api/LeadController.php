@@ -7,6 +7,8 @@ use App\Models\CampaignDetails;
 use App\Models\CoursesInfo;
 use App\Models\LeadAmountHistory;
 use App\Mail\NewLeadMail;
+use App\Mail\StatusChange;
+use App\Mail\Response;
 use App\Models\LeadCallHistory;
 use App\Models\LeadDetails;
 use App\Imports\LeadsImport;
@@ -67,7 +69,7 @@ class LeadController extends Controller
         }
     }
 
-    ////////////////edit course from accountant //////////////////
+    /////////////////////////// update course details from accountant ////////////////////
     public function get_course_details_in_accountant(Request $request, $course_id)
     {
         // dd("helllo");
@@ -102,38 +104,27 @@ class LeadController extends Controller
         }
     }
 
-    /////////////////////////// update course details from accountant ////////////////////
-    public function update_course_details_from_accountant(Request $request, $course_id)
+    /////////////////// delete course by accountant //////////////
+    public function destroy_course_from_accountant(Request $request, $course_id)
     {
         if ($request->bearerToken()) {
             $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
-                $course_exist = CoursesInfo::find($course_id);
-                if ($course_exist->checklist_path != null && $request->checklist) {
-                    unlink(public_path($course_exist->checklist_path));
-                }
-                if (isset($request->checklist)) {
-                    $fileName = time() . '.' . $request->checklist->getClientOriginalExtension();
-                    $request->checklist->move(public_path('assets/course_checklist'), $fileName);
-                    $file_path = "assets/course_checklist/" . $fileName;
-                }
-                $course = CoursesInfo::where('id', $course_id)->update([
-                    'course_code' => $request->course_code,
-                    'course_title' => $request->course_title,
-                    'course_description' => $request->course_description,
-                    'checklist_name' => $request->checklist ? $request->checklist->getClientOriginalName() : $course_exist->checklist_name,
-                    'checklist_path' => isset($file_path) ? $file_path : $course_exist->checklist_path
-                ]);
-                if ($course == 1) {
-                    return response()->json([
-                        'message'    => 'Course updated'
-                    ]);
-                } else {
-                    return response()->json([
-                        'message'    => 'Course not found',
-                        'status' => 404
-                    ], 404);
+                $course = CoursesInfo::find($course_id);
+                // dd($course->checklist_path);
+                if ($course) {
+                    if ($course->checklist_path != null) {
+                        unlink(public_path($course->checklist_path));
+                    }
+
+                    $response = $course->delete();
+                    if ($response) {
+                        return response()->json([
+                            'message'   => 'Deleted',
+                            'status' => 200
+                        ], 200);
+                    }
                 }
             } else {
                 return response()->json([
@@ -149,26 +140,41 @@ class LeadController extends Controller
         }
     }
 
-    /////////////////// delete course by accountant //////////////
-    public function destroy_course_from_accountant(Request $request, $course_id)
+    public function update_course_details_from_accountant(Request $request, $course_id)
     {
         if ($request->bearerToken()) {
             $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
-                $course = CoursesInfo::find($course_id);
-                if ($course) {
-                    if ($course->checklist_path != null) {
-                        unlink(public_path($course->checklist_path));
-                    }
+                // dd($request->checklist);
+                $course_exist = CoursesInfo::find($course_id);
+                if ($course_exist->checklist_path !== null && isset($request->checklist)) {
+                    unlink(public_path($course_exist->checklist_path));
+                }
 
-                    $response = $course->delete();
-                    if ($response) {
-                        return response()->json([
-                            'message'   => 'Deleted',
-                            'status' => 200
-                        ], 200);
-                    }
+
+                if (isset($request->checklist)) {
+                    $fileName = time() . '.' . $request->checklist->getClientOriginalExtension();
+                    $request->checklist->move(public_path('assets/course_checklist'), $fileName);
+                    $file_path = "assets/course_checklist/" . $fileName;
+                }
+                $course = CoursesInfo::where('id', $course_id)->update([
+                    'course_code' => $request->course_code,
+                    'course_title' => $request->course_title,
+                    'course_description' => $request->course_description,
+                    'checklist_name' => isset($request->checklist) ? $request->checklist->getClientOriginalName() : $course_exist->checklist_name,
+                    'checklist_path' => isset($file_path) ? $file_path : $course_exist->checklist_path
+                ]);
+                if ($course == 1) {
+                    return response()->json([
+                        'message'    => 'Course updated',
+                        'status' => 201
+                    ], 201);
+                } else {
+                    return response()->json([
+                        'message'    => 'Course not found',
+                        'status' => 404
+                    ], 404);
                 }
             } else {
                 return response()->json([
@@ -215,6 +221,51 @@ class LeadController extends Controller
                 'status' => false,
                 'message' => $th->getMessage()
             ], 500);
+        }
+    }
+
+    public function lead_status_logs(Request $request, $lead_id)
+    {
+        if ($request->bearerToken()) {
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $lead_status = LeadStatus::where('lead_id', $lead_id)->get();
+                $lead_data = [];
+                for ($i = 0; $i < count($lead_status); $i++) {
+                    if ($lead_status[$i]->updated_by != null) {
+                        $name = Http::get('https://crmuser.quadque.digital/api/get-user-name', ['user_id' => $lead_status[$i]->updated_by]);
+                        if ($lead_status[$i]->updated_by == $name['user_id']) {
+                            $lead_status[$i]->selected_by = $name['full_name'];
+                        }
+                    } else {
+                        $lead_status[$i]->selected_by = null;
+                    }
+                }
+
+                if ($lead_status) {
+                    return response()->json([
+                        'message'    => 'success',
+                        'status' => 200,
+                        'data' => $lead_status
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'message'    => 'Failed',
+                        'status' => 500
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
     }
 
@@ -280,11 +331,11 @@ class LeadController extends Controller
 
                         $course_id = $save->id;
                         $user_id = $request->user_id;
-                        foreach (json_decode($request->file_names) as $names) {
-                            $name = $names->value;
-                            // dd($names->value);
-                            Http::post('https://crmbtob.quadque.digital/accountant/file-name-and-variable', ['course_id' => $course_id, 'name' => $name, 'user_id' => $user_id]);
-                        }
+                        // foreach (json_decode($request->file_names) as $names) {
+                        //     $name = $names->value;
+                        //     // dd($names->value);
+                        //     Http::post('https://crmbtob.quadque.digital/accountant/file-name-and-variable', ['course_id' => $course_id, 'name' => $name, 'user_id' => $user_id]);
+                        // }
 
                         if ($save) {
                             return response()->json([
@@ -545,7 +596,7 @@ class LeadController extends Controller
                         'courses_info.course_title as course_title',
                         'courses_info.course_description as course_description',
                         'courses_info.status as status'
-                    )
+                    )->where('lead_details.sales_user_id', $request->user_id)
 
                     ->leftJoin('courses_info', function ($join) {
                         $join->on('lead_details.course_id', '=', 'courses_info.id');
@@ -557,7 +608,7 @@ class LeadController extends Controller
                     $data = $data->where('sales_user_id', $request->user_id)->where('lead_details.student_id', '=', $request->student_id)->orderBy('lead_details.lead_apply_date', 'desc');
 
                 $paginate_data = $data->get();
-                $lead_id = LeadDetails::select('lead_id')->where('client_id', $request->client_id)->get();
+                $lead_id = LeadDetails::select('lead_id')->get();
                 // dd(json_encode($lead_id[1]->lead_id));
                 for ($i = 0; $i < count($lead_id); $i++) {
                     if (isset($lead_id[$i])) {
@@ -723,12 +774,14 @@ class LeadController extends Controller
             $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
+                // dd($request->client_id);
                 $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->where('client_id', $request->client_id)->get();
                 $sales = explode(',', $request->sales_id);
                 // dd($sales);
+                dd(json_decode($lead_id));
                 for ($i = 0; $i < count($sales); $i++) {
                     for ($j = 0; $j < count($lead_id); $j++) {
-                        $data[] = LeadSalesEmployee::create([
+                        $data = LeadSalesEmployee::create([
                             "sales_user_id" => $sales[$i],
                             "lead_id" => $lead_id[$j]->lead_id,
                             "active_status" => 1,
@@ -736,6 +789,7 @@ class LeadController extends Controller
                         ]);
                     }
                 }
+                dd($data);
                 if ($data) {
                     return response()->json([
                         'message' => 'success',
@@ -1113,7 +1167,12 @@ class LeadController extends Controller
                     'name' => $name,
                     'student_id' => $student_id
                 ];
+                $college = Http::post('https://crmcompany.quadque.digital/api/get-client-name', ['client_id' => $request->client_id]);
+                $nameData = json_decode($college->body());
+                $college_name = $nameData->data->name;
+
                 if ($save) {
+                    Mail::to($lead_email)->queue(new Response($request->lead_status, $college_name, $request->course, $name, $request->response));
                     // HTTP::post('https://crm-mailer.onrender.com/api/send-mail', [
                     //     'lead_id' => $request->lead_id,
                     //     'lead_status' => $request->lead_status,
@@ -1201,7 +1260,7 @@ class LeadController extends Controller
 
     public function leadStatusUpdate(Request $request)
     {
-        // dd("gfdgfdgb");
+        // dd($request->all());
         if (!isset($request->lead_id) || !isset($request->sales_user_id)) {
             return response()->json([
                 'status' => false,
@@ -1276,6 +1335,17 @@ class LeadController extends Controller
                         $lead_info->save();
                     }
                 }
+                // dd($leadStatus);
+                $college = Http::post('https://crmcompany.quadque.digital/api/get-client-name', ['client_id' => $request->client_id]);
+                $nameData = json_decode($college->body());
+                $college_name = $nameData->data->name;
+                // dd($request->response);
+                // if($request->response==1 || $request->response==0){
+                //     Mail::to($lead_email)->queue(new Response($leadStatus,$college_name,$request->course,$name,$request->response));
+                // }else{
+                Mail::to($lead_email)->queue(new StatusChange($leadStatus, $college_name, $request->course, $name));
+                // }
+
 
                 // return response()->json([
                 //         'message' => 'success',
@@ -1337,48 +1407,50 @@ class LeadController extends Controller
             }
             $array = [5, 6];
             //////////Email Service/////////
-            if (in_array($request->lead_status, $array)) {
-                $userServiceAPI = env('EMAIL_SERVICE_API', '');
-                //dd($userServiceAPI);
-                $leadDetails = DB::table('lead_details')
-                    ->select(
-                        'lead_details.id as lid',
-                        'lead_details.lead_id  as lead_id',
-                        'lead_details.student_id as student_id',
-                        'lead_details.full_name as full_name',
-                        'lead_details.phone_number as phone_number',
-                        'lead_details.student_email as student_email',
-                        'lead_details.client_id as client_id',
-                        'lead_details.campaign_id as campaign_id',
-                        'lead_details.sales_user_id as sales_user_id',
-                        'lead_details.document_certificate_id as document_certificate_id',
-                        'lead_details.course_id as course_id',
-                        'lead_details.work_location as work_location',
-                        'lead_details.lead_from as lead_from',
-                        'lead_details.form_data as form_data',
-                        'lead_details.star_review as star_review',
-                        'lead_details.lead_apply_date as lead_apply_date',
-                        'lead_details.lead_remarks as lead_remarks',
-                        'lead_details.lead_details_status as lead_details_status',
-                        'lead_details.created_at as created_at',
-                        'lead_details.updated_at as updated_at',
-                        'courses_info.id as cid',
-                        'courses_info.course_code as course_code',
-                        'courses_info.course_title as course_title',
-                        'courses_info.course_description as course_description',
-                        'courses_info.status as status'
-                    )
-                    ->leftJoin('courses_info', function ($join) {
-                        $join->on('lead_details.course_id', '=', 'courses_info.id');
-                    })->where('lead_details.lead_id', '=', $leadId)
-                    ->first();
+            // if (in_array($request->lead_status, $array)) {
+            //     $userServiceAPI = env('EMAIL_SERVICE_API', '');
+            //     dd($userServiceAPI);
+            //     //dd($userServiceAPI);
+            //     $leadDetails = DB::table('lead_details')
+            //         ->select(
+            //             'lead_details.id as lid',
+            //             'lead_details.lead_id  as lead_id',
+            //             'lead_details.student_id as student_id',
+            //             'lead_details.full_name as full_name',
+            //             'lead_details.phone_number as phone_number',
+            //             'lead_details.student_email as student_email',
+            //             'lead_details.client_id as client_id',
+            //             'lead_details.campaign_id as campaign_id',
+            //             'lead_details.sales_user_id as sales_user_id',
+            //             'lead_details.document_certificate_id as document_certificate_id',
+            //             'lead_details.course_id as course_id',
+            //             'lead_details.work_location as work_location',
+            //             'lead_details.lead_from as lead_from',
+            //             'lead_details.form_data as form_data',
+            //             'lead_details.star_review as star_review',
+            //             'lead_details.lead_apply_date as lead_apply_date',
+            //             'lead_details.lead_remarks as lead_remarks',
+            //             'lead_details.lead_details_status as lead_details_status',
+            //             'lead_details.created_at as created_at',
+            //             'lead_details.updated_at as updated_at',
+            //             'courses_info.id as cid',
+            //             'courses_info.course_code as course_code',
+            //             'courses_info.course_title as course_title',
+            //             'courses_info.course_description as course_description',
+            //             'courses_info.status as status'
+            //         )
+            //         ->leftJoin('courses_info', function ($join) {
+            //             $join->on('lead_details.course_id', '=', 'courses_info.id');
+            //         })->where('lead_details.lead_id', '=', $leadId)
+            //         ->first();
+            //         // dd($leadDetails);
 
-                $response = Http::post($userServiceAPI . '/lead-status', [
-                    'data' => json_encode($leadDetails)
-                ]);
+            //     $response = Http::post($userServiceAPI . '/lead-status', [
+            //         'data' => json_encode($leadDetails)
+            //     ]);
 
-                // dd($response->status());
-            }
+            //     // dd($response->status());
+            // }
 
             //
             //            if($response->status()!= '201'){
@@ -1391,7 +1463,7 @@ class LeadController extends Controller
             ///EOF Email Service ///
             $leadAllStatus = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->get();
             return response()->json([
-                'status' => true,
+                'status' => 201,
                 'message' => 'Record for this Lead Status',
                 'data' => $leadAllStatus
             ], 200);
@@ -1424,6 +1496,7 @@ class LeadController extends Controller
         $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents-details/' . $request->client_id);
         // dd(json_encode($logo_details_of_logo));
         $logo_response_of_logo = json_decode($logo_details_of_logo->body());
+        // dd($logo_response_of_logo);
         $client_name = $logo_response_of_logo->client;
 
         if ($logo_response_of_logo->status !== 404) {
@@ -1436,6 +1509,7 @@ class LeadController extends Controller
                     'status' => 1
                 ]);
                 if (!$existing_lead) {
+                    // dd($request->all());
                     $save = LeadDetails::create([
                         'lead_id' => $lead_id,
                         'student_id' => 0,
@@ -1454,10 +1528,11 @@ class LeadController extends Controller
                         'lead_apply_date' => Carbon::now(),
                         'lead_details_status' => 1
                     ]);
-
+                    // dd($course);
+                    // dd($course->course_title);
                     if ($save) {
                         // HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name'=>$name,'lead_status'=>$lead_status,'logo'=>$logo, 'client'=>$client_name,'course'=>$courseId->course_title]);
-                        Mail::to($request->student_email)->queue(new NewLeadMail($request->full_name, $lead_status, $logo, $client_name, $course->course_title, $client_name));
+                        Mail::to($request->student_email)->queue(new NewLeadMail($request->full_name, $logo, $course, $client_name));
                         return response()->json([
                             'message' => 'success',
                             'status' => 201,
@@ -1473,6 +1548,7 @@ class LeadController extends Controller
                     ], 403);
                 }
             } else {
+                // dd($request->all());
                 if (!$existing_lead) {
                     $course_id = CoursesInfo::where('course_code', $course_code)->first();
                     $save = LeadDetails::create([
@@ -1493,9 +1569,11 @@ class LeadController extends Controller
                         'lead_apply_date' => Carbon::now(),
                         'lead_details_status' => 1
                     ]);
+                    // dd($course);
                     if ($save) {
                         // HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name'=>$name,'lead_status'=>$lead_status,'logo'=>$logo, 'client'=>$client_name,'course'=>$course_id->course_title]);
-                        Mail::to($request->student_email)->queue(new NewLeadMail($request->full_name, $lead_status, $logo, $client_name, $course->course_title, $client_name));
+                        // Mail::to($request->student_email)->queue(new NewLeadMail($request->full_name, $lead_status, $logo, $client_name, $course->course_title, $client_name));
+                        Mail::to($request->student_email)->queue(new NewLeadMail($request->full_name, $logo, $course, $client_name));
                         return response()->json([
                             'message' => 'success',
                             'status' => 201,
