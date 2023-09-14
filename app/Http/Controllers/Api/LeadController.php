@@ -68,28 +68,27 @@ class LeadController extends Controller
             ], 401);
         }
     }
-
+    
     /////////////////////////// update course details from accountant ////////////////////
-    public function get_course_details_in_accountant(Request $request, $course_id)
-    {
+    public function get_course_details_in_accountant(Request $request,$course_id){
         // dd("helllo");
         if ($request->bearerToken()) {
             $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
-                $course = CoursesInfo::find($course_id);
-                if ($course) {
-                    return response()->json([
-                        'message'    => 'success',
-                        'status' => 200,
-                        'data' => $course
-                    ], 200);
-                } else {
-                    return response()->json([
-                        'message'    => 'failed',
-                        'status' => 500
-                    ], 500);
-                }
+        $course = CoursesInfo::find($course_id);
+        if($course){
+            return response()->json([
+                'message'    =>'success',
+                'status'=>200,
+                'data'=>$course
+            ],200);
+        }else{
+            return response()->json([
+                'message'    =>'failed',
+                'status'=>500
+            ],500);
+        }
             } else {
                 return response()->json([
                     'message' => 'Unauthenticated',
@@ -103,29 +102,28 @@ class LeadController extends Controller
             ], 401);
         }
     }
-
+    
     /////////////////// delete course by accountant //////////////
-    public function destroy_course_from_accountant(Request $request, $course_id)
-    {
+    public function destroy_course_from_accountant(Request $request,$course_id){
         if ($request->bearerToken()) {
             $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
-                $course = CoursesInfo::find($course_id);
-                // dd($course->checklist_path);
-                if ($course) {
-                    if ($course->checklist_path != null) {
-                        unlink(public_path($course->checklist_path));
-                    }
-
-                    $response = $course->delete();
-                    if ($response) {
-                        return response()->json([
-                            'message'   => 'Deleted',
-                            'status' => 200
-                        ], 200);
-                    }
-                }
+        $course = CoursesInfo::find($course_id);
+        // dd($course->checklist_path);
+        if($course){
+            if($course->checklist_path!=null){
+                unlink(public_path($course->checklist_path));    
+            }
+            
+            $response = $course->delete();
+            if($response){
+                return response()->json([
+                     'message'   =>'Deleted',
+                     'status'=>200
+                ],200);
+            }
+        }
             } else {
                 return response()->json([
                     'message' => 'Unauthenticated',
@@ -139,42 +137,41 @@ class LeadController extends Controller
             ], 401);
         }
     }
-
-    public function update_course_details_from_accountant(Request $request, $course_id)
-    {
+    
+    public function update_course_details_from_accountant(Request $request,$course_id){
         if ($request->bearerToken()) {
             $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 // dd($request->checklist);
                 $course_exist = CoursesInfo::find($course_id);
-                if ($course_exist->checklist_path !== null && isset($request->checklist)) {
+                if($course_exist->checklist_path!==null && isset($request->checklist)){
                     unlink(public_path($course_exist->checklist_path));
                 }
-
-
-                if (isset($request->checklist)) {
+                
+                
+                if(isset($request->checklist)){
                     $fileName = time() . '.' . $request->checklist->getClientOriginalExtension();
                     $request->checklist->move(public_path('assets/course_checklist'), $fileName);
                     $file_path = "assets/course_checklist/" . $fileName;
                 }
-                $course = CoursesInfo::where('id', $course_id)->update([
-                    'course_code' => $request->course_code,
-                    'course_title' => $request->course_title,
-                    'course_description' => $request->course_description,
-                    'checklist_name' => isset($request->checklist) ? $request->checklist->getClientOriginalName() : $course_exist->checklist_name,
-                    'checklist_path' => isset($file_path) ? $file_path : $course_exist->checklist_path
+                $course = CoursesInfo::where('id',$course_id)->update([
+                    'course_code'=>$request->course_code,
+                    'course_title'=>$request->course_title,
+                    'course_description'=>$request->course_description,
+                    'checklist_name' => isset($request->checklist)?$request->checklist->getClientOriginalName():$course_exist->checklist_name,
+                    'checklist_path' => isset($file_path)?$file_path:$course_exist->checklist_path
                 ]);
-                if ($course == 1) {
+                if($course == 1){
                     return response()->json([
-                        'message'    => 'Course updated',
-                        'status' => 201
-                    ], 201);
-                } else {
+                        'message'    =>'Course updated',
+                        'status'=>201
+                    ],201);
+                }else{
                     return response()->json([
-                        'message'    => 'Course not found',
-                        'status' => 404
-                    ], 404);
+                        'message'    =>'Course not found',
+                        'status'=>404
+                    ],404);
                 }
             } else {
                 return response()->json([
@@ -223,44 +220,43 @@ class LeadController extends Controller
             ], 500);
         }
     }
-
-    public function lead_status_logs(Request $request, $lead_id)
-    {
+    
+    public function lead_status_logs(Request $request,$lead_id){
         if ($request->bearerToken()) {
             $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
-                $lead_status = LeadStatus::where('lead_id', $lead_id)->get();
-                $lead_data = [];
-                for ($i = 0; $i < count($lead_status); $i++) {
-                    if ($lead_status[$i]->updated_by != null) {
-                        $name = Http::get('https://crmuser.quadque.digital/api/get-user-name', ['user_id' => $lead_status[$i]->updated_by]);
-                        if ($lead_status[$i]->updated_by == $name['user_id']) {
-                            $lead_status[$i]->selected_by = $name['full_name'];
-                        }
-                    } else {
-                        $lead_status[$i]->selected_by = null;
+                $lead_status = LeadStatus::where('lead_id',$lead_id)->get();
+                $lead_data=[];
+                for($i=0;$i<count($lead_status);$i++){
+                  if($lead_status[$i]->updated_by!=null){
+                    $name = Http::get('https://crmuser.quadque.digital/api/get-user-name',['user_id'=>$lead_status[$i]->updated_by]);    
+                    if($lead_status[$i]->updated_by == $name['user_id']){
+                        $lead_status[$i]->selected_by = $name['full_name'];
                     }
-                }
-
-                if ($lead_status) {
-                    return response()->json([
-                        'message'    => 'success',
-                        'status' => 200,
-                        'data' => $lead_status
-                    ], 200);
-                } else {
-                    return response()->json([
-                        'message'    => 'Failed',
-                        'status' => 500
-                    ], 500);
-                }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
+                }else{
+                    $lead_status[$i]->selected_by = null;
+                } 
             }
+                
+                if($lead_status){
+                    return response()->json([
+                        'message'    =>'success',
+                        'status'=>200,
+                        'data'=>$lead_status
+                    ],200);
+                }else{
+                    return response()->json([
+                        'message'    =>'Failed',
+                        'status'=>500
+                    ],500);
+                }
+                    } else {
+                        return response()->json([
+                            'message' => 'Unauthenticated',
+                            'status' => 401
+                        ], 401);
+                    }
         } else {
             return response()->json([
                 'message' => 'Unauthenticated',
@@ -596,7 +592,7 @@ class LeadController extends Controller
                         'courses_info.course_title as course_title',
                         'courses_info.course_description as course_description',
                         'courses_info.status as status'
-                    )->where('lead_details.sales_user_id', $request->user_id)
+                    )->where('lead_details.sales_user_id',$request->user_id)
 
                     ->leftJoin('courses_info', function ($join) {
                         $join->on('lead_details.course_id', '=', 'courses_info.id');
@@ -1167,12 +1163,12 @@ class LeadController extends Controller
                     'name' => $name,
                     'student_id' => $student_id
                 ];
-                $college = Http::post('https://crmcompany.quadque.digital/api/get-client-name', ['client_id' => $request->client_id]);
+                $college = Http::post('https://crmcompany.quadque.digital/api/get-client-name',['client_id'=>$request->client_id]);
                 $nameData = json_decode($college->body());
-                $college_name = $nameData->data->name;
-
+                $college_name =$nameData->data->name;
+                
                 if ($save) {
-                    Mail::to($lead_email)->queue(new Response($request->lead_status, $college_name, $request->course, $name, $request->response));
+                    Mail::to($lead_email)->queue(new Response($request->lead_status,$college_name,$request->course,$name,$request->response));
                     // HTTP::post('https://crm-mailer.onrender.com/api/send-mail', [
                     //     'lead_id' => $request->lead_id,
                     //     'lead_status' => $request->lead_status,
@@ -1261,6 +1257,7 @@ class LeadController extends Controller
     public function leadStatusUpdate(Request $request)
     {
         // dd($request->all());
+        // dd($request->all());
         if (!isset($request->lead_id) || !isset($request->sales_user_id)) {
             return response()->json([
                 'status' => false,
@@ -1273,7 +1270,7 @@ class LeadController extends Controller
 
 
 
-        try {
+        // try {
 
             $leadDetails = LeadDetails::where('lead_id', '=', $leadId)->first();
             if ($leadDetails == "") {
@@ -1314,15 +1311,24 @@ class LeadController extends Controller
                 if ($leadAStatus->is_active == 0) {
                     // $leadAStatus->lead_id = $leadId;
                     // $leadAStatus->lead_status = $leadStatus;
+                    
                     $leadAStatus->is_active = 1;
                     $leadAStatus->save();
-                    $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
+                    if($leadAStatus->lead_status ==0 && $leadAStatus->is_active==1){
+                         if ($lead_info) {
+                            $lead_info->lead_details_status = $lead_max_status;
+                            $lead_info->save();
+                        }
+                    }else{
+                        $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
                     // $lead_prev_status = LeadStatus::find($lead_max_status);
 
-                    if ($lead_info) {
-                        $lead_info->lead_details_status = $lead_max_status;
-                        $lead_info->save();
+                        if ($lead_info) {
+                            $lead_info->lead_details_status = $lead_max_status;
+                            $lead_info->save();
+                        }    
                     }
+                    
                 } else if ($leadAStatus->is_active == 1) {
                     // if($leadAStatus-)
                     $leadAStatus->is_active = 0;
@@ -1335,17 +1341,19 @@ class LeadController extends Controller
                         $lead_info->save();
                     }
                 }
-                // dd($leadStatus);
-                $college = Http::post('https://crmcompany.quadque.digital/api/get-client-name', ['client_id' => $request->client_id]);
-                $nameData = json_decode($college->body());
-                $college_name = $nameData->data->name;
-                // dd($request->response);
-                // if($request->response==1 || $request->response==0){
-                //     Mail::to($lead_email)->queue(new Response($leadStatus,$college_name,$request->course,$name,$request->response));
-                // }else{
-                Mail::to($lead_email)->queue(new StatusChange($leadStatus, $college_name, $request->course, $name));
-                // }
-
+                // dd($request->client_id);
+                // if($request->)
+                if($request->$leadStatus!=0){
+                    $college = Http::post('https://crmcompany.quadque.digital/api/get-client-name',['client_id'=>$request->client_id]);
+                    $nameData = json_decode($college->body());
+                    $college_name =$nameData->data->name;
+                    // dd($request->response);
+                    // if($request->response==1 || $request->response==0){
+                    //     Mail::to($lead_email)->queue(new Response($leadStatus,$college_name,$request->course,$name,$request->response));
+                    // }else{
+                        Mail::to($lead_email)->queue(new StatusChange($leadStatus,$college_name,$request->course,$name));
+                    // }
+                }
 
                 // return response()->json([
                 //         'message' => 'success',
@@ -1467,12 +1475,12 @@ class LeadController extends Controller
                 'message' => 'Record for this Lead Status',
                 'data' => $leadAllStatus
             ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
-        }
+        // } catch (\Throwable $th) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => $th->getMessage()
+        //     ], 500);
+        // }
     }
 
     public function create_lead_from_form(Request $request)
@@ -1529,7 +1537,7 @@ class LeadController extends Controller
                         'lead_details_status' => 1
                     ]);
                     // dd($course);
-                    // dd($course->course_title);
+// dd($course->course_title);
                     if ($save) {
                         // HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name'=>$name,'lead_status'=>$lead_status,'logo'=>$logo, 'client'=>$client_name,'course'=>$courseId->course_title]);
                         Mail::to($request->student_email)->queue(new NewLeadMail($request->full_name, $logo, $course, $client_name));
