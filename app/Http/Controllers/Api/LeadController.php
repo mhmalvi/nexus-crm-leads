@@ -68,6 +68,42 @@ class LeadController extends Controller
             ], 401);
         }
     }
+
+    public function leadAddCallHistory(Request $request)
+    {
+
+        if (!isset($request->lead_id) || !isset($request->call_start_time) || !isset($request->call_end_time)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lead id and Call start and end time required'
+            ], 406);
+        }
+
+        $callStartTime = Carbon::parse($request->call_start_time)->toDateTimeString();
+        $callEndTime = Carbon::parse($request->call_end_time)->toDateTimeString();
+        try {
+
+            LeadCallHistory::updateOrcreate([
+                'lead_id' => $request->lead_id,
+                'call_start_time' => $callStartTime,
+                'call_end_time' => $callEndTime,
+                'call_remark' => $request->call_remark
+            ])->toArray();
+
+            $leadCallHistory = LeadCallHistory::where('lead_id', '=', $request->lead_id)->get()->toArray();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lead Call history added successfully',
+                'data'   => $leadCallHistory
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
     
     /////////////////////////// update course details from accountant ////////////////////
     public function get_course_details_in_accountant(Request $request,$course_id){
