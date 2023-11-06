@@ -33,4 +33,9 @@ class LeadDetails extends Model
         'lead_apply_date',
         'lead_details_status'
     ];
+
+    public function count()
+    {
+        return $this->hasOne(Count::class, 'lead_id');
+    }
 }

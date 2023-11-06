@@ -10,4 +10,9 @@ class Count extends Model
     use HasFactory;
 
     protected $guarded = [];
+    protected $table = 'counts';
+    public function lead_details()
+    {
+        return $this->belongsTo(LeadDetails::class);
+    }
 }
