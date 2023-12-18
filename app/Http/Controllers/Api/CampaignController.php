@@ -19,46 +19,46 @@ class CampaignController extends Controller
      */
     public function campaignList(Request $request)
     {
-        // if($request->bearerToken()){
-        //         $userApi = env('USER_SERVICE_API', '');
-        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
-        //         $flag_receive = $flag['data'];
-        //         if($flag_receive == 1){
-        if (!isset($request->client_id)) {
+        if ($request->bearerToken()) {
+            $userApi = env('USER_SERVICE_API', '');
+            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                if (!isset($request->client_id)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Client id required',
+                        'data' => $request->client_id
+                    ], 406);
+                }
+
+                try {
+
+                    $data = DB::table('campaign_details')->where('client_id', '=', $request->client_id)->get();
+
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'All Lead List',
+                        'data' => $data
+                    ], 200);
+                } catch (\Throwable $th) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => $th->getMessage()
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
+        } else {
             return response()->json([
-                'status' => false,
-                'message' => 'Client id required',
-                'data' => $request->client_id
-            ], 406);
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
         }
-
-        try {
-
-            $data = DB::table('campaign_details')->where('client_id', '=', $request->client_id)->get();
-
-            return response()->json([
-                'status' => 200,
-                'message' => 'All Lead List',
-                'data' => $data
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
-        }
-        //     }else{
-        //         return response()->json([
-        //                 'message' => 'Unauthenticated',
-        //                 'status' => 401
-        //             ], 401);
-        //     }
-        // }else{
-        //     return response()->json([
-        //                 'message' => 'Unauthenticated',
-        //                 'status' => 401
-        //             ], 401);
-        // }
     }
 
 
