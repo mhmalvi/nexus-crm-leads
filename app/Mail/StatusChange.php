@@ -16,12 +16,12 @@ class StatusChange extends Mailable
      *
      * @return void
      */
-    public $status;
-    public $college;
-    public $course;
-    public $name;
+     public $status;
+     public $college;
+     public $course;
+     public $name;
     //  public $response;
-    public function __construct($status, $college, $course, $name)
+    public function __construct($status,$college,$course,$name)
     {
         $this->status = $status;
         $this->college = $college;
@@ -36,22 +36,27 @@ class StatusChange extends Mailable
      */
     public function build()
     {
-        if ($this->status == 2) {
+        if($this->status==2){
             return $this
                 ->subject($this->college . "-" . $this->course)
                 ->markdown('mails.skilled');
-        } else if ($this->status == 4) {
-            return $this->with(['name' => $this->name])
+        }else if($this->status==4){
+            return $this->with(['name'=>$this->name])
                 ->subject($this->college . "-" . $this->course)
                 ->markdown('mails.paid');
-        } else if ($this->status == 5) {
-            return $this->with(['name' => $this->name])
+        }else if($this->status==5){
+            return $this->with(['name'=>$this->name])
                 ->subject($this->college . "-" . $this->course)
                 ->markdown('mails.verified');
-        } else if ($this->status == 6) {
-            return $this->with(['name' => $this->name, 'course' => $this->course])
+        }else if($this->status==6){
+            return $this->with(['name'=>$this->name,'course'=>$this->course])
                 ->subject($this->college . "-" . $this->course)
                 ->markdown('mails.completed');
+        }else if($this->status==0){
+            return $this->with(['name'=>$this->name])
+                ->subject($this->college . "-" . $this->course)
+                ->markdown('mails.suspend');
         }
+        
     }
 }

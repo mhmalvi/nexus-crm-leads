@@ -15,11 +15,7 @@ class CoursesInfo extends Model
      * @var array<int, string>
      */
     protected $table = 'courses_info';
-    protected $fillable = [
-        'course_code',
-        'course_title',
-        'course_description',
-        'status'
-    ];
+    
+    protected $guarded=[];
 
 }

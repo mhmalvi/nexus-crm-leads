@@ -13,32 +13,23 @@ class SalesController extends Controller
 {
     public function sales_list(Request $request, $id)
     {
-        $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+        $userApi = env('USER_SERVICE_API', '');
+        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
         $flag_receive = $flag['data'];
         if ($flag_receive == 1) {
-            $auth_url = env('COMPANY_SERVICE_URL', 'https://crmcompany.quadque.digital/api/');
-            // dd($auth_url);
+            $auth_url = env('COMPANY_SERVICE_URL', env('COMPANY_SERVICE_API', '') . '/');
             $sales_from_company_service = [];
-            // $id = 5;
             $sales = Http::get($auth_url . 'company/sales/' . $id);
             $sales_name = Http::get('https://crmuser.quadque.digital/api/user/sales-list');
-            // dd(json_decode($sales));
-            // $sales_from_company_service = json_decode($sales);
-            // dd($sales->json());
             $sales_from_company_service = $sales->object();
             $sales_from_user_service = $sales_name->object();
-            // dd($sales_from_company_service);
-            // dd($sales_from_user_service);
             for ($i = 0; $i < count($sales_from_company_service); $i++) {
-                // dd($sales_from_company_service[$i]);
                 for ($j = 0; $j < count($sales_from_user_service); $j++) {
                     if ($sales_from_company_service[$i]->user_id == $sales_from_user_service[$j]->user_id) {
                         $sales_names[] = $sales_from_user_service[$j];
                     }
                 }
             }
-
-            // dd($sales_names);
 
             if ($sales) {
                 return response()->json([
@@ -62,67 +53,85 @@ class SalesController extends Controller
 
     public function assigned_leads(Request $request, $id)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
-                $leads = DB::table('lead_details')->join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->select('lead_details.lead_id', 'lead_details.full_name', 'courses_info.course_title as course', 'lead_details.sales_user_id')->where('sales_user_id', $id)->get()->toArray();
-                if ($leads) {
-                    return response()->json([
-                        'message' => 'success',
-                        'status' => 200,
-                        'data' => $leads
-                    ], 200);
-                } else {
-                    return response()->json([
-                        'message' => 'No leads found',
-                        'status' => 404
-                    ], 404);
-                }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
+        // if($request->bearerToken()){
+        //     $userApi = env('USER_SERVICE_API', '');
+        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if($flag_receive == 1){
+        $leads = DB::table('lead_details')->join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->select('lead_details.lead_id as lead_id', 'lead_details.full_name as full_name', 'courses_info.course_title as course', 'lead_details.sales_user_id as sales_user_id',)->where('lead_details.sales_user_id', $id)->get()->toArray();
+        for ($i = 0; $i < count($leads); $i++) {
+            $count = DB::table('counts')->select('call_count')->where('lead_id', $leads[$i]->lead_id)->first();
+            $leads[$i]->count = $count;
+        }
+        for ($j = 0; $j < count($leads); $j++) {
+            $last_count = DB::table('lead_call_history')->where('lead_id', $leads[$j]->lead_id)->max('call_start_time');
+            $leads[$j]->last_call = $last_count;
+        }
+        if ($leads) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 200,
+                'data' => $leads
+            ], 200);
         } else {
             return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
+                'message' => 'No leads found',
+                'status' => 404
+            ], 404);
         }
+        //     }else{
+        //         return response()->json([
+        //                 'message' => 'Unauthenticated',
+        //                 'status' => 401
+        //             ], 401);
+        //     }
+        // }else{
+        //     return response()->json([
+        //                 'message' => 'Unauthenticated',
+        //                 'status' => 401
+        //             ], 401);
+        // }
     }
 
     public function unassigned_leads(Request $request, $id)
     {
-        $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
-        $flag_receive = $flag['data'];
-        if ($flag_receive == 1) {
-            $leads = DB::table('lead_details')->join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->select('lead_details.lead_id', 'lead_details.full_name', 'courses_info.course_title as course')->orderBy('lead_details.id', 'desc')->get();
-
-            if ($leads) {
-                return response()->json([
-                    'message' => 'success',
-                    'status' => 200,
-                    'data' => $leads
-                ], 200);
-            } else {
-                return response()->json([
-                    'message' => 'No leads found',
-                    'status' => 404
-                ], 404);
-            }
+        // $userApi = env('USER_SERVICE_API', '');
+        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        // $flag_receive = $flag['data'];
+        // if($flag_receive == 1){
+        $leads = DB::table('lead_details')->join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->select('lead_details.lead_id', 'lead_details.full_name', 'courses_info.course_title as course')->orderBy('lead_details.id', 'desc')->get();
+        for ($i = 0; $i < count($leads); $i++) {
+            $count = DB::table('counts')->select('call_count')->where('lead_id', $leads[$i]->lead_id)->first();
+            $leads[$i]->count = $count;
+        }
+        for ($j = 0; $j < count($leads); $j++) {
+            $last_count = DB::table('lead_call_history')->select('call_start_time')->where('lead_id', $leads[$j]->lead_id)->max('call_start_time');
+            $leads[$j]->last_call = $last_count;
+        }
+        if ($leads) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 200,
+                'data' => $leads
+            ], 200);
         } else {
             return response()->json([
-                'message' => 'unauthenticated',
-                'status' => 401
-            ], 401);
+                'message' => 'No leads found',
+                'status' => 404
+            ], 404);
         }
+        // }else{
+        //     return response()->json([
+        //       'message' =>'unauthenticated',
+        //       'status'=>401
+        //     ],401);
+        // }
     }
 
     public function assign_leads_to_sales(Request $request)
     {
-        $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+        $userApi = env('USER_SERVICE_API', '');
+        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
         $flag_receive = $flag['data'];
         if ($flag_receive == 1) {
             $lead_exist = LeadDetails::where('lead_id', $request->lead_id)->where('sales_user_id', $request->sales_user_id)->exists();
@@ -167,7 +176,8 @@ class SalesController extends Controller
 
     public function unassign_leads(Request $request)
     {
-        $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+        $userApi = env('USER_SERVICE_API', '');
+        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
         $flag_receive = $flag['data'];
         if ($flag_receive == 1) {
             if (!$request->lead_id || !$request->sales_user_id) {
@@ -206,10 +216,11 @@ class SalesController extends Controller
     public function lead_list_in_sales(Request $request, $sales_id, $company_id)
     {
         if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $userApi = env('USER_SERVICE_API', '');
+            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
-                $lead_list = LeadDetails::where('client_id', $company_id)->where('sales_user_id', $sales_id)->get();
+                $lead_list = LeadDetails::join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->where('client_id', $company_id)->where('sales_user_id', $sales_id)->get();
                 if ($lead_list) {
                     return response()->json([
                         'message'    => 'success',

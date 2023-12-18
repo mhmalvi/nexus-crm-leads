@@ -17,12 +17,12 @@ class ChecklistMail extends Mailable
      * @return void
      */
 
-    public $file_path;
+    public $files;
     public $template;
     public $subject;
-    public function __construct($file_path, $template, $subject)
+    public function __construct($files, $template,$subject)
     {
-        $this->file_path = $file_path;
+        $this->files = $files;
         $this->template = $template;
         $this->subject = $subject;
     }
@@ -34,11 +34,14 @@ class ChecklistMail extends Mailable
      */
     public function build()
     {
-        return $this
+        $file_path = array();
+        
+        $this
             ->subject($this->subject)
-            ->markdown('mails.checklistMail')->attach(public_path($this->file_path), [
-                'as' => 'checklist.pdf',
-                'mime' => 'application/pdf',
-            ]);
+            ->markdown('mails.checklistMail');
+            foreach($this->files as $file){
+                $this->attach(public_path($file->file_path));
+            }
+            return $this;
     }
 }

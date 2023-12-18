@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Count;
 
 class LeadDetails extends Model
 {
@@ -33,9 +34,8 @@ class LeadDetails extends Model
         'lead_apply_date',
         'lead_details_status'
     ];
-
-    public function count()
-    {
-        return $this->hasOne(Count::class, 'lead_id');
+    
+    public function count(){
+        return $this->hasOne(Count::class,'lead_id');
     }
 }

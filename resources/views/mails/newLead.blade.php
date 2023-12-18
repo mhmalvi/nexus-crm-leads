@@ -438,7 +438,7 @@
                                       margin-bottom: 0;
                                     "
                                   >
-                                    <strong>Welcome To <%=college%>.</strong>
+                                    <strong>Welcome To {{$college}}.</strong>
                                   </h5>
                                   
                                 </td>
@@ -516,7 +516,7 @@
                                   >
                                     <img
                                       class="big"
-                                      src= <%=logo_file%>
+                                      src= {{$logo_file}}
                                       style="
                                         display: block;
                                         height: auto;

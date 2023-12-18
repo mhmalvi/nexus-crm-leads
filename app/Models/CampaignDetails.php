@@ -14,14 +14,16 @@ class CampaignDetails extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'campaign_name',
-        'campaign_id',
-        'client_id',
-        'business_id',
-        'business_name',
-        'start_time',
-        'stop_time',
-        'campaign_status'
-    ];
+    // protected $fillable = [
+    //     'campaign_name',
+    //     'campaign_id',
+    //     'client_id',
+    //     'business_id',
+    //     'business_name',
+    //     'start_time',
+    //     'stop_time',
+    //     'campaign_status'
+    // ];
+    
+    protected $guarded=[];
 }

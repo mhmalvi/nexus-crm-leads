@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Mail\ChecklistMail;
 use App\Models\MailTemplate;
+use Illuminate\Support\Facades\Http;
 use App\Models\Checklist;
 use Response;
 use Illuminate\Support\Facades\Mail;
@@ -61,13 +62,52 @@ class ChecklistMailController extends Controller
         }
     }
 
+    public function destroy_mail_template(Request $request, $mail_template_id)
+    {
+        // dd($mail_template_id);
+        $mail_template = MailTemplate::find($mail_template_id);
+        $result = $mail_template->delete();
+        if ($result) {
+            return response()->json([
+                'message'    => 'Destroyed',
+                'status' => 201,
+            ], 201);
+        } else {
+            return response()->json([
+                'message' => 'Failed',
+                'status' => 500
+            ], 500);
+        }
+    }
+
     public function pdf_viewer(Request $request, $id)
     {
-        $file = Checklist::find($id);
-        // dd($file->file_path);
-        return Response::make(file_get_contents('public/' . $file->file_path), 200, [
-            'content-type' => 'application/pdf',
-        ]);
+        if ($request->bearerToken()) {
+            $userApi = env('USER_SERVICE_API', '');
+            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag_receive = $flag['data'];
+            if ($flag_receive == 1) {
+                $file = Checklist::find($id);
+                // return Response::make(file_get_contents('public/'.$file->file_path), 200, [
+                //     'content-type' => 'application/pdf',
+                // ]);  
+                return response()->json([
+                    'message' => 'success',
+                    'status' => 200,
+                    'data' => 'https://crmleads.quadque.digital/public/' . $file->file_path
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                    'status' => 401
+                ], 401);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Unauthenticated',
+                'status' => 401
+            ], 401);
+        }
     }
 
     public function fetch_checklist(Request $request, $id)
@@ -250,8 +290,8 @@ class ChecklistMailController extends Controller
     public function delete_template(Request $request, $id)
     {
 
-        $template = MailTemplate::find($id);
-        if ($template) {
+        $template = MailTemplate::where('id', $id)->exists();
+        if (count($template) > 0) {
             $delete = $template->delete();
             if ($delete) {
                 return response()->json([

@@ -15,8 +15,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('optimize')->everyMinute();
-        $schedule->command('campaign:status')->everyMinute();
+        // $schedule->command('inspire')->hourly();
     }
 
     /**

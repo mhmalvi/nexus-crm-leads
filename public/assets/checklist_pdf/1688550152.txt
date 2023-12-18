@@ -1,0 +1,119 @@
+
+===================================
+------------- Servers -------------
+===================================
+
+1. Go Daddy-
+
+=> crm_payment:
+
+	Username: u459555695_crmpayment
+	Password: f9|gVo;=mFB
+	Endpoint: https://crmpayment.quadque.tech
+
+
+2. Hostinger-
+
+=> crm_lead:
+
+	Username: u276671220_crm_lead
+	Password: vKKA>5a9[4
+	Endpoint: https://crmleads.quadque.digital
+
+=> crm_user:
+
+	Username: u276671220_crm_user
+	Password: ^js~DI!S2Nj
+	Endpoint: https://crmuser.quadque.digital
+
+=> crm_company:
+
+	Username: u276671220_crm_company
+	Password: ;o9Dbt[^[Tr
+	Endpoint: https://crmcompany.quadque.digital
+
+=> crm_file_server:
+
+	Username: u276671220_crm_file_serv
+	Password: bG8/=hP7dL@
+	Endpoint: https://crmcompany.quadque.digital
+
+
+
+================================================
+------------- CRM USER Credentials -------------
+================================================
+
+1. Super Admin -
+Email: crm@quadque.digital
+Pass: admin
+
+=============================
+2. Admin - 
+=============================
+Email: admin@nta.com
+Pass: 123456
+
+Email: admin@itecounsel.com
+Pass: 123456
+
+Email: admin@uct.com
+Pass: 123456
+
+Email: admin@nta.com
+Pass: 123456
+
+dev.quadque@gmail.com
+Pass: 123456
+
+=============================
+Sales Employee 
+=============================
+Email: ntasales@gmail.digital
+Pass: 123456
+
+=============================
+Student
+=============================
+hairhouse2340@outlook.com
+123456
+
+hellensaffy1972@gmail.com
+123456
+
+deluke71@gmail.com
+123456
+
+athma1984@gmail.com
+123456
+
+
+
+FOR DEVELOPERS:
+
+For 2 month existance FB token-
+https://graph.facebook.com/v15.0/oauth/access_token?grant_type=fb_exchange_token&client_id=".$appId."&client_secret=".$secretKey."&fb_exchange_token=".$fbToken"
+me?fields=id,name,adaccounts{campaigns.limit(10000){name,start_time,stop_time,status,ads{leads.limit(10000)}},business_name}
+
+ITEC- EAAHTWwpuZCgYBAItCfQNSSZAC2Pc0gGPsfxEKE1HRbLIefBGznzlzHhZBZBabch4nItF72d9n4StlG5zfI4mkV1KcZCQMzDjPoH3ADXKifG0RgNJkJEQ28sRtcVxs8NfvhqVdU7pcQVS3dy6qB4aQUEyvweyNs7o7NLV5N6RT8E2641gdtGlkZCm8fjJPa59IZD
+
+
+
+
+
+EAAL83aDg1SgBAMCBQHwjwo39waauTF38aFJ7Sum5ZAZCdrN36MZBFpDs4GrTQczWeij5uj5z6lPSXikdAqkQ501b9DhpCkJGvsUPSdemHrgSpZB2HotbQlEzVO7ZB6jPTaIoJWWjvjl5VMdG52zmwD8gKepuFUItJaLBei9sccYt298X5vYSy6m6ZATGKG8dSI2rAiBCZBVfCZBXGJdNA1jv87b0LtvwCk7qv7hw3HWBCKB7Ps4IpYiiVBbeMHiQ1CsZD
+
+
+
+
+
+26-04-23
+EAAHTWwpuZCgYBAB7zPvnykKsWSH9PBG2kZBOcvRqq20J3L6AT83J1VACgfSQnzVzZAm5vAX0jBEpxu8X7QGXedjmO8ZCoCvUSK4ZCG0141K10F2HX8yHxWCwF1JIRdpwVrxCK2ysTrp9Eqe1i8RZAkDD7JI0I4wAg7mIAgjFTD718iWqfA2G5CmDrz9I3IWh0ZD
+
+
+
+
+
+
+
+

@@ -2,16 +2,16 @@
 
 namespace App\Imports;
 
+use App\Models\LeadDetails;
 use App\Models\LeadStatus;
 use App\Models\CoursesInfo;
-use App\Models\LeadDetails;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class LeadsImport implements ToCollection
 {
@@ -33,21 +33,11 @@ class LeadsImport implements ToCollection
             for ($i = 1; $i < count($row); $i++) {
                 $id = round(microtime(true) * 1000);
                 $lead_id = intval($id);
-                // dd(substr($row[$i][12],9,1));
-                if(substr($row[$i][12], 9, 1)=='-'){
-                    $course_code = explode('-', $row[$i][12]);
-                    $course_code = $course_code[0];
-                }else if(substr($row[$i][12], 9, 1) == ' '){
-                    $course_code = explode(' ', $row[$i][12]);
-                    // dd($course_code[1]);
-                    $course_code = $course_code[1];
-                    // dd($course_code);
-                }
-                
-                $course_id = CoursesInfo::where('course_code', $course_code)->exists();
+                $course_code = explode('-', $row[$i][12]);
+                $course_id = CoursesInfo::where('course_code', $course_code[0])->exists();
                 if (!$course_id) {
                     $courseId = CoursesInfo::create([
-                        'course_code' => $course_code,
+                        'course_code' => $course_code[0],
                         'course_title' => $row[$i][12],
                         'course_description' => $row[$i][12],
                         'status' => 1

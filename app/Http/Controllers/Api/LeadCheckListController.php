@@ -23,7 +23,9 @@ class LeadCheckListController extends Controller
     public function index(Request $request)
     {
         if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $userApi = env('USER_SERVICE_API', '');
+            $userApi = env('USER_SERVICE_API', '');
+            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 if (!isset($request->course_id))
@@ -84,7 +86,8 @@ class LeadCheckListController extends Controller
     public function create(Request $request)
     {
         if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $userApi = env('USER_SERVICE_API', '');
+            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 if (!isset($request->user_id) || !isset($request->client_id) || !isset($request->course_id))
@@ -181,7 +184,8 @@ class LeadCheckListController extends Controller
     public function delete(Request $request)
     {
         if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $userApi = env('USER_SERVICE_API', '');
+            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 if (!isset($request->id))
@@ -399,10 +403,10 @@ class LeadCheckListController extends Controller
             }
 
             return response()->json([
-                'status' => true,
+                'status' => 200,
                 'message' => 'All Courses',
                 'data'    => $coursesList->toArray()
-            ], 201);
+            ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -425,7 +429,8 @@ class LeadCheckListController extends Controller
     public function updateCourse(Request $request, $id)
     {
         if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $userApi = env('USER_SERVICE_API', '');
+            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 if (CoursesInfo::where('id', $id)->first()) {

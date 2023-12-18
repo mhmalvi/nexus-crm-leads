@@ -16,12 +16,12 @@ class Response extends Mailable
      *
      * @return void
      */
-    public $status;
-    public $college;
-    public $course;
-    public $name;
-    public $response;
-    public function __construct($status, $college, $course, $name, $response)
+     public $status;
+     public $college;
+     public $course;
+     public $name;
+     public $response;
+    public function __construct($status,$college,$course,$name,$response)
     {
         $this->status = $status;
         $this->college = $college;
@@ -38,8 +38,8 @@ class Response extends Mailable
     public function build()
     {
         return $this
-            ->with(['response' => $this->response, 'name' => $this->name, 'course' => $this->course])
-            ->subject($this->college . "-" . $this->course)
-            ->markdown('mails.called');
+                ->with(['response'=>$this->response,'name'=>$this->name,'course'=>$this->course])
+                ->subject($this->college . "-" . $this->course)
+                ->markdown('mails.called');
     }
 }

@@ -36,7 +36,7 @@ class NewLeadMail extends Mailable
     public function build()
     {
         return $this
-            ->subject($this->subject)->with(['name' => $this->name, 'name' => $this->logo, 'logo' => $this->course,'college'=> $this->college])
-            ->markdown('mails.checklistMail');
+            ->subject($this->subject)->with(['name' => $this->name, 'logo_file' => $this->logo, 'course' => $this->course,'college'=> $this->college])
+            ->markdown('mails.newLead');
     }
 }
