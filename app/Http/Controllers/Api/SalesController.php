@@ -220,7 +220,7 @@ class SalesController extends Controller
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
-                $lead_list = LeadDetails::join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->where('client_id', $company_id)->where('sales_user_id', $sales_id)->get();
+                $lead_list = LeadDetails::join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->leftJoin('counts', 'lead_details.lead_id', '=', 'counts.lead_id')->where('client_id', $company_id)->where('sales_user_id', $sales_id)->get();
                 if ($lead_list) {
                     return response()->json([
                         'message'    => 'success',
