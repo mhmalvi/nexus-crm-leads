@@ -537,6 +537,7 @@ class LeadController extends Controller
     public function create_lead(Request $request)
     {
         if ($request->bearerToken()) {
+
             $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
@@ -550,9 +551,12 @@ class LeadController extends Controller
 
                 $lead_status = 1;
                 $companyApi = env('COMPANY_SERVICE_API', '');
-                $logo_details_of_logo = HTTP::get($companyApi . '/documents-details/' . $request->client_id);
+                $logo_details_of_logo = HTTP::get($companyApi.'/documents-details/' . $request->client_id);
+                // dd(json_encode($logo_details_of_logo));
                 $logo_response_of_logo = json_decode($logo_details_of_logo->body());
+                // dd($logo_response_of_logo);
                 $client_name = $logo_response_of_logo->client;
+                // dd($client_name);
                 $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
                 $course = CoursesInfo::where('id', $request->course_id)->first();
                 $logo = $logo_response_of_logo->data->document_name;
@@ -575,6 +579,8 @@ class LeadController extends Controller
                         'lead_apply_date' => Carbon::now(),
                         'lead_details_status' => 1
                     ]);
+                    // HTTP::post('http://localhost:2000/api/send-mail', ['name' => $request->full_name, 'lead_status' => 1]);
+                    // HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $request->full_name, 'lead_status' => $lead_status, 'logo' => $logo, 'client' => $client_name, 'course' => $course->course_title]);
                     Mail::to($request->student_email)->queue(new NewLeadMail($request->full_name, $lead_status, $logo, $client_name, $course->course_title, $client_name));
                     if ($save) {
                         return response()->json([
