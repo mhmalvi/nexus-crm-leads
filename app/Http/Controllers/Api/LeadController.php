@@ -536,12 +536,12 @@ class LeadController extends Controller
 
     public function create_lead(Request $request)
     {
-        if ($request->bearerToken()) {
+        // if ($request->bearerToken()) {
 
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        //     $userApi = env('USER_SERVICE_API', '');
+        //     $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 $id = round(microtime(true) * 1000);
                 $lead_id = intval($id);
                 $living_place = [
@@ -597,18 +597,18 @@ class LeadController extends Controller
                         'status' => 403
                     ], 403);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     public function createLead(Request $request)
