@@ -1328,7 +1328,7 @@ class LeadController extends Controller
                 }
             }
             if ($request->$leadStatus != 0) {
-                $college = Http::post('https://crmcompany.quadque.digital/api/get-client-name', ['client_id' => $request->client_id]);
+                $college = Http::post('https://crmcompany.queleadscrm.com/api/get-client-name', ['client_id' => $request->client_id]);
                 $nameData = json_decode($college->body());
                 $college_name = $nameData->data->name;
                 Mail::to($lead_email)->queue(new StatusChange($leadStatus, $college_name, $request->course, $name));
