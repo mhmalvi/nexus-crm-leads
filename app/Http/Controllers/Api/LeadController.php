@@ -1247,6 +1247,7 @@ class LeadController extends Controller
 
     public function leadStatusUpdate(Request $request)
     {
+        // dd($request->all());
         if (!isset($request->lead_id) || !isset($request->sales_user_id)) {
             return response()->json([
                 'status' => false,
@@ -1284,13 +1285,16 @@ class LeadController extends Controller
             ['lead_id', '=', $leadId],
             ['lead_status', '=', $leadStatus]
         ])->first();
+        // dd(json_encode($leadAStatus));
         $lead_info = LeadDetails::where('lead_id', '=', $leadId)->first();
 
         $lead_email = $lead_info->student_email;
         $name = $lead_info->full_name;
         $student_id = $lead_info->student_id;
+        // dd($lead_email);
         if ($leadAStatus != "" || $leadAStatus != null) {
             if ($leadAStatus->is_active == 0) {
+
                 $leadAStatus->is_active = 1;
                 $leadAStatus->save();
                 if ($leadAStatus->lead_status == 0 && $leadAStatus->is_active == 1) {
@@ -1300,12 +1304,14 @@ class LeadController extends Controller
                     }
                 } else {
                     $lead_max_status = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->max('lead_status');
+
                     if ($lead_info) {
                         $lead_info->lead_details_status = $lead_max_status;
                         $lead_info->save();
                     }
                 }
             } else if ($leadAStatus->is_active == 1) {
+                // if($leadAStatus-)
                 $leadAStatus->is_active = 0;
                 $leadAStatus->save();
 
@@ -1316,7 +1322,7 @@ class LeadController extends Controller
                 }
             }
             if ($request->$leadStatus != 0) {
-                $college = Http::post(env('COMPANY_SERVICE_API', '') . '/get-client-name', ['client_id' => $request->client_id]);
+                $college = Http::post('https://crmcompany.quadque.digital/api/get-client-name', ['client_id' => $request->client_id]);
                 $nameData = json_decode($college->body());
                 $college_name = $nameData->data->name;
                 Mail::to($lead_email)->queue(new StatusChange($leadStatus, $college_name, $request->course, $name));
