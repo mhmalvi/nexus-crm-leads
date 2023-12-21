@@ -568,7 +568,7 @@ class LeadController extends Controller
                         'phone_number' => $request->phone_number,
                         'student_email' => $request->student_email,
                         'client_id' => $request->client_id,
-                        'campaign_id' => "",
+                        'campaign_id' => 0,
                         'sales_user_id' => 0,
                         'document_certificate_id' => 0,
                         'course_id' => $request->course_id,
