@@ -152,7 +152,6 @@ class LeadController extends Controller
         // dd("helllo");
         if ($request->bearerToken()) {
             $userApi = env('USER_SERVICE_API', '');
-            $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post('https://crmuser.q/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
@@ -188,7 +187,6 @@ class LeadController extends Controller
     {
         if ($request->bearerToken()) {
             $userApi = env('USER_SERVICE_API', '');
-            $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
@@ -223,7 +221,6 @@ class LeadController extends Controller
     public function update_course_details_from_accountant(Request $request, $course_id)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
             $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
@@ -310,7 +307,6 @@ class LeadController extends Controller
     {
         if ($request->bearerToken()) {
             $userApi = env('USER_SERVICE_API', '');
-            $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
@@ -358,7 +354,6 @@ class LeadController extends Controller
     {
         if ($request->bearerToken()) {
             $userApi = env('USER_SERVICE_API', '');
-            $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
@@ -392,7 +387,6 @@ class LeadController extends Controller
     public function add_course_by_accountant(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
             $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
@@ -543,7 +537,6 @@ class LeadController extends Controller
     public function create_lead(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
             $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
@@ -787,7 +780,6 @@ class LeadController extends Controller
     {
         if ($request->bearerToken()) {
             $userApi = env('USER_SERVICE_API', '');
-            $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
@@ -827,7 +819,6 @@ class LeadController extends Controller
     public function sales_assign_to_lead(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
             $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
@@ -874,7 +865,6 @@ class LeadController extends Controller
     public function add_course(Request $request)
     {    //////////// insert course ///////////
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
             $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
@@ -965,7 +955,6 @@ class LeadController extends Controller
     public function course_details(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
             $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
@@ -1198,7 +1187,6 @@ class LeadController extends Controller
     public function delete_sales_employee_by_user_id(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
             $userApi = env('USER_SERVICE_API', '');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
