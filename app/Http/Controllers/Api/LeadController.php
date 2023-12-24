@@ -119,16 +119,9 @@ class LeadController extends Controller
                 'call_remark' => $request->call_remark
             ])->toArray();
 
-            $count = Count::where('lead_id', $request->lead_id)->first();
-            if ($count) {
-                $count->call_count = $count->call_count + 1;
-                $count->save();
-            } else {
-                Count::create([
-                    'lead_id' => $request->lead_id,
-                    'call_count' => 1
-                ]);
-            }
+            $count = DB::table('lead_details')->where('lead_id', $request->lead_id)->first();
+            // dd($count);
+            DB::table('lead_details')->where('lead_id', $request->lead_id)->update(['call_count' => $count->call_count + 1]);
 
 
             $leadCallHistory = LeadCallHistory::where('lead_id', '=', $request->lead_id)->get()->toArray();
@@ -729,6 +722,7 @@ class LeadController extends Controller
                         'lead_details.lead_details_status as lead_details_status',
                         'lead_details.created_at as created_at',
                         'lead_details.updated_at as updated_at',
+                        'lead_details.call_count as call_count',
                         'courses_info.id as cid',
                         'courses_info.course_code as course_code',
                         'courses_info.course_title as course_title',
