@@ -145,7 +145,7 @@ class LeadController extends Controller
         // dd("helllo");
         if ($request->bearerToken()) {
             $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.q/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post($userApi.'/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $course = CoursesInfo::find($course_id);
