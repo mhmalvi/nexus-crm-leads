@@ -732,7 +732,6 @@ class LeadController extends Controller
                     )->leftJoin('courses_info', function ($join) {
                         $join->on('lead_details.course_id', '=', 'courses_info.id');
                     });
-                    // ->leftJoin('counts', 'lead_details.lead_id', '=', 'counts.lead_id');
                 if (isset($request->client_id))
                     $data = $data->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc')->get();
 
