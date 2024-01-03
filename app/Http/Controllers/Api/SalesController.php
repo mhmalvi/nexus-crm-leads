@@ -216,7 +216,7 @@ class SalesController extends Controller
     public function lead_list_in_sales(Request $request, $sales_id, $company_id)
     {
         if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $lead_list = LeadDetails::join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->where('client_id', $company_id)->where('sales_user_id', $sales_id)->get();
