@@ -27,7 +27,7 @@ class SalesController extends Controller
             for ($i = 0; $i < count($sales); $i++) {
                 for ($j = 0; $j < count($sales); $j++) {
                     if ($sales[$i]->user_id == $sales_from_user_service[$j]->user_id) {
-                        $sales_names[] = $sales_from_user_service[$j];
+                        $sales_names[] = $sales[$j];
                     }
                 }
             }
