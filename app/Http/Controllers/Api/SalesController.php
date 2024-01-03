@@ -25,9 +25,9 @@ class SalesController extends Controller
             // $sales_from_company_service = $sales->object();
             $sales_from_user_service = $sales_name->object();
             for ($i = 0; $i < count($sales); $i++) {
-                for ($j = 0; $j < count($sales); $j++) {
+                for ($j = 0; $j < count($sales_from_user_service); $j++) {
                     if ($sales[$i]->user_id == $sales_from_user_service[$j]->user_id) {
-                        $sales_names[] = $sales[$j];
+                        $sales_names[] = $sales_from_user_service[$j];
                     }
                 }
             }
