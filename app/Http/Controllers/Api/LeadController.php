@@ -1026,6 +1026,7 @@ class LeadController extends Controller
                     'lead_details.lead_apply_date as lead_apply_date',
                     'lead_details.lead_remarks as lead_remarks',
                     'lead_details.lead_details_status as lead_details_status',
+                    'lead_details.call_count as call_count',
                     'lead_details.created_at as created_at',
                     'lead_details.updated_at as updated_at',
                     'courses_info.id as cid',
