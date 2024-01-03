@@ -727,8 +727,7 @@ class LeadController extends Controller
                         'courses_info.course_code as course_code',
                         'courses_info.course_title as course_title',
                         'courses_info.course_description as course_description',
-                        'courses_info.status as status',
-                        'counts.call_count as call_count'
+                        'courses_info.status as status'
                     )->leftJoin('courses_info', function ($join) {
                         $join->on('lead_details.course_id', '=', 'courses_info.id');
                     })->get();
