@@ -115,4 +115,4 @@ Route::get('campaign-wise-lead-percentage', [\App\Http\Controllers\Api\CampaignC
 
 Route::get('campaign-status-change', [\App\Http\Controllers\Api\CampaignController::class, 'campaign_status_change']);
 
-Route::get('counts',[\App\Http\Controllers\Api\CountController::class, 'count']);
+Route::get('counts',[\App\Http\Controllers\Api\CountController::class, 'counts']);
