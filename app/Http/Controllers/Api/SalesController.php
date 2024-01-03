@@ -20,7 +20,7 @@ class SalesController extends Controller
             $auth_url = env('COMPANY_SERVICE_URL', env('COMPANY_SERVICE_API', '') . '/');
             $sales_from_company_service = [];
             $sales = Http::get($auth_url . 'company/sales/' . $id);
-            $sales_name = Http::get('https://crmuser.quadque.digital/api/user/sales-list');
+            $sales_name = Http::get('https://crmuser.queleadscrm.com/api/user/sales-list');
             $sales_from_company_service = $sales->object();
             $sales_from_user_service = $sales_name->object();
             for ($i = 0; $i < count($sales_from_company_service); $i++) {
@@ -216,11 +216,10 @@ class SalesController extends Controller
     public function lead_list_in_sales(Request $request, $sales_id, $company_id)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.quadque.digital/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
-                $lead_list = LeadDetails::join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->leftJoin('counts', 'lead_details.lead_id', '=', 'counts.lead_id')->where('client_id', $company_id)->where('sales_user_id', $sales_id)->get();
+                $lead_list = LeadDetails::join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->where('client_id', $company_id)->where('sales_user_id', $sales_id)->get();
                 if ($lead_list) {
                     return response()->json([
                         'message'    => 'success',
