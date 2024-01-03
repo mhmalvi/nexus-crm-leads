@@ -39,7 +39,7 @@ class CountController extends Controller
         for ($i = 0; $i < count(json_decode($leads)); $i++) {
             // dd($leads[$i]);
             // $count_detail = json_decode($leads);
-            $counts = DB::table('lead_details')->where('lead_id', '=', json_decode($leads[$i]->lead_id))->update(['call_counts' => $leads[$i]->call_count]);
+            $counts = DB::table('lead_details')->where('lead_id', '=', json_decode($leads[$i]->lead_id))->update(['call_count' => $leads[$i]->call_count]);
             // dd($counts);
             // $lead_counts = json_decode($counts);
             // dd($lead_counts);
