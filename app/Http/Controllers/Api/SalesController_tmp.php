@@ -19,14 +19,13 @@ class SalesController extends Controller
         if ($flag_receive == 1) {
             $auth_url = env('COMPANY_SERVICE_URL', env('COMPANY_SERVICE_API', '') . '/');
             $sales_from_company_service = [];
-            $sales = DB::connection('company')->table('company_sales_employee')->where('company_id', $id)->where('active', 1)->get();
-            // $sales = Http::get($auth_url . 'company/sales/' . $id);
+            $sales = Http::get($auth_url . 'company/sales/' . $id);
             $sales_name = Http::get('https://crmuser.queleadscrm.com/api/user/sales-list');
-            // $sales_from_company_service = $sales->object();
+            $sales_from_company_service = $sales->object();
             $sales_from_user_service = $sales_name->object();
-            for ($i = 0; $i < count($sales); $i++) {
-                for ($j = 0; $j < count($sales); $j++) {
-                    if ($sales[$i]->user_id == $sales_from_user_service[$j]->user_id) {
+            for ($i = 0; $i < count($sales_from_company_service); $i++) {
+                for ($j = 0; $j < count($sales_from_user_service); $j++) {
+                    if ($sales_from_company_service[$i]->user_id == $sales_from_user_service[$j]->user_id) {
                         $sales_names[] = $sales_from_user_service[$j];
                     }
                 }
