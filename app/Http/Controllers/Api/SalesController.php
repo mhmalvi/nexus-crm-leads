@@ -97,10 +97,10 @@ class SalesController extends Controller
 
     public function unassigned_leads(Request $request, $id)
     {
-        $userApi = env('USER_SERVICE_API', '');
-        $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-        $flag_receive = $flag['data'];
-        if ($flag_receive == 1) {
+        // $userApi = env('USER_SERVICE_API', '');
+        // $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        // $flag_receive = $flag['data'];
+        // if ($flag_receive == 1) {
             $leads = DB::table('lead_details')->join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->select('lead_details.lead_id', 'lead_details.full_name', 'courses_info.course_title as course', 'lead_details.call_count as call_count')->orderBy('lead_details.id', 'desc')->get()->toArray();
             for ($j = 0; $j < count($leads); $j++) {
                 $last_count = DB::table('lead_call_history')->select('call_start_time')->where('lead_id', $leads[$j]->lead_id)->max('call_start_time');
@@ -118,12 +118,12 @@ class SalesController extends Controller
                     'status' => 404
                 ], 404);
             }
-        } else {
-            return response()->json([
-                'message' => 'unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     public function assign_leads_to_sales(Request $request)
