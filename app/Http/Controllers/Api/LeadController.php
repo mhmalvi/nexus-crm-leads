@@ -954,7 +954,7 @@ class LeadController extends Controller
     {
         if ($request->bearerToken()) {
             $userApi = env('USER_SERVICE_API','');
-            dd($userApi);
+            // dd($userApi);
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
