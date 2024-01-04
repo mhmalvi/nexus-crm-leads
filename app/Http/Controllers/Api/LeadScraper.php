@@ -48,7 +48,7 @@ class LeadScraper extends Controller
                 //$accessToken  =  "EAAKu5ZBYpE2cBAMOvGwtJwDv96WezHbxpdBbcFnBaqgmiMUNqMCNPAZApA0YuInf5AxHSiThsAIWETluZCPM7Bk4aLnBnAlrZBUChP9Lhoy9IFMbi9xSce8qCaJcaxUOln0lrKZAsjitJZAPTzJs7ay2T3XYhubnb7GNL0geO6DHkWSaZCIwE5EJZB54VxFruxgTr0KbFIGf7AZDZD";
 
                 // $url = "https://graph.facebook.com/v15.0/me?fields=id,name,adaccounts{campaigns.limit(10000){name,start_time,stop_time,status,ads{leads.limit(10000)}},business_name}&access_token=".$accessToken;
-                $url = "https://graph.facebook.com/v18.0/me?fields=id,name,adaccounts{campaigns.limit(10000){name,start_time,stop_time,status,ads{leads.limit(1000000)}},business_name}&access_token=" . $accessToken;
+                $url = "https://graph.facebook.com/v18.0/me?fields=id,name,adaccounts{campaigns.limit(10000){name,start_time,stop_time,status,ads{leads.limit(10000)}},business_name}&access_token=" . $accessToken;
                 // dd(json_decode(file_get_contents($url)));
                 $dataArray = json_decode(file_get_contents($url), true);
                 //dd($dataArray);
