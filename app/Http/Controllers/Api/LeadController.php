@@ -145,7 +145,7 @@ class LeadController extends Controller
         // dd("helllo");
         if ($request->bearerToken()) {
             $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi.'/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $course = CoursesInfo::find($course_id);
@@ -534,61 +534,61 @@ class LeadController extends Controller
         //     $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
         //     $flag_receive = $flag['data'];
         //     if ($flag_receive == 1) {
-                $id = round(microtime(true) * 1000);
-                $lead_id = intval($id);
-                $living_place = [
-                    "name"
-                    => "what_state_do_you_live_in?", "values" => $request->living_place
-                ];
+        $id = round(microtime(true) * 1000);
+        $lead_id = intval($id);
+        $living_place = [
+            "name"
+            => "what_state_do_you_live_in?", "values" => $request->living_place
+        ];
 
-                $lead_status = 1;
-                $companyApi = env('COMPANY_SERVICE_API', '');
-                $logo_details_of_logo = HTTP::get($companyApi.'/documents-details/' . $request->client_id);
-                // dd(json_encode($logo_details_of_logo));
-                $logo_response_of_logo = json_decode($logo_details_of_logo->body());
-                // dd($logo_response_of_logo);
-                $client_name = $logo_response_of_logo->client;
-                // dd($client_name);
-                $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
-                $course = CoursesInfo::where('id', $request->course_id)->first();
-                $logo = $logo_response_of_logo->data->document_name;
-                if (!$existing_lead) {
-                    $save = LeadDetails::create([
-                        'lead_id' => $lead_id,
-                        'student_id' => 0,
-                        'full_name' => $request->full_name,
-                        'phone_number' => $request->phone_number,
-                        'student_email' => $request->student_email,
-                        'client_id' => $request->client_id,
-                        'campaign_id' => 0,
-                        'sales_user_id' => 0,
-                        'document_certificate_id' => 0,
-                        'course_id' => $request->course_id,
-                        'work_location' => $request->work_location,
-                        'lead_from' => $request->lead_from,
-                        'form_data' => $request->form_data,
-                        'star_review' => 0,
-                        'lead_apply_date' => Carbon::now(),
-                        'lead_details_status' => 1
-                    ]);
-                    // HTTP::post('http://localhost:2000/api/send-mail', ['name' => $request->full_name, 'lead_status' => 1]);
-                    // HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $request->full_name, 'lead_status' => $lead_status, 'logo' => $logo, 'client' => $client_name, 'course' => $course->course_title]);
-                    Mail::to($request->student_email)->queue(new NewLeadMail($request->full_name, $lead_status, $logo, $client_name, $course->course_title, $client_name));
-                    if ($save) {
-                        return response()->json([
-                            'message' => 'success',
-                            'status' => 201,
-                            'data' => $save
-                        ], 200);
-                    } else {
-                        abort(500);
-                    }
-                } else {
-                    return response()->json([
-                        'message' => 'exists',
-                        'status' => 403
-                    ], 403);
-                }
+        $lead_status = 1;
+        $companyApi = env('COMPANY_SERVICE_API', '');
+        $logo_details_of_logo = HTTP::get($companyApi . '/documents-details/' . $request->client_id);
+        // dd(json_encode($logo_details_of_logo));
+        $logo_response_of_logo = json_decode($logo_details_of_logo->body());
+        // dd($logo_response_of_logo);
+        $client_name = $logo_response_of_logo->client;
+        // dd($client_name);
+        $existing_lead = LeadDetails::where('lead_id', $lead_id)->first();
+        $course = CoursesInfo::where('id', $request->course_id)->first();
+        $logo = $logo_response_of_logo->data->document_name;
+        if (!$existing_lead) {
+            $save = LeadDetails::create([
+                'lead_id' => $lead_id,
+                'student_id' => 0,
+                'full_name' => $request->full_name,
+                'phone_number' => $request->phone_number,
+                'student_email' => $request->student_email,
+                'client_id' => $request->client_id,
+                'campaign_id' => 0,
+                'sales_user_id' => 0,
+                'document_certificate_id' => 0,
+                'course_id' => $request->course_id,
+                'work_location' => $request->work_location,
+                'lead_from' => $request->lead_from,
+                'form_data' => $request->form_data,
+                'star_review' => 0,
+                'lead_apply_date' => Carbon::now(),
+                'lead_details_status' => 1
+            ]);
+            // HTTP::post('http://localhost:2000/api/send-mail', ['name' => $request->full_name, 'lead_status' => 1]);
+            // HTTP::post('https://crm-mailer.onrender.com/api/send-mail', ['name' => $request->full_name, 'lead_status' => $lead_status, 'logo' => $logo, 'client' => $client_name, 'course' => $course->course_title]);
+            Mail::to($request->student_email)->queue(new NewLeadMail($request->full_name, $lead_status, $logo, $client_name, $course->course_title, $client_name));
+            if ($save) {
+                return response()->json([
+                    'message' => 'success',
+                    'status' => 201,
+                    'data' => $save
+                ], 200);
+            } else {
+                abort(500);
+            }
+        } else {
+            return response()->json([
+                'message' => 'exists',
+                'status' => 403
+            ], 403);
+        }
         //     } else {
         //         return response()->json([
         //             'message' => 'Unauthenticated',
@@ -730,7 +730,7 @@ class LeadController extends Controller
                     )->leftJoin('courses_info', function ($join) {
                         $join->on('lead_details.course_id', '=', 'courses_info.id');
                     });
-                    // ->leftJoin('counts', 'lead_details.lead_id', '=', 'counts.lead_id');
+                // ->leftJoin('counts', 'lead_details.lead_id', '=', 'counts.lead_id');
                 if (isset($request->client_id))
                     $data = $data->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc')->get();
 
@@ -953,7 +953,7 @@ class LeadController extends Controller
     public function course_details(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
+            $userApi = getenv('USER_SERVICE_API');
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
@@ -1343,7 +1343,7 @@ class LeadController extends Controller
             }
         }
         $array = [5, 6];
-        
+
 
         ///EOF Email Service ///
         $leadAllStatus = LeadStatus::where('lead_id', $leadId)->where('is_active', '=', 1)->get();
