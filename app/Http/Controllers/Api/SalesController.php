@@ -97,9 +97,9 @@ class SalesController extends Controller
 
     public function unassigned_leads(Request $request, $id)
     {
-        $userApi = env('USER_SERVICE_API');
-        dd($userApi);
-        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        // $userApi = env('USER_SERVICE_API');
+        // dd($userApi);
+        $flag = Http::withToken($request->bearerToken())->post(env('USER_SERVICE_API') . '/check-if-token-exists');
         $flag_receive = $flag['data'];
         if ($flag_receive == 1) {
             $leads = DB::table('lead_details')->join('courses_info', 'lead_details.course_id', '=', 'courses_info.id')->select('lead_details.lead_id', 'lead_details.full_name', 'courses_info.course_title as course', 'lead_details.call_count as call_count')->orderBy('lead_details.id', 'desc')->get()->toArray();
