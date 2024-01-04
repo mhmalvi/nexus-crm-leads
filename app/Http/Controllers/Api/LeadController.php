@@ -1091,8 +1091,8 @@ class LeadController extends Controller
                     $salesUserIds[] = $value['sales_user_id'];
                     $salesUserIds[] = $value['assign_by'];
                 }
-                $userServiceAPI = env('USER_SERVICE_API', '');
-                $response = Http::post($userServiceAPI . '/user/list', [
+                // $userServiceAPI = env('USER_SERVICE_API', '');
+                $response = Http::post('https://crmuser.queleadscrm.com/api/user/list', [
                     'users' => json_encode($salesUserIds)
                 ]);
 
