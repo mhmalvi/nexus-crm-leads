@@ -213,7 +213,6 @@ class SalesController extends Controller
 
     public function lead_list_in_sales(Request $request, $sales_id, $company_id)
     {
-        dd("hello");
         if ($request->bearerToken()) {
             $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
