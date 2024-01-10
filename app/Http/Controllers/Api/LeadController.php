@@ -953,7 +953,7 @@ class LeadController extends Controller
     public function course_details(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API','');
+            $userApi = env('USER_SERVICE_API', '');
             // dd($userApi);
             $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
             $flag_receive = $flag['data'];
@@ -1371,7 +1371,7 @@ class LeadController extends Controller
         $name = $request->full_name;
         $lead_status = 1;
 
-        $logo_details_of_logo = HTTP::get(env('COMPANY_SERVICE_API', '') . '/documents-details/' . $request->client_id);
+        $logo_details_of_logo = HTTP::get('https://crmcompany.queleadscrm.com/api/documents-details/' . $request->client_id);
         $logo_response_of_logo = json_decode($logo_details_of_logo->body());
         $client_name = $logo_response_of_logo->client;
 
