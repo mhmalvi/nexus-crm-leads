@@ -1371,12 +1371,45 @@ class LeadController extends Controller
         $name = $request->full_name;
         $lead_status = 1;
 
-        $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents-details/' . $request->client_id);
-        $logo_response_of_logo = json_decode($logo_details_of_logo->body());
-        $client_name = $logo_response_of_logo->client;
 
-        if ($logo_response_of_logo->status !== 404) {
-            $logo = $logo_response_of_logo->data->document_name;
+        $logo_id = DB::connection('company')->table('companies')->find($id);
+        // dd($logo_id);
+        if ($logo_id->logo_id != null || $logo_id->logo_id != "") {
+            $file_system = DB::connection('company')->table('crm_filesystem')->find($logo_id->logo_id);
+            // dd(json_encode($file_system));
+            if ($file_system) {
+                return response()->json([
+                    'message' => 'success',
+                    'status' => 200,
+                    'data' => $file_system->toArray(),
+                    'client' => $logo_id->name
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'Not found',
+                    'status' => 404,
+                ], 404);
+            }
+        } else if ($logo_id->id) {
+            $file_system = DB::connection('company')->table('crm_filesystem')->where('client_id', $logo_id->id)->first();
+            // dd(json_encode($file_system));
+            // if ($file_system) {
+            //     return response()->json([
+            //         'message' => 'success',
+            //         'status' => 200,
+            //         'data' => $file_system->toArray(),
+            //         'client' => $logo_id->name
+            //     ], 200);
+            // }
+        }
+
+
+        // $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents-details/' . $request->client_id);
+        // $logo_response_of_logo = json_decode($logo_details_of_logo->body());
+        $client_name = $file_system->client;
+
+        if ($file_system->status !== 404) {
+            $logo = $file_system->data->document_name;
             if (!$course_id) {
                 $courseId = CoursesInfo::create([
                     'course_code' => $course_code,
