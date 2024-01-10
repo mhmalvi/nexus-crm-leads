@@ -35,8 +35,7 @@ class LeadController extends Controller
     public function get_course_in_accountant(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post('/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $courses = CoursesInfo::orderBy('id', 'desc')->get();
@@ -144,8 +143,7 @@ class LeadController extends Controller
     {
         // dd("helllo");
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $course = CoursesInfo::find($course_id);
@@ -180,7 +178,7 @@ class LeadController extends Controller
     {
         if ($request->bearerToken()) {
             $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $course = CoursesInfo::find($course_id);
@@ -214,8 +212,7 @@ class LeadController extends Controller
     public function update_course_details_from_accountant(Request $request, $course_id)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 // dd($request->checklist);
@@ -299,8 +296,7 @@ class LeadController extends Controller
     public function lead_status_logs(Request $request, $lead_id)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $lead_status = LeadStatus::where('lead_id', $lead_id)->get();
@@ -345,8 +341,7 @@ class LeadController extends Controller
     public function unassign_lead(Request $request, $id)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $leadDetails = LeadDetails::where('lead_id', $id)->first();
@@ -379,8 +374,7 @@ class LeadController extends Controller
     public function add_course_by_accountant(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 if ($request->course_code && $request->course_title && $request->course_description) {
@@ -777,8 +771,7 @@ class LeadController extends Controller
     public function uploadLeadExcel(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $client_id = $request->client_id;
@@ -817,8 +810,7 @@ class LeadController extends Controller
     public function sales_assign_to_lead(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->where('client_id', $request->client_id)->get();
@@ -863,8 +855,7 @@ class LeadController extends Controller
     public function add_course(Request $request)
     {    //////////// insert course ///////////
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 if ($request->course_code && $request->course_title && $request->course_description) {
@@ -953,9 +944,8 @@ class LeadController extends Controller
     public function course_details(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
             // dd($userApi);
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 $course_details = CoursesInfo::orderBy('id', 'desc')->get();
@@ -1187,8 +1177,7 @@ class LeadController extends Controller
     public function delete_sales_employee_by_user_id(Request $request)
     {
         if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
             $flag_receive = $flag['data'];
             if ($flag_receive == 1) {
                 try {
