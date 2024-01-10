@@ -1371,7 +1371,7 @@ class LeadController extends Controller
         $name = $request->full_name;
         $lead_status = 1;
 
-        $logo_details_of_logo = HTTP::get('https://crmcompany.queleadscrm.com/api/documents-details/' . $request->client_id);
+        $logo_details_of_logo = HTTP::get('https://crmcompany.quadque.digital/api/documents-details/' . $request->client_id);
         $logo_response_of_logo = json_decode($logo_details_of_logo->body());
         $client_name = $logo_response_of_logo->client;
 
