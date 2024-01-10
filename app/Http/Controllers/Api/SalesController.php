@@ -13,8 +13,7 @@ class SalesController extends Controller
 {
     public function sales_list(Request $request, $id)
     {
-        $userApi = env('USER_SERVICE_API', '');
-        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
         $flag_receive = $flag['data'];
         if ($flag_receive == 1) {
             $auth_url = env('COMPANY_SERVICE_URL', env('COMPANY_SERVICE_API', '') . '/');
@@ -128,8 +127,7 @@ class SalesController extends Controller
 
     public function assign_leads_to_sales(Request $request)
     {
-        $userApi = env('USER_SERVICE_API', '');
-        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
         $flag_receive = $flag['data'];
         if ($flag_receive == 1) {
             $lead_exist = LeadDetails::where('lead_id', $request->lead_id)->where('sales_user_id', $request->sales_user_id)->exists();
@@ -175,7 +173,7 @@ class SalesController extends Controller
     public function unassign_leads(Request $request)
     {
         $userApi = env('USER_SERVICE_API', '');
-        $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
         $flag_receive = $flag['data'];
         if ($flag_receive == 1) {
             if (!$request->lead_id || !$request->sales_user_id) {
