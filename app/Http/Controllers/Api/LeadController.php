@@ -295,10 +295,10 @@ class LeadController extends Controller
 
     public function lead_status_logs(Request $request, $lead_id)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 $lead_status = LeadStatus::where('lead_id', $lead_id)->get();
                 $lead_data = [];
                 for ($i = 0; $i < count($lead_status); $i++) {
@@ -324,18 +324,18 @@ class LeadController extends Controller
                         'status' => 500
                     ], 500);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     public function unassign_lead(Request $request, $id)
