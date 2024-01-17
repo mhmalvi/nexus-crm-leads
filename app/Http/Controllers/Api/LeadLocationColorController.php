@@ -11,7 +11,7 @@ class LeadLocationColorController extends Controller
 {
     public function add_color(Request $request)
     {
-        
+
         $response = Color::create([
             'location' => $request->location,
             'color' => $request->color,
@@ -32,18 +32,19 @@ class LeadLocationColorController extends Controller
         }
     }
 
-    public function getColor(Request $request){
+    public function getColor(Request $request)
+    {
         $response = Color::all();
-        if($response){
+        if ($response) {
             return response()->json([
-                'message'=>'success',
-                'status'=>200,
-                'data'=>$response
-            ],200);
-        }else{
+                'message' => 'success',
+                'status' => 200,
+                'data' => $response
+            ], 200);
+        } else {
             return response()->json([
-                'message'=>'No color found'
-            ],404);
+                'message' => 'No color found'
+            ], 404);
         }
     }
 }
