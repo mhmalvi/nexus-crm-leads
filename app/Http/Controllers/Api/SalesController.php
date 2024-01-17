@@ -13,7 +13,7 @@ class SalesController extends Controller
 {
     public function sales_list(Request $request, $id)
     {
-        $flag = Http::timeout(10)->withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        $flag = Http::timeout(-1)->withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
         $flag_receive = $flag['data'];
         if ($flag_receive == 1) {
             $auth_url = env('COMPANY_SERVICE_URL', env('COMPANY_SERVICE_API', '') . '/');
