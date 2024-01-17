@@ -11,6 +11,11 @@ class LeadLocationColorController extends Controller
 {
     public function add_color(Request $request)
     {
+        $request->validate([
+            'location' => 'required',
+            'color' => 'required',
+            'company_id' => 'required'
+        ]);
         $response = Color::create([
             'location' => $request->location,
             'color' => $request->color,
