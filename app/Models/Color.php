@@ -9,4 +9,5 @@ class Color extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $table='location_color';
 }
