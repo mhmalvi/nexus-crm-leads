@@ -10,7 +10,23 @@ class LeadLocationColorController extends Controller
 {
     public function add_color(Request $request)
     {
-        $response = Http::post(env('LEAD_SERVICE_API', '') . '/add-lead-location-color', ['location' => $request->location, 'color' => $request->color, 'company_id' => $request->company_id]);
-        return response()->json($response);
+        $response = Color::create([
+            'location' => $request->location,
+            'color' => $request->color,
+            'company_id' => $request->company_id
+        ]);
+
+        if ($response) {
+            return response()->json([
+                'message' => 'Color saved successfully',
+                'status' => 201,
+                'data' => $response
+            ], 201);
+        } else {
+            return response()->json([
+                'message' => 'Failed',
+                'status' => 500
+            ], 500);
+        }
     }
 }
