@@ -47,4 +47,23 @@ class LeadLocationColorController extends Controller
             ], 404);
         }
     }
+
+    public function deleteColor(Request $request)
+    {
+        $color = Color::find($request->id);
+        if ($color) {
+            $response = $color->delete();
+            if ($response) {
+                return response()->json([
+                    'message' => 'Deleted',
+                    'status' => 200,
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'failed',
+                    'status' => 500
+                ], 500);
+            }
+        }
+    }
 }

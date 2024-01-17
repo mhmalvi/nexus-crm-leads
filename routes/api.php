@@ -31,6 +31,7 @@ Route::post('/multi-review/{lead_id}', [\App\Http\Controllers\Api\LeadController
 
 Route::post('/add-lead-location-color', [LeadLocationColorController::class, 'add_color']);
 Route::get('/location-color', [LeadLocationColorController::class, 'getColor']);
+Route::get('/delete-location-color', [LeadLocationColorController::class, 'deleteColor']);
 
 Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
 Route::get('/lead/lead_id={lead_id}/lead-status-logs',[\App\Http\Controllers\Api\LeadController::class,'lead_status_logs']);
