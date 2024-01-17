@@ -34,7 +34,7 @@ class LeadLocationColorController extends Controller
 
     public function getColor(Request $request,$company_id)
     {
-        $response = Color::orderBy('id')->where('company_id',$company_id)->get();
+        $response = Color::where('company_id', $company_id)->orderBy('id', 'desc')->get();
         if ($response) {
             return response()->json([
                 'message' => 'success',
