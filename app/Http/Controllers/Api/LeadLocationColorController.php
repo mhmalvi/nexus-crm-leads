@@ -66,4 +66,24 @@ class LeadLocationColorController extends Controller
             }
         }
     }
+
+    public function updateColor(Request $request)
+    {
+        $color = Color::find($request->id);
+        $color->location = $request->location;
+        $color->color = $request->color;
+        $response = $color->save();
+        if ($response) {
+            return response()->json([
+                'message' => 'Updated',
+                'status' => 201,
+                'data' => $color
+            ], 201);
+        } else {
+            return response()->json([
+                'message' => 'failed',
+                'status' => 500
+            ], 500);
+        }
+    }
 }
