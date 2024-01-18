@@ -76,11 +76,11 @@ class LeadLocationColorController extends Controller
         $color = Color::find($request->id);
         $isColorExists = Color::where('id', '!=', $request->id)->where('color', $request->color)->exists();
         $isLocationExists = Color::where('id', '!=', $request->id)->where('location', $request->location)->exists();
-        if (!$isColorExists) {
+        if ($isColorExists) {
             return response()->json([
                 'message' => 'Color already exists on other locations'
             ]);
-        } elseif (!$isLocationExists) {
+        } elseif ($isLocationExists) {
             return response()->json([
                 'message' => 'Location already exists'
             ]);
