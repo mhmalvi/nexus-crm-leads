@@ -74,6 +74,13 @@ class LeadLocationColorController extends Controller
     public function updateColor(Request $request)
     {
         $color = Color::find($request->id);
+        $colors = Color::where('id', '!=', $request->id)->get();
+        if ($colors) {
+            $request->validate([
+                'location' => 'unique:location_color|required',
+                'color' => 'unique:location_color|required',
+            ]);
+        }
         $color->location = $request->location;
         $color->color = $request->color;
         $response = $color->save();
