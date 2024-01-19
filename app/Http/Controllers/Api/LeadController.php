@@ -340,10 +340,10 @@ class LeadController extends Controller
 
     public function unassign_lead(Request $request, $id)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 $leadDetails = LeadDetails::where('lead_id', $id)->first();
                 $leadDetails->sales_user_id = 0;
                 $update = $leadDetails->save();
@@ -358,18 +358,18 @@ class LeadController extends Controller
                         'status' => 500
                     ], 500);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
     public function add_course_by_accountant(Request $request)
     {
@@ -770,10 +770,10 @@ class LeadController extends Controller
 
     public function uploadLeadExcel(Request $request)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 $client_id = $request->client_id;
                 $lead_import = new LeadsImport($client_id);
                 $data = \Excel::import($lead_import, $request->file);
@@ -793,26 +793,26 @@ class LeadController extends Controller
                         'status' => 403
                     ], 403);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     public function sales_assign_to_lead(Request $request)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->where('client_id', $request->client_id)->get();
                 $sales = explode(',', $request->sales_id);
                 dd(json_decode($lead_id));
@@ -838,26 +838,26 @@ class LeadController extends Controller
                         'status' => 500
                     ], 500);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     public function add_course(Request $request)
     {    //////////// insert course ///////////
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 if ($request->course_code && $request->course_title && $request->course_description) {
                     $course = CoursesInfo::where('course_code', $request->course_code)->exists();
                     if ($course) {
@@ -886,8 +886,8 @@ class LeadController extends Controller
                         'status' => 'empty'
                     ], 500);
                 }
-            }
-        }
+            // }
+        // }
     }
 
     public function course_details_by_course_id(Request $request)
@@ -943,11 +943,11 @@ class LeadController extends Controller
 
     public function course_details(Request $request)
     {
-        if ($request->bearerToken()) {
-            // dd($userApi);
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     // dd($userApi);
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 $course_details = CoursesInfo::orderBy('id', 'desc')->get();
                 // }
                 if ($course_details) {
@@ -962,18 +962,18 @@ class LeadController extends Controller
                         'status' => 404,
                     ]);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     /**
@@ -1176,10 +1176,10 @@ class LeadController extends Controller
 
     public function delete_sales_employee_by_user_id(Request $request)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 try {
                     if ($request->sales_user_id) {
                         $data = LeadSalesEmployee::where('sales_user_id', $request->sales_user_id)->get();
@@ -1220,18 +1220,18 @@ class LeadController extends Controller
                         'message' => $th->getMessage()
                     ], 500);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     public function leadStatusUpdate(Request $request)

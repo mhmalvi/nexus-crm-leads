@@ -22,10 +22,10 @@ class LeadScraper extends Controller
      */
     public function dataScraper(Request $request)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 // dd($request->client_id);
                 if (!isset($request->client_id) || !isset($request->ac_k)) {
                     return response()->json([
@@ -257,18 +257,18 @@ class LeadScraper extends Controller
                 //            ], 500);
                 //        }
                 //////////////////////////////////////////
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     private function _checkFBInboxData($array)
