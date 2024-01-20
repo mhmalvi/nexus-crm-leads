@@ -1153,7 +1153,7 @@ class LeadController extends Controller
                     'student_id' => $student_id
                 ];
 
-                $college = Http::post(env('COMPANY_SERVICE_API', '') . '/get-client-name', ['client_id' => $request->client_id]);
+                $college = Http::crm_company()->post('/get-client-name', ['client_id' => $request->client_id]);
                 $nameData = json_decode($college->body());
                 $college_name = $nameData->data->name;
 
@@ -1312,7 +1312,7 @@ class LeadController extends Controller
                 }
             }
             if ($request->$leadStatus != 0) {
-                $college = Http::post('https://crmcompany.queleadscrm.com/api/get-client-name', ['client_id' => $request->client_id]);
+                $college = Http::crm_company()->post('/get-client-name', ['client_id' => $request->client_id]);
                 $nameData = json_decode($college->body());
                 $college_name = $nameData->data->name;
                 Mail::to($lead_email)->queue(new StatusChange($leadStatus, $college_name, $request->course, $name));
@@ -1363,7 +1363,7 @@ class LeadController extends Controller
         $lead_status = 1;
 
         // dd($client_logo);
-        $logo_details_of_logo = HTTP::get('https://crmcompany.queleadscrm.com/api/documents-details/' . $request->client_id);
+        $logo_details_of_logo = HTTP::crm_company()->get('/documents-details/' . $request->client_id);
         // dd(json_encode($logo_details_of_logo));
         $logo_response_of_logo = json_decode($logo_details_of_logo->body());
         // dd($logo_response_of_logo);

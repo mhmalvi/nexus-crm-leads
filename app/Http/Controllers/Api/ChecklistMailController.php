@@ -82,32 +82,17 @@ class ChecklistMailController extends Controller
 
     public function pdf_viewer(Request $request, $id)
     {
-        if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+
                 $file = Checklist::find($id);
                 // return Response::make(file_get_contents('public/'.$file->file_path), 200, [
                 //     'content-type' => 'application/pdf',
-                // ]);  
+                // ]);
                 return response()->json([
                     'message' => 'success',
                     'status' => 200,
-                    'data' => 'https://crmleads.quadque.digital/public/' . $file->file_path
+                    'data' => 'https://crmleads.queleadscrm.com/public/' . $file->file_path
                 ], 200);
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+
     }
 
     public function fetch_checklist(Request $request, $id)
