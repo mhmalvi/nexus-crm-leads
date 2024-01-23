@@ -1180,9 +1180,9 @@ class LeadController extends Controller
                     // dd($request->client_id);
                     $college = DB::connection('company')->table('companies')->where('id', $request->client_id)->first();                    
                     // $college = Http::crm_company()->post('/get-client-name', ['client_id' => $request->client_id]);
-                    dd($college);
-                    $nameData = json_decode($college->body());
-                    $college_name = $nameData->data->name;
+                    // dd($college);
+                    $nameData = json_decode($college);
+                    $college_name = $nameData->name;
 
                     if ($save) {
                         Mail::to($lead_email)->queue(new Response($request->lead_status, $college_name, $request->course, $name, $request->response));
