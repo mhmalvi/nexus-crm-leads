@@ -299,31 +299,31 @@ class LeadController extends Controller
         //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
         //     $flag_receive = $flag['data'];
         //     if ($flag_receive == 1) {
-                $lead_status = LeadStatus::where('lead_id', $lead_id)->get();
-                $lead_data = [];
-                for ($i = 0; $i < count($lead_status); $i++) {
-                    if ($lead_status[$i]->updated_by != null) {
-                        $user_name = DB::connection('user')->table('user_profile')->where('user_id', $lead_status[$i]->updated_by)->first();
-                        if ($lead_status[$i]->updated_by == $user_name->user_id) {
-                            $lead_status[$i]->selected_by = $user_name->full_name;
-                        }
-                    } else {
-                        $lead_status[$i]->selected_by = null;
-                    }
+        $lead_status = LeadStatus::where('lead_id', $lead_id)->get();
+        $lead_data = [];
+        for ($i = 0; $i < count($lead_status); $i++) {
+            if ($lead_status[$i]->updated_by != null) {
+                $user_name = DB::connection('user')->table('user_profile')->where('user_id', $lead_status[$i]->updated_by)->first();
+                if ($lead_status[$i]->updated_by == $user_name->user_id) {
+                    $lead_status[$i]->selected_by = $user_name->full_name;
                 }
+            } else {
+                $lead_status[$i]->selected_by = null;
+            }
+        }
 
-                if ($lead_status) {
-                    return response()->json([
-                        'message'    => 'success',
-                        'status' => 200,
-                        'data' => $lead_status
-                    ], 200);
-                } else {
-                    return response()->json([
-                        'message'    => 'Failed',
-                        'status' => 500
-                    ], 500);
-                }
+        if ($lead_status) {
+            return response()->json([
+                'message'    => 'success',
+                'status' => 200,
+                'data' => $lead_status
+            ], 200);
+        } else {
+            return response()->json([
+                'message'    => 'Failed',
+                'status' => 500
+            ], 500);
+        }
         //     } else {
         //         return response()->json([
         //             'message' => 'Unauthenticated',
@@ -1152,7 +1152,7 @@ class LeadController extends Controller
                     'student_id' => $student_id
                 ];
 
-                $college = Http::post(env('COMPANY_SERVICE_API', '') . '/get-client-name', ['client_id' => $request->client_id]);
+                $college = Http::crm_company()->post('/get-client-name', ['client_id' => $request->client_id]);
                 $nameData = json_decode($college->body());
                 $college_name = $nameData->data->name;
 

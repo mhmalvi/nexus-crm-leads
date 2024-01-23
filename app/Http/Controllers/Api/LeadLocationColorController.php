@@ -6,6 +6,7 @@ use App\Models\Color;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
+use LeadDetails;
 
 class LeadLocationColorController extends Controller
 {
@@ -109,4 +110,9 @@ class LeadLocationColorController extends Controller
             ], 404);
         }
     }
+
+    // public function saveLocation(Request $request)
+    // {
+    //     LeadDetails::all()
+    // }
 }
