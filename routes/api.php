@@ -36,7 +36,7 @@ Route::put('/update-location-color', [LeadLocationColorController::class, 'updat
 
 Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
 Route::get('/lead/lead_id={lead_id}/lead-status-logs',[\App\Http\Controllers\Api\LeadController::class,'lead_status_logs']);
-Route::put('/lead/response', [\App\Http\Controllers\Api\LeadController::class, 'leadResponse']);
+Route::post('/lead/response', [\App\Http\Controllers\Api\LeadController::class, 'leadResponse']);
 Route::put('/lead/quality/update', [\App\Http\Controllers\Api\LeadController::class, 'leadQualityUpdate']);
 Route::put('/lead/{lead_id}/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
 Route::post('/lead/assign', [\App\Http\Controllers\Api\LeadController::class, 'leadAssign']);

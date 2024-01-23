@@ -1127,47 +1127,49 @@ class LeadController extends Controller
 
     public function leadResponse(Request $request)
     {
-        $lead_info = LeadDetails::where('lead_id', '=', $request->lead_id)->first();
-        $lead_email = $lead_info->student_email;
-        $name = $lead_info->full_name;
-        $student_id = $lead_info->student_id;
-        $lead_status = LeadStatus::where('lead_id', $request->lead_id)->where('lead_status', '=', 3)->first();
-        if ($lead_status->lead_status == 3) {
-            if (!$lead_status) {
-                return response()->json([
-                    'message' => "Lead ID not found",
-                    'status' => 404,
-
-                ], 404);
-            } else {
-                $lead_status->response = $request->response;
-                $lead_status->lead_id = $request->lead_id;
-                $save = $lead_status->save();
-                $data = [
-                    'lead_status' => $request->lead_status,
-                    'lead_id' => $request->lead_id,
-                    'response' => $request->response,
-                    'to' => $lead_email,
-                    'name' => $name,
-                    'student_id' => $student_id
-                ];
-                $college = Http::crm_company()->post('/get-client-name', ['client_id' => $request->client_id]);
-                $nameData = json_decode($college->body());
-                $college_name = $nameData->data->name;
-
-                if ($save) {
-                    Mail::to($lead_email)->queue(new Response($request->lead_status, $college_name, $request->course, $name, $request->response));
+        if ($request->keyword == 'lead') {
+            $lead_info = LeadDetails::where('lead_id', '=', $request->lead_id)->first();
+            $lead_email = $lead_info->student_email;
+            $name = $lead_info->full_name;
+            $student_id = $lead_info->student_id;
+            $lead_status = LeadStatus::where('lead_id', $request->lead_id)->where('lead_status', '=', 3)->first();
+            if ($lead_status->lead_status == 3) {
+                if (!$lead_status) {
                     return response()->json([
-                        'message' => "success",
-                        'status' => 200,
-                        'data' => $data
-                    ], 200);
+                        'message' => "Lead ID not found",
+                        'status' => 404,
+
+                    ], 404);
                 } else {
-                    return response()->json([
-                        'message' => "failed",
-                        'status' => 500,
-                        'data' => $request->all()
-                    ], 500);
+                    $lead_status->response = $request->response;
+                    $lead_status->lead_id = $request->lead_id;
+                    $save = $lead_status->save();
+                    $data = [
+                        'lead_status' => $request->lead_status,
+                        'lead_id' => $request->lead_id,
+                        'response' => $request->response,
+                        'to' => $lead_email,
+                        'name' => $name,
+                        'student_id' => $student_id
+                    ];
+                    $college = Http::crm_company()->post('/get-client-name', ['client_id' => $request->client_id]);
+                    $nameData = json_decode($college->body());
+                    $college_name = $nameData->data->name;
+
+                    if ($save) {
+                        Mail::to($lead_email)->queue(new Response($request->lead_status, $college_name, $request->course, $name, $request->response));
+                        return response()->json([
+                            'message' => "success",
+                            'status' => 200,
+                            'data' => $data
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'message' => "failed",
+                            'status' => 500,
+                            'data' => $request->all()
+                        ], 500);
+                    }
                 }
             }
         }
