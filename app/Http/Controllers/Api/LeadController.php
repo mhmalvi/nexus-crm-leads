@@ -1180,7 +1180,7 @@ class LeadController extends Controller
                     // dd($request->client_id);
                     $college = DB::connection('company')->table('companies')->where('id', $request->client_id)->first();                    
                     // $college = Http::crm_company()->post('/get-client-name', ['client_id' => $request->client_id]);
-                    dd($college->body());
+                    dd($college);
                     $nameData = json_decode($college->body());
                     $college_name = $nameData->data->name;
 
