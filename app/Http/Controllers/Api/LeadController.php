@@ -41,7 +41,7 @@ class LeadController extends Controller
                 $courses = CoursesInfo::orderBy('id', 'desc')->get();
                 if ($courses) {
                     return response()->json([
-                        'message'    => 'success',
+                        'message' => 'success',
                         'status' => 200,
                         'data' => $courses
                     ], 200);
@@ -86,7 +86,7 @@ class LeadController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Lead amount added successfully',
-                'data'   => $leadAmountHistory
+                'data' => $leadAmountHistory
 
             ], 200);
         } catch (\Throwable $th) {
@@ -128,7 +128,7 @@ class LeadController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Lead Call history added successfully',
-                'data'   => $leadCallHistory
+                'data' => $leadCallHistory
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -149,13 +149,13 @@ class LeadController extends Controller
                 $course = CoursesInfo::find($course_id);
                 if ($course) {
                     return response()->json([
-                        'message'    => 'success',
+                        'message' => 'success',
                         'status' => 200,
                         'data' => $course
                     ], 200);
                 } else {
                     return response()->json([
-                        'message'    => 'failed',
+                        'message' => 'failed',
                         'status' => 500
                     ], 500);
                 }
@@ -190,7 +190,7 @@ class LeadController extends Controller
                     $response = $course->delete();
                     if ($response) {
                         return response()->json([
-                            'message'   => 'Deleted',
+                            'message' => 'Deleted',
                             'status' => 200
                         ], 200);
                     }
@@ -236,12 +236,12 @@ class LeadController extends Controller
                 ]);
                 if ($course == 1) {
                     return response()->json([
-                        'message'    => 'Course updated',
+                        'message' => 'Course updated',
                         'status' => 201
                     ], 201);
                 } else {
                     return response()->json([
-                        'message'    => 'Course not found',
+                        'message' => 'Course not found',
                         'status' => 404
                     ], 404);
                 }
@@ -283,7 +283,7 @@ class LeadController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Lead Sales Employee added successfully',
-                'data'   => $leadSalesEmployeeHistory
+                'data' => $leadSalesEmployeeHistory
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -311,6 +311,18 @@ class LeadController extends Controller
                 $lead_status[$i]->selected_by = null;
             }
         }
+        $lead_status = LeadStatus::where('lead_id', $lead_id)->get();
+        $lead_data = [];
+        for ($i = 0; $i < count($lead_status); $i++) {
+            if ($lead_status[$i]->updated_by != null) {
+                $user_name = DB::connection('user')->table('user_profile')->where('user_id', $lead_status[$i]->updated_by)->first();
+                if ($lead_status[$i]->updated_by == $user_name->user_id) {
+                    $lead_status[$i]->selected_by = $user_name->full_name;
+                }
+            } else {
+                $lead_status[$i]->selected_by = null;
+            }
+        }
 
         if ($lead_status) {
             return response()->json([
@@ -321,6 +333,18 @@ class LeadController extends Controller
         } else {
             return response()->json([
                 'message'    => 'Failed',
+                'status' => 500
+            ], 500);
+        }
+        if ($lead_status) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 200,
+                'data' => $lead_status
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'Failed',
                 'status' => 500
             ], 500);
         }
@@ -340,36 +364,36 @@ class LeadController extends Controller
 
     public function unassign_lead(Request $request, $id)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
-                $leadDetails = LeadDetails::where('lead_id', $id)->first();
-                $leadDetails->sales_user_id = 0;
-                $update = $leadDetails->save();
-                if ($update) {
-                    return response()->json([
-                        'message' => 'Lead unassigned',
-                        'status' => 201
-                    ], 201);
-                } else {
-                    return response()->json([
-                        'message' => 'failed',
-                        'status' => 500
-                    ], 500);
-                }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
+        $leadDetails = LeadDetails::where('lead_id', $id)->first();
+        $leadDetails->sales_user_id = 0;
+        $update = $leadDetails->save();
+        if ($update) {
+            return response()->json([
+                'message' => 'Lead unassigned',
+                'status' => 201
+            ], 201);
         } else {
             return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
+                'message' => 'failed',
+                'status' => 500
+            ], 500);
         }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
     public function add_course_by_accountant(Request $request)
     {
@@ -390,9 +414,9 @@ class LeadController extends Controller
                         $file_path = "assets/course_checklist/" . $fileName;
 
                         $save = new CoursesInfo();
-                        $save->course_code  = $request->course_code;
-                        $save->course_title    = $request->course_title;
-                        $save->course_description   = $request->course_description;
+                        $save->course_code = $request->course_code;
+                        $save->course_title = $request->course_title;
+                        $save->course_description = $request->course_description;
                         $save->checklist_name = $request->checklist->getClientOriginalName();
                         $save->checklist_path = $file_path;
                         $save->status = 1;
@@ -403,7 +427,7 @@ class LeadController extends Controller
 
                         if ($save) {
                             return response()->json([
-                                'message'    => 'Course saved',
+                                'message' => 'Course saved',
                                 'status' => 201,
                                 'data' => $save
                             ], 201);
@@ -444,7 +468,7 @@ class LeadController extends Controller
 
             if ($leadDetails->sales_user_id > 0) {
                 if (isset($request->star_review))
-                    $leadDetails->star_review = (int)$request->star_review;
+                    $leadDetails->star_review = (int) $request->star_review;
                 if (isset($request->lead_remarks))
                     $leadDetails->lead_remarks = $request->lead_remarks;
                 $leadDetails->save();
@@ -532,7 +556,8 @@ class LeadController extends Controller
         $lead_id = intval($id);
         $living_place = [
             "name"
-            => "what_state_do_you_live_in?", "values" => $request->living_place
+            => "what_state_do_you_live_in?",
+            "values" => $request->living_place
         ];
 
         $lead_status = 1;
@@ -770,124 +795,124 @@ class LeadController extends Controller
 
     public function uploadLeadExcel(Request $request)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
-                $client_id = $request->client_id;
-                $lead_import = new LeadsImport($client_id);
-                $data = \Excel::import($lead_import, $request->file);
-                if ($lead_import->flag == 1) {
-                    return response()->json([
-                        'message' => 'success',
-                        'status' => 200
-                    ]);
-                } elseif ($lead_import->flag == 0) {
-                    return response()->json([
-                        'message' => 'Please reformat excel sheet columns',
-                        'status' => 400
-                    ], 400);
-                } elseif ($lead_import->flag == 3) {
-                    return response()->json([
-                        'message' => 'Data already exists',
-                        'status' => 403
-                    ], 403);
-                }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
+        $client_id = $request->client_id;
+        $lead_import = new LeadsImport($client_id);
+        $data = \Excel::import($lead_import, $request->file);
+        if ($lead_import->flag == 1) {
             return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
+                'message' => 'success',
+                'status' => 200
+            ]);
+        } elseif ($lead_import->flag == 0) {
+            return response()->json([
+                'message' => 'Please reformat excel sheet columns',
+                'status' => 400
+            ], 400);
+        } elseif ($lead_import->flag == 3) {
+            return response()->json([
+                'message' => 'Data already exists',
+                'status' => 403
+            ], 403);
         }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     public function sales_assign_to_lead(Request $request)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
-                $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->where('client_id', $request->client_id)->get();
-                $sales = explode(',', $request->sales_id);
-                dd(json_decode($lead_id));
-                for ($i = 0; $i < count($sales); $i++) {
-                    for ($j = 0; $j < count($lead_id); $j++) {
-                        $data = LeadSalesEmployee::create([
-                            "sales_user_id" => $sales[$i],
-                            "lead_id" => $lead_id[$j]->lead_id,
-                            "active_status" => 1,
-                            "assign_by" => $request->assigned_by
-                        ]);
-                    }
-                }
-                if ($data) {
-                    return response()->json([
-                        'message' => 'success',
-                        'status' => 201,
-                        'data' => $data
-                    ], 201);
-                } else {
-                    return response()->json([
-                        'message' => 'failed',
-                        'status' => 500
-                    ], 500);
-                }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
+        $lead_id = LeadDetails::select('lead_id')->where('course_id', $request->course_id)->where('client_id', $request->client_id)->get();
+        $sales = explode(',', $request->sales_id);
+        dd(json_decode($lead_id));
+        for ($i = 0; $i < count($sales); $i++) {
+            for ($j = 0; $j < count($lead_id); $j++) {
+                $data = LeadSalesEmployee::create([
+                    "sales_user_id" => $sales[$i],
+                    "lead_id" => $lead_id[$j]->lead_id,
+                    "active_status" => 1,
+                    "assign_by" => $request->assigned_by
+                ]);
             }
+        }
+        if ($data) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 201,
+                'data' => $data
+            ], 201);
         } else {
             return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
+                'message' => 'failed',
+                'status' => 500
+            ], 500);
         }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     public function add_course(Request $request)
     {    //////////// insert course ///////////
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
-                if ($request->course_code && $request->course_title && $request->course_description) {
-                    $course = CoursesInfo::where('course_code', $request->course_code)->exists();
-                    if ($course) {
-                        return response()->json([
-                            'message' => 'Course already exists',
-                            'status' => 403
-                        ], 403);
-                    } else {
-                        $save = CoursesInfo::create([
-                            'course_code'    => $request->course_code,
-                            'course_title'    => $request->course_title,
-                            'course_description'    => $request->course_description,
-                            'status' => 1
-                        ]);
-                        if ($save) {
-                            return response()->json([
-                                'message'    => 'Course saved',
-                                'status' => 201,
-                                'data' => $save
-                            ], 201);
-                        }
-                    }
-                } else {
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
+        if ($request->course_code && $request->course_title && $request->course_description) {
+            $course = CoursesInfo::where('course_code', $request->course_code)->exists();
+            if ($course) {
+                return response()->json([
+                    'message' => 'Course already exists',
+                    'status' => 403
+                ], 403);
+            } else {
+                $save = CoursesInfo::create([
+                    'course_code' => $request->course_code,
+                    'course_title' => $request->course_title,
+                    'course_description' => $request->course_description,
+                    'status' => 1
+                ]);
+                if ($save) {
                     return response()->json([
-                        'message' => 'Please insert all fields',
-                        'status' => 'empty'
-                    ], 500);
+                        'message' => 'Course saved',
+                        'status' => 201,
+                        'data' => $save
+                    ], 201);
                 }
             }
+        } else {
+            return response()->json([
+                'message' => 'Please insert all fields',
+                'status' => 'empty'
+            ], 500);
         }
+        // }
+        // }
     }
 
     public function course_details_by_course_id(Request $request)
@@ -943,37 +968,37 @@ class LeadController extends Controller
 
     public function course_details(Request $request)
     {
-        if ($request->bearerToken()) {
-            // dd($userApi);
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
-                $course_details = CoursesInfo::orderBy('id', 'desc')->get();
-                // }
-                if ($course_details) {
-                    return response()->json([
-                        'message' => 'success',
-                        'status' => 200,
-                        'data' => $course_details
-                    ]);
-                } else {
-                    return response()->json([
-                        'message' => 'not found',
-                        'status' => 404,
-                    ]);
-                }
-            } else {
-                return response()->json([
-                    'message' => 'unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
+        // if ($request->bearerToken()) {
+        //     // dd($userApi);
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
+        $course_details = CoursesInfo::orderBy('id', 'desc')->get();
+        // }
+        if ($course_details) {
+            return response()->json([
+                'message' => 'success',
+                'status' => 200,
+                'data' => $course_details
+            ]);
         } else {
             return response()->json([
-                'message' => 'unauthenticated',
-                'status' => 401
-            ], 401);
+                'message' => 'not found',
+                'status' => 404,
+            ]);
         }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     /**
@@ -1083,7 +1108,7 @@ class LeadController extends Controller
                     $salesUserIds[] = $value['assign_by'];
                 }
                 // $userServiceAPI = env('USER_SERVICE_API', '');
-                $response = Http::post('https://crmuser.queleadscrm.com/api/user/list', [
+                $response = Http::crm_user()->post('/user/list', [
                     'users' => json_encode($salesUserIds)
                 ]);
 
@@ -1177,62 +1202,62 @@ class LeadController extends Controller
 
     public function delete_sales_employee_by_user_id(Request $request)
     {
-        if ($request->bearerToken()) {
-            $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
-                try {
-                    if ($request->sales_user_id) {
-                        $data = LeadSalesEmployee::where('sales_user_id', $request->sales_user_id)->get();
-                        if ($data) {
-                            foreach ($data as $datas) {
-                                $delete = $datas->delete();
-                            }
-                            $leads = LeadDetails::where('sales_user_id', $request->sales_user_id)->where('course_id', $request->course_id)->get();
-                            foreach ($leads as $lead) {
-                                $lead->sales_user_id = 0;
-                            }
-                            if ($delete == true) {
-                                return response()->json([
-                                    'message' => 'deleted',
-                                    'status' => 200
-                                ], 200);
-                            } else {
-                                return response()->json([
-                                    'message' => 'not deleted',
-                                    'status' => 500
-                                ], 500);
-                            }
-                        } else {
-                            return response()->json([
-                                'message' => 'not found',
-                                'status' => 404
-                            ], 404);
-                        }
+        // if ($request->bearerToken()) {
+        //     $flag = Http::withToken($request->bearerToken())->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
+        try {
+            if ($request->sales_user_id) {
+                $data = LeadSalesEmployee::where('sales_user_id', $request->sales_user_id)->get();
+                if ($data) {
+                    foreach ($data as $datas) {
+                        $delete = $datas->delete();
+                    }
+                    $leads = LeadDetails::where('sales_user_id', $request->sales_user_id)->where('course_id', $request->course_id)->get();
+                    foreach ($leads as $lead) {
+                        $lead->sales_user_id = 0;
+                    }
+                    if ($delete == true) {
+                        return response()->json([
+                            'message' => 'deleted',
+                            'status' => 200
+                        ], 200);
                     } else {
                         return response()->json([
-                            'message' => 'not found',
-                            'status' => 404
-                        ], 404);
+                            'message' => 'not deleted',
+                            'status' => 500
+                        ], 500);
                     }
-                } catch (\Throwable $th) {
+                } else {
                     return response()->json([
-                        'status' => false,
-                        'message' => $th->getMessage()
-                    ], 500);
+                        'message' => 'not found',
+                        'status' => 404
+                    ], 404);
                 }
             } else {
                 return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
+                    'message' => 'not found',
+                    'status' => 404
+                ], 404);
             }
-        } else {
+        } catch (\Throwable $th) {
             return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
         }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     public function leadStatusUpdate(Request $request)
@@ -1312,7 +1337,7 @@ class LeadController extends Controller
                 }
             }
             if ($request->$leadStatus != 0) {
-                $college = Http::post('https://crmcompany.queleadscrm.com/api/get-client-name', ['client_id' => $request->client_id]);
+                $college = Http::crm_company()->post('/get-client-name', ['client_id' => $request->client_id]);
                 $nameData = json_decode($college->body());
                 $college_name = $nameData->data->name;
                 Mail::to($lead_email)->queue(new StatusChange($leadStatus, $college_name, $request->course, $name));
@@ -1351,7 +1376,8 @@ class LeadController extends Controller
         $lead_id = intval($id);
         $living_place = [
             "name"
-            => "what_state_do_you_live_in?", "values" => $request->living_place
+            => "what_state_do_you_live_in?",
+            "values" => $request->living_place
         ];
         $course = $request->course;
         $course_code = explode('-', $course);
@@ -1362,7 +1388,7 @@ class LeadController extends Controller
         $lead_status = 1;
 
         // dd($client_logo);
-        $logo_details_of_logo = HTTP::get('https://crmcompany.queleadscrm.com/api/documents-details/' . $request->client_id);
+        $logo_details_of_logo = HTTP::crm_company()->get('/documents-details/' . $request->client_id);
         // dd(json_encode($logo_details_of_logo));
         $logo_response_of_logo = json_decode($logo_details_of_logo->body());
         // dd($logo_response_of_logo);

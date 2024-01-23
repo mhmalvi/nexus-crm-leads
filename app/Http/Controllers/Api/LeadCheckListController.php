@@ -22,12 +22,12 @@ class LeadCheckListController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $userApi = env('USER_SERVICE_API', '');
+        //     $userApi = env('USER_SERVICE_API', '');
+        //     $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 if (!isset($request->course_id))
                     return response()->json([
                         'status' => false,
@@ -64,18 +64,18 @@ class LeadCheckListController extends Controller
                         'message' => $th->getMessage()
                     ], 500);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     /**
@@ -85,11 +85,11 @@ class LeadCheckListController extends Controller
      */
     public function create(Request $request)
     {
-        if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $userApi = env('USER_SERVICE_API', '');
+        //     $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 if (!isset($request->user_id) || !isset($request->client_id) || !isset($request->course_id))
                     return response()->json([
                         'status' => false,
@@ -123,18 +123,18 @@ class LeadCheckListController extends Controller
                         'message' => $th->getMessage()
                     ], 500);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     /**
@@ -183,11 +183,11 @@ class LeadCheckListController extends Controller
      */
     public function delete(Request $request)
     {
-        if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $userApi = env('USER_SERVICE_API', '');
+        //     $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 if (!isset($request->id))
                     return response()->json([
                         'status' => false,
@@ -223,18 +223,18 @@ class LeadCheckListController extends Controller
                         'message' => $th->getMessage()
                     ], 500);
                 }
-            } else {
-                return response()->json([
-                    'message' => 'Unauthenticated',
-                    'status' => 401
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated',
-                'status' => 401
-            ], 401);
-        }
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'Unauthenticated',
+        //             'status' => 401
+        //         ], 401);
+        //     }
+        // } else {
+        //     return response()->json([
+        //         'message' => 'Unauthenticated',
+        //         'status' => 401
+        //     ], 401);
+        // }
     }
 
     /**
@@ -428,25 +428,25 @@ class LeadCheckListController extends Controller
     // update course info by id
     public function updateCourse(Request $request, $id)
     {
-        if ($request->bearerToken()) {
-            $userApi = env('USER_SERVICE_API', '');
-            $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
-            $flag_receive = $flag['data'];
-            if ($flag_receive == 1) {
+        // if ($request->bearerToken()) {
+        //     $userApi = env('USER_SERVICE_API', '');
+        //     $flag = Http::withToken($request->bearerToken())->post($userApi . '/check-if-token-exists');
+        //     $flag_receive = $flag['data'];
+        //     if ($flag_receive == 1) {
                 if (CoursesInfo::where('id', $id)->first()) {
                     $findCourse = CoursesInfo::findOrFail($id);
                     $findCourse->course_title = $request->title;
-                    // $findCourse->course_description = $request->description; 
+                    // $findCourse->course_description = $request->description;
                     $findCourse->save();
                     return response()->json(['message' => 'Course updated successfully !', 'status' => 201], 201);
                 } else {
                     return response()->json(['message' => 'Course not found!'], 404);
                 }
-            } else {
-                return response()->json(['message' => 'Unauthenticated!', 'status' => 401], 401);
-            }
-        } else {
-            return response()->json(['message' => 'Unauthenticated!', 'status' => 401], 401);
-        }
+        //     } else {
+        //         return response()->json(['message' => 'Unauthenticated!', 'status' => 401], 401);
+        //     }
+        // } else {
+        //     return response()->json(['message' => 'Unauthenticated!', 'status' => 401], 401);
+        // }
     }
 }
