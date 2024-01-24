@@ -654,7 +654,7 @@ class LeadController extends Controller
      */
     public function leadList(Request $request)
     {
-        try {
+        // try {
             if ($request->bearerToken()) {
                 $flag = Http::crm_user()->withToken($request->bearerToken())->post('/check-if-token-exists');
                 $flag_receive = $flag['data'];
@@ -777,12 +777,12 @@ class LeadController extends Controller
                     'status' => 401
                 ], 401);
             }
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
-        }
+        // } catch (\Throwable $th) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => $th->getMessage()
+        //     ], 500);
+        // }
     }
 
     public function lead_update(Request $request, $lead_id)
