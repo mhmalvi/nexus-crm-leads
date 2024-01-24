@@ -655,111 +655,127 @@ class LeadController extends Controller
     public function leadList(Request $request)
     {
         try {
-            if ($request->role_id == 5) {
-                $data = DB::table('lead_details')
-                    ->select(
-                        'lead_details.id as lid',
-                        'lead_details.lead_id  as lead_id',
-                        'lead_details.student_id as student_id',
-                        'lead_details.full_name as full_name',
-                        'lead_details.phone_number as phone_number',
-                        'lead_details.student_email as student_email',
-                        'lead_details.client_id as client_id',
-                        'lead_details.campaign_id as campaign_id',
-                        'lead_details.sales_user_id as sales_user_id',
-                        'lead_details.document_certificate_id as document_certificate_id',
-                        'lead_details.course_id as course_id',
-                        'lead_details.work_location as work_location',
-                        'lead_details.lead_from as lead_from',
-                        'lead_details.form_data as form_data',
-                        'lead_details.star_review as star_review',
-                        'lead_details.lead_apply_date as lead_apply_date',
-                        'lead_details.lead_remarks as lead_remarks',
-                        'lead_details.lead_details_status as lead_details_status',
-                        'lead_details.created_at as created_at',
-                        'lead_details.updated_at as updated_at',
-                        'courses_info.id as cid',
-                        'courses_info.course_code as course_code',
-                        'courses_info.course_title as course_title',
-                        'courses_info.course_description as course_description',
-                        'courses_info.status as status'
-                    )->where('lead_details.sales_user_id', $request->user_id)
-                    ->leftJoin('courses_info', function ($join) {
-                        $join->on('lead_details.course_id', '=', 'courses_info.id');
-                    })->get();
-                if (isset($request->client_id))
-                    $data = $data->where('sales_user_id', $request->user_id)->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc');
+            if ($request->bearerToken()) {
+                $flag = Http::withToken($request->bearerToken())->crm_user()->post('https://crmuser.queleadscrm.com/api/check-if-token-exists');
+                $flag_receive = $flag['data'];
+                if ($flag_receive == 1) {
+                    if ($request->role_id == 5) {
+                        $data = DB::table('lead_details')
+                            ->select(
+                                'lead_details.id as lid',
+                                'lead_details.lead_id  as lead_id',
+                                'lead_details.student_id as student_id',
+                                'lead_details.full_name as full_name',
+                                'lead_details.phone_number as phone_number',
+                                'lead_details.student_email as student_email',
+                                'lead_details.client_id as client_id',
+                                'lead_details.campaign_id as campaign_id',
+                                'lead_details.sales_user_id as sales_user_id',
+                                'lead_details.document_certificate_id as document_certificate_id',
+                                'lead_details.course_id as course_id',
+                                'lead_details.work_location as work_location',
+                                'lead_details.lead_from as lead_from',
+                                'lead_details.form_data as form_data',
+                                'lead_details.star_review as star_review',
+                                'lead_details.lead_apply_date as lead_apply_date',
+                                'lead_details.lead_remarks as lead_remarks',
+                                'lead_details.lead_details_status as lead_details_status',
+                                'lead_details.created_at as created_at',
+                                'lead_details.updated_at as updated_at',
+                                'courses_info.id as cid',
+                                'courses_info.course_code as course_code',
+                                'courses_info.course_title as course_title',
+                                'courses_info.course_description as course_description',
+                                'courses_info.status as status'
+                            )->where('lead_details.sales_user_id', $request->user_id)
+                            ->leftJoin('courses_info', function ($join) {
+                                $join->on('lead_details.course_id', '=', 'courses_info.id');
+                            })->get();
+                        if (isset($request->client_id))
+                            $data = $data->where('sales_user_id', $request->user_id)->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc');
 
-                if (isset($request->student_id))
-                    $data = $data->where('sales_user_id', $request->user_id)->where('lead_details.student_id', '=', $request->student_id)->orderBy('lead_details.lead_apply_date', 'desc');
+                        if (isset($request->student_id))
+                            $data = $data->where('sales_user_id', $request->user_id)->where('lead_details.student_id', '=', $request->student_id)->orderBy('lead_details.lead_apply_date', 'desc');
 
-                $paginate_data = $data->get();
-                $lead_id = LeadDetails::select('lead_id')->get();
-                for ($i = 0; $i < count($lead_id); $i++) {
-                    if (isset($lead_id[$i])) {
-                        $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->get();
-                    }
-                }
+                        $paginate_data = $data->get();
+                        $lead_id = LeadDetails::select('lead_id')->get();
+                        for ($i = 0; $i < count($lead_id); $i++) {
+                            if (isset($lead_id[$i])) {
+                                $sales_objects[] = LeadSalesEmployee::where('lead_id', $lead_id[$i]->lead_id)->get();
+                            }
+                        }
 
-                for ($j = 0; $j < count($paginate_data); $j++) {
-                    for ($k = 0; $k < count($sales_objects); $k++) {
-                        if (isset($sales_objects[$k][0]->lead_id)) {
-                            for ($m = 0; $m < count($sales_objects[$k]); $m++) {
-                                if ($paginate_data[$j]->lead_id == $sales_objects[$k][$m]->lead_id) {
-                                    $paginate_data[$j]->assignedHistory[] = $sales_objects[$k][$m]->sales_user_id;
+                        for ($j = 0; $j < count($paginate_data); $j++) {
+                            for ($k = 0; $k < count($sales_objects); $k++) {
+                                if (isset($sales_objects[$k][0]->lead_id)) {
+                                    for ($m = 0; $m < count($sales_objects[$k]); $m++) {
+                                        if ($paginate_data[$j]->lead_id == $sales_objects[$k][$m]->lead_id) {
+                                            $paginate_data[$j]->assignedHistory[] = $sales_objects[$k][$m]->sales_user_id;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'All Lead List',
-                    'data' => $paginate_data,
-                ], 200);
-            } else {
-                $data = DB::table('lead_details')
-                    ->select(
-                        'lead_details.id as lid',
-                        'lead_details.lead_id  as lead_id',
-                        'lead_details.student_id as student_id',
-                        'lead_details.full_name as full_name',
-                        'lead_details.phone_number as phone_number',
-                        'lead_details.student_email as student_email',
-                        'lead_details.client_id as client_id',
-                        'lead_details.campaign_id as campaign_id',
-                        'lead_details.sales_user_id as sales_user_id',
-                        'lead_details.document_certificate_id as document_certificate_id',
-                        'lead_details.course_id as course_id',
-                        'lead_details.work_location as work_location',
-                        'lead_details.lead_from as lead_from',
-                        'lead_details.form_data as form_data',
-                        'lead_details.star_review as star_review',
-                        'lead_details.lead_apply_date as lead_apply_date',
-                        'lead_details.lead_remarks as lead_remarks',
-                        'lead_details.lead_details_status as lead_details_status',
-                        'lead_details.created_at as created_at',
-                        'lead_details.updated_at as updated_at',
-                        'lead_details.call_count as call_count',
-                        'courses_info.id as cid',
-                        'courses_info.course_code as course_code',
-                        'courses_info.course_title as course_title',
-                        'courses_info.course_description as course_description',
-                        'courses_info.status as status'
-                    )->leftJoin('courses_info', function ($join) {
-                        $join->on('lead_details.course_id', '=', 'courses_info.id');
-                    });
-                // ->leftJoin('counts', 'lead_details.lead_id', '=', 'counts.lead_id');
-                if (isset($request->client_id))
-                    $data = $data->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc')->get();
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'All Lead List',
+                            'data' => $paginate_data,
+                        ], 200);
+                    } else {
+                        $data = DB::table('lead_details')
+                            ->select(
+                                'lead_details.id as lid',
+                                'lead_details.lead_id  as lead_id',
+                                'lead_details.student_id as student_id',
+                                'lead_details.full_name as full_name',
+                                'lead_details.phone_number as phone_number',
+                                'lead_details.student_email as student_email',
+                                'lead_details.client_id as client_id',
+                                'lead_details.campaign_id as campaign_id',
+                                'lead_details.sales_user_id as sales_user_id',
+                                'lead_details.document_certificate_id as document_certificate_id',
+                                'lead_details.course_id as course_id',
+                                'lead_details.work_location as work_location',
+                                'lead_details.lead_from as lead_from',
+                                'lead_details.form_data as form_data',
+                                'lead_details.star_review as star_review',
+                                'lead_details.lead_apply_date as lead_apply_date',
+                                'lead_details.lead_remarks as lead_remarks',
+                                'lead_details.lead_details_status as lead_details_status',
+                                'lead_details.created_at as created_at',
+                                'lead_details.updated_at as updated_at',
+                                'lead_details.call_count as call_count',
+                                'courses_info.id as cid',
+                                'courses_info.course_code as course_code',
+                                'courses_info.course_title as course_title',
+                                'courses_info.course_description as course_description',
+                                'courses_info.status as status'
+                            )->leftJoin('courses_info', function ($join) {
+                                $join->on('lead_details.course_id', '=', 'courses_info.id');
+                            });
+                        // ->leftJoin('counts', 'lead_details.lead_id', '=', 'counts.lead_id');
+                        if (isset($request->client_id))
+                            $data = $data->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc')->get();
 
-                if (isset($request->student_id))
-                    $data = $data->where('lead_details.student_id', '=', $request->student_id)->orderBy('lead_details.lead_apply_date', 'desc')->get();
+                        if (isset($request->student_id))
+                            $data = $data->where('lead_details.student_id', '=', $request->student_id)->orderBy('lead_details.lead_apply_date', 'desc')->get();
+                        return response()->json([
+                            'status' => 200,
+                            'message' => 'All Lead List',
+                            'data' => $data,
+                        ], 200);
+                    }
+                } else {
+                    return response()->json([
+                        'message' => 'unauthorized',
+                        'status' => 401
+                    ], 401);
+                }
+            } else {
                 return response()->json([
-                    'status' => 200,
-                    'message' => 'All Lead List',
-                    'data' => $data,
-                ], 200);
+                    'message' => 'unauthorized',
+                    'status' => 401
+                ], 401);
             }
         } catch (\Throwable $th) {
             return response()->json([
@@ -1152,51 +1168,46 @@ class LeadController extends Controller
 
     public function leadResponse(Request $request)
     {
-        if ($request->keyword == 'lead') {
-            $lead_info = LeadDetails::where('lead_id', '=', $request->lead_id)->first();
-            $lead_email = $lead_info->student_email;
-            $name = $lead_info->full_name;
-            $student_id = $lead_info->student_id;
-            $lead_status = LeadStatus::where('lead_id', $request->lead_id)->where('lead_status', '=', 3)->first();
-            if ($lead_status->lead_status == 3) {
-                if (!$lead_status) {
+        $lead_info = LeadDetails::where('lead_id', '=', $request->lead_id)->first();
+        $lead_email = $lead_info->student_email;
+        $name = $lead_info->full_name;
+        $student_id = $lead_info->student_id;
+        $lead_status = LeadStatus::where('lead_id', $request->lead_id)->where('lead_status', '=', 3)->first();
+        if ($lead_status->lead_status == 3) {
+            if (!$lead_status) {
+                return response()->json([
+                    'message' => "Lead ID not found",
+                    'status' => 404,
+
+                ], 404);
+            } else {
+                $lead_status->response = $request->response;
+                $lead_status->lead_id = $request->lead_id;
+                $save = $lead_status->save();
+                $data = [
+                    'lead_status' => $request->lead_status,
+                    'lead_id' => $request->lead_id,
+                    'response' => $request->response,
+                    'to' => $lead_email,
+                    'name' => $name,
+                    'student_id' => $student_id
+                ];
+                $college = DB::connection('company')->table('companies')->where('id', $request->client_id)->first();
+                $college_name = $college->name;
+
+                if ($save) {
+                    Mail::to($lead_email)->queue(new Response($request->lead_status, $college_name, $request->course, $name, $request->response));
                     return response()->json([
-                        'message' => "Lead ID not found",
-                        'status' => 404,
-
-                    ], 404);
+                        'message' => "success",
+                        'status' => 200,
+                        'data' => $data
+                    ], 200);
                 } else {
-                    $lead_status->response = $request->response;
-                    $lead_status->lead_id = $request->lead_id;
-                    $save = $lead_status->save();
-                    $data = [
-                        'lead_status' => $request->lead_status,
-                        'lead_id' => $request->lead_id,
-                        'response' => $request->response,
-                        'to' => $lead_email,
-                        'name' => $name,
-                        'student_id' => $student_id
-                    ];
-                    // dd($request->client_id);
-                    $college = DB::connection('company')->table('companies')->where('id', $request->client_id)->first();                    
-                    // $college = Http::crm_company()->post('/get-client-name', ['client_id' => $request->client_id]);
-                    // dd($college);
-                    $college_name = $college->name;
-
-                    if ($save) {
-                        Mail::to($lead_email)->queue(new Response($request->lead_status, $college_name, $request->course, $name, $request->response));
-                        return response()->json([
-                            'message' => "success",
-                            'status' => 200,
-                            'data' => $data
-                        ], 200);
-                    } else {
-                        return response()->json([
-                            'message' => "failed",
-                            'status' => 500,
-                            'data' => $request->all()
-                        ], 500);
-                    }
+                    return response()->json([
+                        'message' => "failed",
+                        'status' => 500,
+                        'data' => $request->all()
+                    ], 500);
                 }
             }
         }

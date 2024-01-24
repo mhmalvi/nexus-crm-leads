@@ -436,10 +436,7 @@ class LeadController extends Controller
                 'message' => 'Lead id and Sales Id required '
             ], 406);
         }
-
-
         try {
-
             $leadDetails = LeadDetails::where('lead_id', '=', $request->lead_id)->first();
             if ($leadDetails == "") {
                 return response()->json([
