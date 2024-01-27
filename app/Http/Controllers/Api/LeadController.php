@@ -721,7 +721,7 @@ class LeadController extends Controller
                             'message' => 'All Lead List',
                             'data' => $paginate_data,
                         ], 200);
-                    } else if(json_decode($flag->body())->role!=8 && json_decode($flag->body())->role==1 && json_decode($flag->body())->role==2 && json_decode($flag->body())->role==3){
+                    } else if(json_decode($flag->body())->role==1 || json_decode($flag->body())->role==2 || json_decode($flag->body())->role==3){
                         $data = DB::table('lead_details')
                             ->select(
                                 'lead_details.id as lid',
