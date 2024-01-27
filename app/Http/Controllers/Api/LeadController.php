@@ -655,11 +655,11 @@ class LeadController extends Controller
     public function leadList(Request $request)
     {
         // try {
-            // if ($request->bearerToken()) {
-            //     $flag = Http::crm_user()->withToken($request->bearerToken())->post('/check-if-token-exists');
-            //     $flag_receive = $flag['data'];
-            //     if ($flag_receive == 1) {
-                    if ($request->role_id == 5) {
+            if ($request->bearerToken()) {
+                $flag = Http::crm_user()->withToken($request->bearerToken())->post('/check-if-token-exists');
+                $flag_receive = $flag['data'];
+                if ($flag_receive == 1) {
+                    if ($request->role_id == 5 && $flag['role_id']==5) {
                         $data = DB::table('lead_details')
                             ->select(
                                 'lead_details.id as lid',
@@ -765,18 +765,18 @@ class LeadController extends Controller
                             'data' => $data,
                         ], 200);
                     }
-            //     } else {
-            //         return response()->json([
-            //             'message' => 'unauthorized',
-            //             'status' => 401
-            //         ], 401);
-            //     }
-            // } else {
-            //     return response()->json([
-            //         'message' => 'unauthorized',
-            //         'status' => 401
-            //     ], 401);
-            // }
+                } else {
+                    return response()->json([
+                        'message' => 'unauthorized',
+                        'status' => 401
+                    ], 401);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'unauthorized',
+                    'status' => 401
+                ], 401);
+            }
         // } catch (\Throwable $th) {
         //     return response()->json([
         //         'status' => false,
