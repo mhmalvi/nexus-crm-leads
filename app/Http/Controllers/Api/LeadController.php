@@ -764,6 +764,11 @@ class LeadController extends Controller
                             'message' => 'All Lead List',
                             'data' => $data,
                         ], 200);
+                    }else{
+                        return response()->json([
+                        'message' => 'unauthorized',
+                        'status' => 401
+                    ], 401);
                     }
                 } else {
                     return response()->json([
