@@ -659,7 +659,7 @@ class LeadController extends Controller
                 $flag = Http::crm_user()->withToken($request->bearerToken())->post('/check-if-token-exists');
                 $flag_receive = $flag['data'];
                 if ($flag_receive == 1) {
-                    if ($request->role_id == 5 && $flag['role_id']==5) {
+                    if ($flag['role_id']==5) {
                         $data = DB::table('lead_details')
                             ->select(
                                 'lead_details.id as lid',
