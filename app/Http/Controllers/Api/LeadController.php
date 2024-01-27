@@ -657,10 +657,9 @@ class LeadController extends Controller
         // try {
             if ($request->bearerToken()) {
                 $flag = Http::crm_user()->withToken($request->bearerToken())->post('/check-if-token-exists');
-                // dd(json_decode($flag->body())->data);
-                $flag_receive = json_decode($flag->body())->data;
+                $flag_receive = $flag['data'];
                 if ($flag_receive == 1) {
-                    if (json_decode($flag->body())->role==5) {
+                    if ($request->role_id == 5) {
                         $data = DB::table('lead_details')
                             ->select(
                                 'lead_details.id as lid',
@@ -722,7 +721,7 @@ class LeadController extends Controller
                             'message' => 'All Lead List',
                             'data' => $paginate_data,
                         ], 200);
-                    } else if(json_decode($flag->body())->role==1 || json_decode($flag->body())->role==2 || json_decode($flag->body())->role==3){
+                    } else {
                         $data = DB::table('lead_details')
                             ->select(
                                 'lead_details.id as lid',
@@ -765,11 +764,6 @@ class LeadController extends Controller
                             'message' => 'All Lead List',
                             'data' => $data,
                         ], 200);
-                    }else{
-                        return response()->json([
-                        'message' => 'unauthorized',
-                        'status' => 401
-                    ], 401);
                     }
                 } else {
                     return response()->json([
