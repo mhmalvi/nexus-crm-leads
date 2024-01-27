@@ -657,7 +657,7 @@ class LeadController extends Controller
         // try {
             if ($request->bearerToken()) {
                 $flag = Http::crm_user()->withToken($request->bearerToken())->post('/check-if-token-exists');
-                $flag_receive = $flag['data'];
+                $flag_receive = json_decode($flag->body())->data;
                 if ($flag_receive == 1) {
                     if (json_decode($flag->body())->role==5) {
                         $data = DB::table('lead_details')
