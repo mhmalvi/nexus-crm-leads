@@ -35,6 +35,10 @@ Route::group(['middleware' => ['companyandsalesAuthentication']], function () {
     Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
     Route::post('/lead/add/amount', [\App\Http\Controllers\Api\LeadController::class, 'leadAddAmount']);
     Route::post('/lead/add/call', [\App\Http\Controllers\Api\LeadController::class, 'leadAddCallHistory']);
+    Route::post('/review/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'single_comment']);
+    Route::post('/multi-review/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'multi_comment']);
+    Route::get('/lead/lead_id={lead_id}/lead-status-logs', [\App\Http\Controllers\Api\LeadController::class,
+    'lead_status_logs']);
 });
 
 
@@ -43,16 +47,13 @@ Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'c
 
 Route::post('/lead/filter', [\App\Http\Controllers\Api\LeadController::class, 'leadFilter']);
 
-Route::post('/review/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'single_comment']);
-Route::post('/multi-review/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'multi_comment']);
-
 // Route::post('/add-lead-location-color', [LeadLocationColorController::class, 'add_color']);
 // Route::get('/location-color', [LeadLocationColorController::class, 'getColor']);
 // Route::get('/delete-location-color', [LeadLocationColorController::class, 'deleteColor']);
 // Route::put('/update-location-color', [LeadLocationColorController::class, 'updateColor']);
 
 
-Route::get('/lead/lead_id={lead_id}/lead-status-logs', [\App\Http\Controllers\Api\LeadController::class, 'lead_status_logs']);
+
 Route::put('/lead/response', [\App\Http\Controllers\Api\LeadController::class, 'leadResponse']);
 Route::put('/lead/quality/update', [\App\Http\Controllers\Api\LeadController::class, 'leadQualityUpdate']);
 Route::put('/lead/{lead_id}/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
