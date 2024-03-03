@@ -28,7 +28,7 @@ Route::group(['middleware' => 'companyAuthentication'], function () {
 });
 
 Route::post('/lead/list', [\App\Http\Controllers\Api\LeadController::class,
-'leadList'])->middleware('salesAuthentication','companyAuthentication');
+'leadList']);
 
 Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'createLead']);
 
