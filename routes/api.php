@@ -24,10 +24,11 @@ Route::group(['middleware' => 'companyAuthentication'], function () {
     
     Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
     Route::post('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
-    Route::post('/lead/list', [\App\Http\Controllers\Api\LeadController::class,
-    'leadList'])->middleware('salesAuthentication');
+    
 });
 
+Route::post('/lead/list', [\App\Http\Controllers\Api\LeadController::class,
+'leadList'])->middleware('salesAuthentication','companyAuthentication');
 
 Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'createLead']);
 
