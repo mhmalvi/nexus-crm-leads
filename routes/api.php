@@ -34,6 +34,7 @@ Route::group(['middleware' => ['companyandsalesAuthentication']], function () {
     Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
     Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
     Route::post('/lead/add/amount', [\App\Http\Controllers\Api\LeadController::class, 'leadAddAmount']);
+    Route::post('/lead/add/call', [\App\Http\Controllers\Api\LeadController::class, 'leadAddCallHistory']);
 });
 
 
@@ -82,8 +83,6 @@ Route::post('/course_id={course_id}/course-update-from-accountant', [\App\Http\C
 Route::post('/course_id={course_id}/course-destroy-from-accountant', [\App\Http\Controllers\Api\LeadController::class, 'destroy_course_from_accountant']);
 Route::get('/get-course-in-accountant', [\App\Http\Controllers\Api\LeadController::class, 'get_course_in_accountant']);
 Route::get('/lead/courses', [\App\Http\Controllers\Api\LeadCheckListController::class, 'getCoursesList']);
-
-Route::post('/lead/add/call', [\App\Http\Controllers\Api\LeadController::class, 'leadAddCallHistory']);
 
 Route::post('/save-mail-template', [\App\Http\Controllers\Api\ChecklistMailController::class, 'save_mail_template']);
 // Route::post('/destroy-mail-template',[\App\Http\Controllers\Api\ChecklistMailController::class,'destroy_mail_template']);
