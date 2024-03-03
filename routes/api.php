@@ -40,10 +40,7 @@ Route::group(['middleware' => 'companyAuthentication'], function () {
 
     Route::post('/unassign-leads', [\App\Http\Controllers\Api\SalesController::class, 'unassign_leads']);
     Route::get('/sales-list/{id}', [\App\Http\Controllers\Api\SalesController::class, 'sales_list']);
-    Route::post(
-        '/sales_id={sales_id}/company_id={company_id}/get-lead-list-in-sales',
-        [\App\Http\Controllers\Api\SalesController::class, 'lead_list_in_sales']
-    );
+
     Route::post('/lead/{id}/course/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'updateCourse']);
 
 
@@ -83,7 +80,10 @@ Route::group(['middleware' => ['companyandsalesAuthentication']], function () {
         'save_mail_template'
     ]);
 
-
+    Route::post(
+        '/sales_id={sales_id}/company_id={company_id}/get-lead-list-in-sales',
+        [\App\Http\Controllers\Api\SalesController::class, 'lead_list_in_sales']
+    );
 
     Route::post(
         '/template_id={template_id}/delete-mail-templates',
