@@ -20,7 +20,7 @@ class CompanyMiddleware
         // dd($request->bearerToken());
         if ($auth_exists) {
             $auth = Auth::where('token', 'Bearer ' . $request->bearerToken())->first();
-            if ($auth->role_id == 3) {
+            if ($auth->role_id == 3 || $auth->role_id == 4) {
                 return $next($request);
             } else {
                 return response()->json(['Unauthenticated'], 401);

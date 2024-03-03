@@ -562,7 +562,7 @@ class LeadController extends Controller
 
         $lead_status = 1;
         $companyApi = env('COMPANY_SERVICE_API', '');
-        $logo_details_of_logo = HTTP::get($companyApi . '/documents-details/' . $request->client_id);
+        $logo_details_of_logo = HTTP::crm_company()->get('/documents-details/' . $request->client_id);
         // dd(json_encode($logo_details_of_logo));
         $logo_response_of_logo = json_decode($logo_details_of_logo->body());
         // dd($logo_response_of_logo);
