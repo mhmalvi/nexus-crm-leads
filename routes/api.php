@@ -83,7 +83,6 @@ Route::post('/course_id={course_id}/course-destroy-from-accountant', [\App\Http\
 Route::get('/get-course-in-accountant', [\App\Http\Controllers\Api\LeadController::class, 'get_course_in_accountant']);
 Route::get('/lead/courses', [\App\Http\Controllers\Api\LeadCheckListController::class, 'getCoursesList']);
 
-Route::post('/lead/add/amount', [\App\Http\Controllers\Api\LeadController::class, 'leadAddAmount']);
 Route::post('/lead/add/call', [\App\Http\Controllers\Api\LeadController::class, 'leadAddCallHistory']);
 
 Route::post('/save-mail-template', [\App\Http\Controllers\Api\ChecklistMailController::class, 'save_mail_template']);
