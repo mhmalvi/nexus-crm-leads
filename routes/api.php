@@ -22,14 +22,15 @@ use App\Http\Controllers\Api\LeadLocationColorController;
 
 Route::group(['middleware' => 'companyAuthentication'], function () {
 
-    Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
+    
     Route::post('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
 });
-Route::group(['middleware' => ['companyAuthentication','salesAuthentication']], function () {
+Route::group(['middleware' => ['companyandsalesAuthentication']], function () {
     Route::post('/lead/list', [
         \App\Http\Controllers\Api\LeadController::class,
         'leadList'
     ]);
+    Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
 });
 
 
