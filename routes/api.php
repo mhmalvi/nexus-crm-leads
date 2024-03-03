@@ -28,7 +28,6 @@ Route::group(['middleware' => 'companyAuthentication'], function () {
 Route::post('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
 Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'createLead']);
 
-Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
 Route::post('/lead/filter', [\App\Http\Controllers\Api\LeadController::class, 'leadFilter']);
 
 Route::post('/review/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'single_comment']);
