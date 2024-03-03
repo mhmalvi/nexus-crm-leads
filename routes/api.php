@@ -24,6 +24,7 @@ Route::group(['middleware' => 'companyAuthentication'], function () {
 
     
     Route::post('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
+    Route::post('/excel-read', [\App\Http\Controllers\Api\LeadController::class, 'uploadLeadExcel']);
 });
 Route::group(['middleware' => ['companyandsalesAuthentication']], function () {
     Route::post('/lead/list', [
@@ -32,6 +33,7 @@ Route::group(['middleware' => ['companyandsalesAuthentication']], function () {
     ]);
     Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
     Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
+    Route::post('/lead/add/amount', [\App\Http\Controllers\Api\LeadController::class, 'leadAddAmount']);
 });
 
 
@@ -107,7 +109,7 @@ Route::post('/create-lead', [\App\Http\Controllers\Api\LeadController::class, 'c
 
 Route::post('/create-lead-from-form', [\App\Http\Controllers\Api\LeadController::class, 'create_lead_from_form']);
 
-Route::post('/excel-read', [\App\Http\Controllers\Api\LeadController::class, 'uploadLeadExcel']);
+
 
 Route::put('lead-update/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'lead_update']);
 
