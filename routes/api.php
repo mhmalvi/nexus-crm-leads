@@ -21,14 +21,18 @@ use App\Http\Controllers\Api\LeadLocationColorController;
 //});
 
 Route::group(['middleware' => 'companyAuthentication'], function () {
-    
+
     Route::post('/lead/details', [\App\Http\Controllers\Api\LeadController::class, 'leadDetails']);
     Route::post('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
-    
+});
+Route::group(['middleware' => ['companyAuthentication','salesAuthentication']], function () {
+    Route::post('/lead/list', [
+        \App\Http\Controllers\Api\LeadController::class,
+        'leadList'
+    ]);
 });
 
-Route::post('/lead/list', [\App\Http\Controllers\Api\LeadController::class,
-'leadList']);
+
 
 Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'createLead']);
 
@@ -43,7 +47,7 @@ Route::get('/delete-location-color', [LeadLocationColorController::class, 'delet
 Route::put('/update-location-color', [LeadLocationColorController::class, 'updateColor']);
 
 Route::put('/lead/status', [\App\Http\Controllers\Api\LeadController::class, 'leadStatusUpdate']);
-Route::get('/lead/lead_id={lead_id}/lead-status-logs',[\App\Http\Controllers\Api\LeadController::class,'lead_status_logs']);
+Route::get('/lead/lead_id={lead_id}/lead-status-logs', [\App\Http\Controllers\Api\LeadController::class, 'lead_status_logs']);
 Route::put('/lead/response', [\App\Http\Controllers\Api\LeadController::class, 'leadResponse']);
 Route::put('/lead/quality/update', [\App\Http\Controllers\Api\LeadController::class, 'leadQualityUpdate']);
 Route::put('/lead/{lead_id}/update', [\App\Http\Controllers\Api\LeadController::class, 'leadUpdate']);
@@ -65,14 +69,14 @@ Route::delete('/lead/checklist/{document_id}/delete/documents', [\App\Http\Contr
 Route::put('/lead/checklist/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'update']);
 Route::post('/lead/checklist/delete', [\App\Http\Controllers\Api\LeadCheckListController::class, 'delete']);
 
-Route::get('/checklist_id={id}/view-pdf-content',[\App\Http\Controllers\Api\ChecklistMailController::class, 'pdf_viewer']);
+Route::get('/checklist_id={id}/view-pdf-content', [\App\Http\Controllers\Api\ChecklistMailController::class, 'pdf_viewer']);
 
-Route::post('/add-course',[\App\Http\Controllers\Api\LeadController::class, 'add_course']);
-Route::post('/add-course-by-accountant',[\App\Http\Controllers\Api\LeadController::class, 'add_course_by_accountant']);
-Route::get('/course_id={course_id}/get-course-details-in-accountant',[\App\Http\Controllers\Api\LeadController::class,'get_course_details_in_accountant']);
-Route::post('/course_id={course_id}/course-update-from-accountant',[\App\Http\Controllers\Api\LeadController::class,'update_course_details_from_accountant']);
-Route::post('/course_id={course_id}/course-destroy-from-accountant',[\App\Http\Controllers\Api\LeadController::class,'destroy_course_from_accountant']);
-Route::get('/get-course-in-accountant',[\App\Http\Controllers\Api\LeadController::class,'get_course_in_accountant']);
+Route::post('/add-course', [\App\Http\Controllers\Api\LeadController::class, 'add_course']);
+Route::post('/add-course-by-accountant', [\App\Http\Controllers\Api\LeadController::class, 'add_course_by_accountant']);
+Route::get('/course_id={course_id}/get-course-details-in-accountant', [\App\Http\Controllers\Api\LeadController::class, 'get_course_details_in_accountant']);
+Route::post('/course_id={course_id}/course-update-from-accountant', [\App\Http\Controllers\Api\LeadController::class, 'update_course_details_from_accountant']);
+Route::post('/course_id={course_id}/course-destroy-from-accountant', [\App\Http\Controllers\Api\LeadController::class, 'destroy_course_from_accountant']);
+Route::get('/get-course-in-accountant', [\App\Http\Controllers\Api\LeadController::class, 'get_course_in_accountant']);
 Route::get('/lead/courses', [\App\Http\Controllers\Api\LeadCheckListController::class, 'getCoursesList']);
 
 Route::post('/lead/add/amount', [\App\Http\Controllers\Api\LeadController::class, 'leadAddAmount']);
@@ -97,25 +101,25 @@ Route::post('/template_id={template_id}/delete-mail-templates', [\App\Http\Contr
 Route::get('/lead/{id}/course', [\App\Http\Controllers\Api\LeadCheckListController::class, 'courseInfo']);
 Route::post('/lead/{id}/course/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'updateCourse']);
 
-Route::post('/create-lead',[\App\Http\Controllers\Api\LeadController::class, 'create_lead']);
+Route::post('/create-lead', [\App\Http\Controllers\Api\LeadController::class, 'create_lead']);
 
 Route::post('/create-lead-from-form', [\App\Http\Controllers\Api\LeadController::class, 'create_lead_from_form']);
 
 Route::post('/excel-read', [\App\Http\Controllers\Api\LeadController::class, 'uploadLeadExcel']);
 
-Route::put('lead-update/{lead_id}',[\App\Http\Controllers\Api\LeadController::class, 'lead_update']);
+Route::put('lead-update/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'lead_update']);
 
-Route::post('assign-sales-to-lead',[\App\Http\Controllers\Api\LeadController::class, 'sales_assign_to_lead']);
+Route::post('assign-sales-to-lead', [\App\Http\Controllers\Api\LeadController::class, 'sales_assign_to_lead']);
 
 Route::post('/assign-leads', [\App\Http\Controllers\Api\SalesController::class, 'assign_leads_to_sales']);
 
 Route::post('/unassign-leads', [\App\Http\Controllers\Api\SalesController::class, 'unassign_leads']);
 
-Route::get('/sales-list/{id}',[\App\Http\Controllers\Api\SalesController::class, 'sales_list']);
+Route::get('/sales-list/{id}', [\App\Http\Controllers\Api\SalesController::class, 'sales_list']);
 
-Route::post('/sales_id={sales_id}/company_id={company_id}/get-lead-list-in-sales',[\App\Http\Controllers\Api\SalesController::class,'lead_list_in_sales']);
+Route::post('/sales_id={sales_id}/company_id={company_id}/get-lead-list-in-sales', [\App\Http\Controllers\Api\SalesController::class, 'lead_list_in_sales']);
 
-Route::post('course-details-by-client',[\App\Http\Controllers\Api\LeadController::class, 'course_details']);
+Route::post('course-details-by-client', [\App\Http\Controllers\Api\LeadController::class, 'course_details']);
 
 Route::post('course-details-by-course-id', [\App\Http\Controllers\Api\LeadController::class, 'course_details_by_course_id']);
 
@@ -129,4 +133,4 @@ Route::get('campaign-wise-lead-percentage', [\App\Http\Controllers\Api\CampaignC
 
 Route::get('campaign-status-change', [\App\Http\Controllers\Api\CampaignController::class, 'campaign_status_change']);
 
-Route::get('counts',[\App\Http\Controllers\Api\CountController::class, 'counts']);
+Route::get('counts', [\App\Http\Controllers\Api\CountController::class, 'counts']);
