@@ -23,7 +23,7 @@ use App\Http\Controllers\Api\LeadLocationColorController;
 Route::group(['middleware' => 'companyAuthentication'], function () {
 
 
-    Route::post('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
+    
     Route::post('/excel-read', [\App\Http\Controllers\Api\LeadController::class, 'uploadLeadExcel']);
 
     Route::post('/lead/assign', [\App\Http\Controllers\Api\LeadController::class, 'leadAssign']);
@@ -96,7 +96,7 @@ Route::group(['middleware' => ['companyandsalesAuthentication']], function () {
     Route::put('lead-update/{lead_id}', [\App\Http\Controllers\Api\LeadController::class, 'lead_update']);
 });
 
-
+Route::post('/lead/scrap', [\App\Http\Controllers\Api\LeadScraper::class, 'dataScraper']);
 Route::post('/create-lead-from-form', [\App\Http\Controllers\Api\LeadController::class, 'create_lead_from_form']);
 Route::post('/lead/create', [\App\Http\Controllers\Api\LeadController::class, 'createLead']);
 
