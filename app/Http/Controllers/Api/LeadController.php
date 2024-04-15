@@ -23,15 +23,20 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\CompanyService;
 use App\Models\Count;
 
 class LeadController extends Controller
 {
+    private $company;
     /**
      * Create Lead
      * @param Request $request
      * @return
      */
+    public function __construct(CompanyService $company){
+        $this->company = $company;
+    }
     public function get_course_in_accountant(Request $request)
     {
         if ($request->bearerToken()) {
@@ -686,6 +691,7 @@ class LeadController extends Controller
                 ->leftJoin('courses_info', function ($join) {
                     $join->on('lead_details.course_id', '=', 'courses_info.id');
                 })->get();
+
             if (isset($request->client_id))
                 $data = $data->where('sales_user_id', $request->user_id)->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc');
 
@@ -748,6 +754,7 @@ class LeadController extends Controller
                 )->leftJoin('courses_info', function ($join) {
                     $join->on('lead_details.course_id', '=', 'courses_info.id');
                 });
+                $company = $this->company->getCompany($request->client_id);
             // ->leftJoin('counts', 'lead_details.lead_id', '=', 'counts.lead_id');
             if (isset($request->client_id))
                 $data = $data->where('lead_details.client_id', '=', $request->client_id)->orderBy('lead_details.lead_apply_date', 'desc')->get();

@@ -41,6 +41,7 @@ Route::group(['middleware' => 'companyAuthentication'], function () {
     Route::post('/unassign-leads', [\App\Http\Controllers\Api\SalesController::class, 'unassign_leads']);
     Route::get('/sales-list/{id}', [\App\Http\Controllers\Api\SalesController::class, 'sales_list']);
 
+    Route::get('/lead/{id}/course', [\App\Http\Controllers\Api\CourseController::class, 'editCourse']);
     Route::post('/lead/{id}/course/update', [\App\Http\Controllers\Api\LeadCheckListController::class, 'updateCourse']);
 
 
