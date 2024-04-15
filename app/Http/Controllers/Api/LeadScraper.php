@@ -114,7 +114,7 @@ class LeadScraper extends Controller
                                                                             'course_title' => isset($leadDetailsInfo['lead'][$lead['id']]['course_title']) ? trim($leadDetailsInfo['lead'][$lead['id']]['course_title']) : '',
                                                                             'course_description' => isset($leadDetailsInfo['lead'][$lead['id']]['course_title']) ? $leadDetailsInfo['lead'][$lead['id']]['course_title'] : '',
                                                                             'status' => 1,
-                                                                            'client_id' => $client_id
+                                                                            'client_id_in_courses_info' => $client_id
                                                                         ]);
                                                                     }
                                                                 } // EOF Course
