@@ -165,7 +165,6 @@ class LeadScraper extends Controller
                                                     }
                                                 }
                                             }
-
                                             $campaignDetails['campaign_name'] = $campaign['name'];
                                             $campaignDetails['campaign_id'] = $campaign['id'];
                                             $campaignDetails['start_time'] = $campaign['start_time'];
@@ -199,6 +198,40 @@ class LeadScraper extends Controller
                                             $leadDetails['campaign'][$campaign['id']]['campaign_details'] = $campaignDetails;
                                             $leadDetails['campaign'][$campaign['id']]['campaign_leads'] = $leadDetailsInfo;
                                             $leadDetails['lead_from'] = $leadFrom;
+                                        } else {
+                                            $campaignDetails['campaign_name'] = $campaign['name'];
+                                            $campaignDetails['campaign_id'] = $campaign['id'];
+                                            $campaignDetails['start_time'] = $campaign['start_time'];
+                                            $campaignDetails['stop_time'] = isset($campaign['stop_time']) ?
+                                                $campaign['stop_time'] : $campaign['start_time'];
+                                            $campaignDetails['campaign_status'] = $campaign['status'];
+
+                                            ////////////Insert Campaign//////////////////////////
+
+                                            $campaignData = CampaignDetails::where(
+                                                'campaign_id',
+                                                '=',
+                                                $campaign['id']
+                                            )->first();
+                                            $start_time = Carbon::parse($campaign['start_time'])->toDateTime();
+
+                                            $stop_time = Carbon::parse($campaignDetails['stop_time'])->toDateTime();
+
+                                            //dd($start_time); // 2020-11-23 13:26:02
+
+
+                                            if ($campaignData === null) {
+                                                $campaign = CampaignDetails::create([
+                                                    'campaign_name' => $campaign['name'],
+                                                    'campaign_id' => $campaign['id'],
+                                                    'client_id' => $client_id,
+                                                    'business_id' => $dataCampaign['id'],
+                                                    'business_name' => $dataCampaign['business_name'],
+                                                    'start_time' => $start_time,
+                                                    'stop_time' => $stop_time,
+                                                    'campaign_status' => $campaign['status']
+                                                ]);
+                                            }
                                         }
                                     }
                                 }
