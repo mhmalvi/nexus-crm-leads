@@ -1,64 +1,109 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Nexus CRM Leads
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+The lead management microservice for the **Nexus CRM** platform. This Laravel-based API handles the complete lead lifecycle — from capture and assignment through qualification, communication, and conversion tracking.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Lead CRUD Operations** — Create, read, update, and delete leads with rich metadata
+- **Lead Assignment** — Assign and reassign leads to sales representatives with bulk operations
+- **Pipeline Management** — Track lead status transitions with full audit logging
+- **Lead Scraping** — Automated lead data extraction and import capabilities
+- **Excel Import** — Bulk lead upload via Excel/CSV file parsing
+- **Campaign Attribution** — Associate leads with marketing campaigns and track conversion rates
+- **Quality Scoring** — Rate and filter leads by quality metrics
+- **Communication Tracking** — Log call history, comments, and email interactions per lead
+- **Email Templates** — Manage reusable email templates with mail merge support
+- **Checklist Management** — Configurable checklists for lead processing workflows
+- **Document Management** — Attach and manage student documents per lead
+- **Course Management** — Link leads to courses with accountant-level course administration
+- **Sales Performance** — Per-salesperson lead lists and assignment tracking
+- **Form Integration** — Public API endpoint for capturing leads from external web forms
+- **PDF Export** — Generate and serve checklist PDFs
+- **Analytics** — Campaign-wise lead percentages, status counts, and conversion metrics
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Layer | Technology |
+|-------|-----------|
+| Framework | Laravel 10 |
+| Language | PHP 8.1+ |
+| Authentication | Laravel Sanctum |
+| HTTP Client | Guzzle |
+| Database | MySQL |
+| Testing | PHPUnit 10 |
+| Code Style | StyleCI |
 
-## Learning Laravel
+## Prerequisites
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP >= 8.1
+- Composer
+- MySQL 5.7+ or MariaDB 10.3+
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Getting Started
 
-## Laravel Sponsors
+1. **Clone the repository**
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+   ```bash
+   git clone https://github.com/mhmalvi/nexus-crm-leads.git
+   cd nexus-crm-leads
+   ```
 
-### Premium Partners
+2. **Install dependencies**
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+   ```bash
+   composer install
+   ```
 
-## Contributing
+3. **Configure environment**
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-## Code of Conduct
+   Update `.env` with your database credentials and service URLs.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. **Run database migrations**
 
-## Security Vulnerabilities
+   ```bash
+   php artisan migrate
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+   Alternatively, import the provided `crm_lead.sql` schema file.
+
+5. **Start the development server**
+
+   ```bash
+   php artisan serve
+   ```
+
+   The API will be available at `http://localhost:8000`.
+
+## API Overview
+
+| Endpoint Group | Description |
+|---------------|-------------|
+| `POST /api/lead/list` | List and filter leads |
+| `POST /api/create-lead` | Create a new lead |
+| `POST /api/lead/assign` | Assign leads to sales reps |
+| `PUT /api/lead/status` | Update lead status |
+| `PUT /api/lead/quality/update` | Update lead quality score |
+| `POST /api/lead/mail` | Send emails to leads |
+| `POST /api/excel-read` | Import leads from Excel |
+| `POST /api/lead/scrap` | Scrape lead data |
+| `POST /api/campaign/list` | List campaigns |
+| `GET /api/counts` | Dashboard count metrics |
+| `POST /api/create-lead-from-form` | Public form submission endpoint |
+
+## Microservices Integration
+
+| Service | Interaction |
+|---------|------------|
+| nexus-crm-users | Validates authentication tokens and fetches user/sales data |
+| nexus-crm-orgs | Retrieves company context for multi-tenant operations |
+| nexus-crm-payments | Links leads to payment records |
+| nexus-crm-alerts | Triggers notification events on lead status changes |
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is proprietary software. All rights reserved.
