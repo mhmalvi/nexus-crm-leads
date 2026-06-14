@@ -1,3 +1,6 @@
+<!-- repo-card -->
+![nexus-crm-leads](docs/assets/social-card.png)
+
 # Nexus CRM Leads
 
 The lead management microservice for the **Nexus CRM** platform. This Laravel-based API handles the complete lead lifecycle — from capture and assignment through qualification, communication, and conversion tracking.
